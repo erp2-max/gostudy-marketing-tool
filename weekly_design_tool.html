@@ -308,21 +308,21 @@ textarea{min-height:72px;line-height:1.5}
 
   <div class="sidebar-divider"></div>
 
-  <button onclick="toggleGemini()" aria-expanded="false" aria-controls="gemini-section" style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:10px 22px;background:none;border:none;cursor:pointer;font-family:inherit">
+  <button onclick="toggleClaude()" aria-expanded="false" aria-controls="claude-section" style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:10px 22px;background:none;border:none;cursor:pointer;font-family:inherit">
     <div style="display:flex;align-items:center;gap:8px">
-      <span style="font-size:10px;font-weight:700;color:rgba(166,138,86,.55);letter-spacing:2px;text-transform:uppercase">✦ Gemini AI 生成</span>
-      <span id="gemini-dot" style="width:7px;height:7px;border-radius:50%;background:rgba(74,222,128,.2);display:inline-block;transition:all .3s"></span>
+      <span style="font-size:10px;font-weight:700;color:rgba(166,138,86,.55);letter-spacing:2px;text-transform:uppercase">✦ Claude AI 生成</span>
+      <span id="claude-dot" style="width:7px;height:7px;border-radius:50%;background:rgba(74,222,128,.2);display:inline-block;transition:all .3s"></span>
     </div>
-    <span id="gemini-arrow" style="color:rgba(166,138,86,.35);font-size:12px">▶</span>
+    <span id="claude-arrow" style="color:rgba(166,138,86,.35);font-size:12px">▶</span>
   </button>
-  <div id="gemini-section" style="display:none">
+  <div id="claude-section" style="display:none">
     <div class="api-section" style="padding-top:0">
-      <div style="font-size:10px;color:rgba(200,176,122,.4);margin-bottom:8px;line-height:1.7">免費！前往 <span style="color:var(--gold)">aistudio.google.com</span><br>登入 Google → Get API Key → 貼上</div>
+      <div style="font-size:10px;color:rgba(200,176,122,.4);margin-bottom:8px;line-height:1.7">前往 <span style="color:var(--gold)">console.anthropic.com</span><br>登入 → API Keys → Create Key → 貼上</div>
       <div class="api-row">
-        <input class="api-input" type="password" id="gemini-key" placeholder="AIzaSy...">
-        <button class="api-save-btn" onclick="saveGeminiKey()">儲存</button>
+        <input class="api-input" type="password" id="claude-key" placeholder="sk-ant-api...">
+        <button class="api-save-btn" onclick="saveClaudeKey()">儲存</button>
       </div>
-      <div class="api-status none" id="gemini-status">尚未設定 · 使用關鍵字模板</div>
+      <div class="api-status none" id="claude-status">尚未設定 · 使用關鍵字模板</div>
     </div>
   </div>
 
@@ -430,16 +430,9 @@ textarea{min-height:72px;line-height:1.5}
       </div>
       <div class="gen-btn-wrap">
         <div class="ai-toggle-row" id="ai-toggle-row" style="display:none">
-          <span class="ai-toggle-label" id="ai-toggle-label">✦ Gemini AI 生成</span>
+          <span class="ai-toggle-label" id="ai-toggle-label">✦ Claude AI 生成</span>
           <label class="toggle-sw">
-            <input type="checkbox" id="use-gemini-toggle" checked onchange="updateGenHint()">
-            <span class="toggle-track"></span>
-          </label>
-        </div>
-        <div class="ai-toggle-row" id="search-toggle-row" style="display:none">
-          <span class="ai-toggle-label">🌐 搜尋最新資訊</span>
-          <label class="toggle-sw">
-            <input type="checkbox" id="use-search-toggle" onchange="updateGenHint()">
+            <input type="checkbox" id="use-claude-toggle" checked onchange="updateGenHint()">
             <span class="toggle-track"></span>
           </label>
         </div>
@@ -471,7 +464,7 @@ textarea{min-height:72px;line-height:1.5}
   <div class="status-bar">
     <span class="sdot"></span>
     <span>GOSTUDY · 行銷圖卡生成工具 v3.0</span>
-    <span style="margin-left:auto;opacity:.5">圖片：Unsplash CC0 · AI：Gemini Flash + Google 搜尋（免費）· 匯出：PNG 全尺寸</span>
+    <span style="margin-left:auto;opacity:.5">圖片：Unsplash CC0 · AI：Claude Haiku (Anthropic) · 匯出：PNG 全尺寸</span>
   </div>
 </div>
 </div>
@@ -738,82 +731,86 @@ function updateTopicHint(raw) {
   else                 { hint.className='topic-hint show generic';  hint.innerHTML='✦ 通用模板 &middot; 留學資訊角度'; }
 }
 
-// ── Gemini ────────────────────────────────────────────────────────────────────
-function getGeminiKey() { return localStorage.getItem('gs_gemini_key')||''; }
+// ── Claude AI ─────────────────────────────────────────────────────────────────
+function getClaudeKey() { return localStorage.getItem('gs_claude_key')||''; }
 
-function toggleGemini() {
-  const sec=document.getElementById('gemini-section'), arrow=document.getElementById('gemini-arrow');
+function toggleClaude() {
+  const sec=document.getElementById('claude-section'), arrow=document.getElementById('claude-arrow');
   const open=sec.style.display==='none';
   sec.style.display=open?'block':'none'; arrow.textContent=open?'▼':'▶';
-  document.querySelector('[aria-controls="gemini-section"]').setAttribute('aria-expanded',open);
+  document.querySelector('[aria-controls="claude-section"]').setAttribute('aria-expanded',open);
 }
 
-function saveGeminiKey() {
-  const k=document.getElementById('gemini-key').value.trim();
-  if (!k) { alert('請輸入 Gemini API Key'); return; }
-  if (!k.startsWith('AIzaSy')||k.length<35) { alert('格式有誤，請重新確認'); return; }
-  localStorage.setItem('gs_gemini_key',k); showGeminiStatus(true);
+function saveClaudeKey() {
+  const k=document.getElementById('claude-key').value.trim();
+  if (!k) { alert('請輸入 Claude API Key'); return; }
+  if (!k.startsWith('sk-ant-')||k.length<20) { alert('格式有誤，Claude Key 以 sk-ant- 開頭'); return; }
+  localStorage.setItem('gs_claude_key',k); showClaudeStatus(true);
 }
 
-function showGeminiStatus(ok) {
-  document.getElementById('gemini-status').textContent = ok?'✓ Key 已儲存 · 使用 Gemini Flash':'尚未設定 · 使用關鍵字模板';
-  document.getElementById('gemini-status').className   = 'api-status '+(ok?'ok':'none');
-  document.getElementById('gemini-dot').style.background = ok?'#4ade80':'rgba(74,222,128,.2)';
+function showClaudeStatus(ok) {
+  document.getElementById('claude-status').textContent = ok?'✓ Key 已儲存 · 使用 Claude Haiku':'尚未設定 · 使用關鍵字模板';
+  document.getElementById('claude-status').className   = 'api-status '+(ok?'ok':'none');
+  document.getElementById('claude-dot').style.background = ok?'#4ade80':'rgba(74,222,128,.2)';
   document.getElementById('ai-toggle-row').style.display = ok?'flex':'none';
-  document.getElementById('search-toggle-row').style.display = ok?'flex':'none';
   updateGenHint();
 }
 
-function isSearchEnabled() { return !!(document.getElementById('use-search-toggle')?.checked); }
-
 function updateGenHint() {
-  const useAI = !!getGeminiKey() && (document.getElementById('use-gemini-toggle')?.checked??true);
-  const useSearch = useAI && isSearchEnabled();
-  document.getElementById('gen-hint').textContent = useSearch
-    ? '🌐 Gemini Flash + Google 即時搜尋'
-    : useAI ? '✦ Gemini Flash AI 即時生成' : '輸入議題後一鍵生成 · 無需 API Key';
+  const useAI = !!getClaudeKey() && (document.getElementById('use-claude-toggle')?.checked??true);
+  document.getElementById('gen-hint').textContent = useAI
+    ? '✦ Claude Haiku AI 即時生成' : '輸入議題後一鍵生成 · 無需 API Key';
 }
 
-function isGeminiEnabled() { return !!getGeminiKey() && (document.getElementById('use-gemini-toggle')?.checked??true); }
+function isClaudeEnabled() { return !!getClaudeKey() && (document.getElementById('use-claude-toggle')?.checked??true); }
 
-async function geminiRequest(prompt, cfg={}, onWait, useSearch=false, extraParts=[]) {
-  const key=getGeminiKey(); if (!key) throw new Error('未設定 API Key');
-  // vision or search grounding both require gemini-2.0-flash (not lite)
-  const needFlash = useSearch || extraParts.length>0;
-  const model = needFlash ? 'gemini-2.0-flash' : 'gemini-2.0-flash-lite';
-  const url=`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
-  const genCfg = useSearch
-    ? {temperature:.85, ...cfg}  // no responseMimeType when using tools
-    : {temperature:.85, responseMimeType:'application/json', ...cfg};
-  const parts = [{text:prompt}, ...extraParts];
-  const reqBody = {
-    contents:[{parts}],
-    generationConfig: genCfg,
-    ...(useSearch ? {tools:[{google_search:{}}]} : {})
-  };
-  const body=JSON.stringify(reqBody);
-  for (let attempt=0; attempt<=1; attempt++) {
-    const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body});
-    if (res.ok) {
-      const r=await res.json();
-      const t=r.candidates?.[0]?.content?.parts?.[0]?.text||'{}';
-      // Robust JSON extraction: strip markdown fences, then find the outermost {...} block
-      // (grounded responses often include extra text/citations around the JSON)
-      const stripped = t.replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'').trim();
-      const start = stripped.indexOf('{'), end = stripped.lastIndexOf('}');
-      const jsonStr = (start !== -1 && end > start) ? stripped.slice(start, end+1) : stripped;
-      return JSON.parse(jsonStr);
-    }
-    const err=await res.json().catch(()=>({}));
-    const msg=err?.error?.message||`HTTP ${res.status}`;
-    if (res.status===429 && /per_minute|per minute|rpm|rate/i.test(msg) && attempt<1) {
-      for (let s=62;s>0;s--) { if(onWait) onWait(`⏳ 速率限制，${s}s 後重試…`); await new Promise(r=>setTimeout(r,1000)); }
-      if(onWait) onWait('↺ 重試中…'); continue;
-    }
-    if (res.status===400) throw new Error('API Key 格式有誤');
-    if (res.status===403) throw new Error('API Key 無效或未啟用');
-    throw new Error(res.status===429?'今日配額用完，明日重置':msg);
+async function claudeRequest(prompt, cfg={}, onWait, _unused=false, imageParts=[]) {
+  const key=getClaudeKey(); if (!key) throw new Error('未設定 API Key');
+  const url='https://api.anthropic.com/v1/messages';
+  // 組裝 content：文字在前，圖片在後
+  const content = [{type:'text', text:prompt}];
+  for (const img of imageParts) {
+    // 相容舊格式 {inlineData:{mimeType,data}} 與 Claude 原生格式
+    const src = img.inlineData || img;
+    const mimeType = src.mimeType || src.media_type || 'image/jpeg';
+    const data = src.data;
+    if (data) content.push({type:'image', source:{type:'base64', media_type:mimeType, data}});
   }
+  const reqBody = {
+    model: 'claude-3-5-haiku-20241022',
+    max_tokens: 4096,
+    temperature: cfg.temperature||.85,
+    messages: [{role:'user', content}]
+  };
+  const res = await fetch(url, {
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'x-api-key': key,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify(reqBody)
+  });
+  if (res.ok) {
+    const r=await res.json();
+    const t=r.content?.[0]?.text||'{}';
+    // 移除 markdown code fence，取出最外層 JSON {...}
+    const stripped = t.replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'').trim();
+    const start=stripped.indexOf('{'), end=stripped.lastIndexOf('}');
+    const jsonStr=(start!==-1&&end>start)?stripped.slice(start,end+1):stripped;
+    return JSON.parse(jsonStr);
+  }
+  const err=await res.json().catch(()=>({}));
+  const msg=err?.error?.message||`HTTP ${res.status}`;
+  if (res.status===429) {
+    if(onWait) onWait('⏳ 速率限制，稍後重試…');
+    await new Promise(r=>setTimeout(r,5000));
+    throw new Error('速率限制，請稍後再試');
+  }
+  if (res.status===401) throw new Error('API Key 無效，請重新確認');
+  if (res.status===400) throw new Error('請求格式有誤：'+msg);
+  throw new Error(msg);
 }
 
 // ── Threads content type state + uploaded files ────────────────────────────────
@@ -975,7 +972,7 @@ ${typeGuides[contentType]}${inputSection}
 }`;
 }
 
-function buildGeminiPrompt(topic, plat, withSearch=false) {
+function buildAIPrompt(topic, plat, withSearch=false) {
   const isMulti = plat==='ig'||plat==='fb';
   const desc={ad:'廣告圖卡（單張）',ig:'Instagram 社群多頁圖卡（封面+表格+3內容頁）',fb:'Facebook 社群多頁圖卡（封面+表格+3內容頁）',blog:'官網部落格封面（橫式800×600）',thread:'Threads 純文案'}[plat]||'';
   const multiExtra = isMulti ? `
@@ -1082,11 +1079,10 @@ async function generate() {
   genBtn.disabled=true;
 
   let aiData=null;
-  if (isGeminiEnabled()) {
-    const withSearch = isSearchEnabled();
+  if (isClaudeEnabled()) {
     genBtn.textContent='AI 生成中…';
-    infoEl.textContent = withSearch ? '🌐 Google 搜尋 + Gemini Flash 生成中…' : '✦ Gemini Flash 生成文案中…';
-    try { aiData=await geminiRequest(buildGeminiPrompt(topic,platform,withSearch),{temperature:.85},msg=>{infoEl.textContent=msg;},withSearch); }
+    infoEl.textContent = '✦ Claude Haiku 生成文案中…';
+    try { aiData=await claudeRequest(buildAIPrompt(topic,platform),{temperature:.85},msg=>{infoEl.textContent=msg;}); }
     catch(e) { infoEl.textContent=`⚠ AI 失敗：${(e.message||'').slice(0,50)}`; await new Promise(r=>setTimeout(r,1500)); }
   }
 
@@ -1108,7 +1104,7 @@ async function generate() {
   renderOutput(generated);
   updateSceneCycleRow();
 
-  const aiNote=aiData?' · ✦ Gemini AI':(getGeminiKey()?' · 模板(AI失敗)':' · 模板');
+  const aiNote=aiData?' · ✦ Claude AI':(getClaudeKey()?' · 模板(AI失敗)':' · 模板');
   infoEl.textContent=`✓ 完成${aiNote}`;
   document.getElementById('dl-btn').style.display    = 'inline-flex';
   document.getElementById('canva-btn').style.display = 'inline-flex';
@@ -1117,7 +1113,7 @@ async function generate() {
 
 async function generateThread() {
   const genBtn=document.getElementById('gen-btn'), infoEl=document.getElementById('preview-info');
-  if (!isGeminiEnabled()) { alert('Threads 貼文需要 Gemini API Key，請在左側設定'); return; }
+  if (!isClaudeEnabled()) { alert('Threads 貼文需要 Claude API Key，請在左側設定'); return; }
 
   const manualText = (document.getElementById('inp-thread-content')?.value||'').trim();
   const useSearch  = (threadContentType==='auto');
@@ -1127,11 +1123,11 @@ async function generateThread() {
 
   // ── Process uploaded files ─────────────────────────────────────────────────
   const textParts = [];   // text extracted from PDFs / TXT
-  const imageParts = [];  // base64 images for Gemini vision
+  const imageParts = [];  // base64 images for Claude vision
 
   for (const f of threadFiles) {
     if (f.base64) {
-      // Image → Gemini inline data part
+      // Image → Claude vision part（claudeRequest 內部自動轉換格式）
       imageParts.push({ inlineData: { mimeType: f.mimeType, data: f.base64 } });
     } else if (f.text) {
       textParts.push(`【${f.name}】\n${f.text}`);
@@ -1141,7 +1137,7 @@ async function generateThread() {
   // Combine all text content
   const allText = [manualText, ...textParts].filter(Boolean).join('\n\n');
 
-  // ── Call Gemini ────────────────────────────────────────────────────────────
+  // ── Call Claude ────────────────────────────────────────────────────────────
   const hasImages = imageParts.length > 0;
   const hasContent = allText || hasImages;
 
@@ -1165,7 +1161,7 @@ async function generateThread() {
 
   let aiData=null;
   try {
-    aiData = await geminiRequest(prompt, {temperature:.92}, msg=>{infoEl.textContent=msg;}, useSearch, imageParts);
+    aiData = await claudeRequest(prompt, {temperature:.92}, msg=>{infoEl.textContent=msg;}, false, imageParts);
   } catch(e) {
     infoEl.textContent=`⚠ AI 失敗：${(e.message||'').slice(0,50)}`;
     await new Promise(r=>setTimeout(r,1500));
@@ -1175,7 +1171,7 @@ async function generateThread() {
   area.innerHTML='';
   renderThreadOutput(aiData||{}, area);
 
-  const src = hasImages ? '· 🖼️ Vision + Vivian AI' : '· ✦ Vivian AI';
+  const src = hasImages ? '· 🖼️ Vision + Claude AI' : '· ✦ Claude AI';
   infoEl.textContent = aiData ? `✓ 完成 ${src}` : '✓ 完成 · AI 失敗';
   document.getElementById('dl-btn').style.display    = 'none';
   document.getElementById('canva-btn').style.display = 'none';
@@ -2065,8 +2061,8 @@ function copyText(text,btn){
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 (function init() {
-  const k=localStorage.getItem('gs_gemini_key');
-  if (k){document.getElementById('gemini-key').value=k;showGeminiStatus(true);}
+  const k=localStorage.getItem('gs_claude_key');
+  if (k){document.getElementById('claude-key').value=k;showClaudeStatus(true);}
   document.getElementById('inp-topic').addEventListener('input',e=>updateTopicHint(e.target.value.trim()));
   initSceneGrid();
   setThreadType('listing'); // init thread input area (hidden until thread tab is clicked)
