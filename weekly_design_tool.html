@@ -223,9 +223,11 @@ textarea{min-height:72px;line-height:1.5}
 .topic-hint.deadline{background:rgba(251,146,60,.1);border:1px solid rgba(251,146,60,.3);color:rgba(200,100,20,.95)}
 .topic-hint.generic{background:rgba(166,138,86,.1);border:1px solid rgba(166,138,86,.3);color:var(--khaki)}
 
-/* Draggable text group hover hint */
+/* Draggable elements hover hint */
 [data-drag="text-group"]:hover{outline:1.5px dashed rgba(255,255,255,.28);outline-offset:6px}
 [data-drag="text-group"]:active{cursor:grabbing!important}
+[data-drag="subject"]:hover{outline:1.5px dashed rgba(166,138,86,.5);outline-offset:4px}
+[data-drag="subject"]:active{cursor:grabbing!important}
 
 /* Card templates */
 .gs-card-s{width:1080px;height:1350px;position:relative;overflow:hidden;font-family:'Noto Sans TC','Microsoft JhengHei',sans-serif}
@@ -449,7 +451,7 @@ let breakingNewsText = 'Breaking News！';
 let hookYellowLine   = 2; // which hook line (1/2/3) renders in yellow
 
 // ── Manual layout overrides (drag + font adjust) ──────────────────────────────
-let manualOverrides = { textDx:0, textDy:0, hlDelta:0, hookDelta:0 };
+let manualOverrides = { textDx:0, textDy:0, hlDelta:0, hookDelta:0, subDx:0, subDy:0, subScale:1.0 };
 let _dragState = null; // drag tracking: {el, scale, startX, startY, startDx, startDy}
 
 // ── Image URL map ─────────────────────────────────────────────────────────────
@@ -546,6 +548,9 @@ function clearSubject() {
   document.getElementById('subject-zone').classList.remove('has-img');
   document.getElementById('subject-clear-btn').style.display='none';
   document.getElementById('subject-side-row').style.display='none';
+  // Reset subject overrides
+  manualOverrides.subDx=0; manualOverrides.subDy=0; manualOverrides.subScale=1.0;
+  const scaleEl=document.getElementById('sub-scale-val'); if(scaleEl) scaleEl.textContent='100%';
   if(generated) renderOutput(generated);
 }
 
@@ -985,6 +990,29 @@ function buildEditPanel(d) {
       adjRow.appendChild(fRow);
     });
 
+    // ── Subject size control (only when subject uploaded) ──
+    if (subjectUrl) {
+      const subSzRow=document.createElement('div'); subSzRow.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:6px';
+      const subLbl=document.createElement('span'); subLbl.style.cssText='font-size:11px;color:var(--muted);flex:1'; subLbl.textContent='素材大小';
+      const subM=document.createElement('button'); subM.textContent='－'; subM.className='side-btn';
+      subM.style.cssText='padding:3px 10px;font-size:13px;font-weight:700;border-radius:5px;cursor:pointer;font-family:inherit;border:1px solid var(--border);background:transparent;color:var(--muted)';
+      const subValEl=document.createElement('span'); subValEl.id='sub-scale-val';
+      subValEl.style.cssText='font-size:12px;font-weight:700;color:var(--gold);min-width:42px;text-align:center';
+      subValEl.textContent=Math.round(manualOverrides.subScale*100)+'%';
+      const subP=document.createElement('button'); subP.textContent='＋'; subP.className='side-btn';
+      subP.style.cssText=subM.style.cssText;
+      subM.onclick=()=>{
+        manualOverrides.subScale=Math.max(0.3, +(manualOverrides.subScale-0.1).toFixed(2));
+        subValEl.textContent=Math.round(manualOverrides.subScale*100)+'%'; rebuildSCard();
+      };
+      subP.onclick=()=>{
+        manualOverrides.subScale=Math.min(2.0, +(manualOverrides.subScale+0.1).toFixed(2));
+        subValEl.textContent=Math.round(manualOverrides.subScale*100)+'%'; rebuildSCard();
+      };
+      subSzRow.appendChild(subLbl); subSzRow.appendChild(subM); subSzRow.appendChild(subValEl); subSzRow.appendChild(subP);
+      adjRow.appendChild(subSzRow);
+    }
+
     const resetBtn=document.createElement('button'); resetBtn.textContent='↺ 重置版面';
     resetBtn.style.cssText='margin-top:4px;padding:6px 12px;font-size:11px;font-weight:700;border-radius:6px;cursor:pointer;font-family:inherit;border:1px solid var(--border);background:transparent;color:var(--muted);width:100%;transition:all .15s';
     resetBtn.onmouseenter=()=>{resetBtn.style.background='rgba(166,138,86,.15)';resetBtn.style.color='var(--gold)';};
@@ -1041,25 +1069,30 @@ function rebuildSCard() {
 }
 
 function resetLayout() {
-  manualOverrides = { textDx:0, textDy:0, hlDelta:0, hookDelta:0 };
+  manualOverrides = { textDx:0, textDy:0, hlDelta:0, hookDelta:0, subDx:0, subDy:0, subScale:1.0 };
   ['hlDelta','hookDelta'].forEach(k=>{
     const el = document.getElementById('fsize-'+k);
     if (el) el.textContent = '+0';
   });
+  const scaleEl = document.getElementById('sub-scale-val');
+  if (scaleEl) scaleEl.textContent = '100%';
   rebuildSCard();
 }
 
 // ── Drag-to-reposition ─────────────────────────────────────────────────────────
 document.addEventListener('mousedown', function(e) {
-  const dragEl = e.target.closest('[data-drag="text-group"]');
+  const dragEl = e.target.closest('[data-drag]');
   if (!dragEl) return;
+  const dtype = dragEl.dataset.drag;
   const inner = dragEl.closest('[style*="transform:scale"]') || dragEl.closest('.card-preview-shell > div');
   if (!inner) return;
   const shell = inner.parentElement;
   const dW = parseInt(shell?.style.width) || 360;
   const nW = parseInt(inner.style.width) || 1080;
   const sc = dW / nW;
-  _dragState = { el:dragEl, sc, startX:e.clientX, startY:e.clientY, startDx:manualOverrides.textDx, startDy:manualOverrides.textDy };
+  const startDx = dtype==='subject' ? manualOverrides.subDx : manualOverrides.textDx;
+  const startDy = dtype==='subject' ? manualOverrides.subDy : manualOverrides.textDy;
+  _dragState = { el:dragEl, dtype, sc, startX:e.clientX, startY:e.clientY, startDx, startDy };
   dragEl.style.cursor = 'grabbing';
   e.preventDefault();
 });
@@ -1068,9 +1101,15 @@ document.addEventListener('mousemove', function(e) {
   if (!_dragState) return;
   const sdx = e.clientX - _dragState.startX;
   const sdy = e.clientY - _dragState.startY;
-  manualOverrides.textDx = Math.round(_dragState.startDx + sdx / _dragState.sc);
-  manualOverrides.textDy = Math.round(_dragState.startDy + sdy / _dragState.sc);
-  _dragState.el.style.transform = `translate(${manualOverrides.textDx}px,${manualOverrides.textDy}px)`;
+  const dx = Math.round(_dragState.startDx + sdx / _dragState.sc);
+  const dy = Math.round(_dragState.startDy + sdy / _dragState.sc);
+  if (_dragState.dtype === 'subject') {
+    manualOverrides.subDx = dx; manualOverrides.subDy = dy;
+    _dragState.el.style.transform = `translate(${dx}px,${dy}px)`;
+  } else {
+    manualOverrides.textDx = dx; manualOverrides.textDy = dy;
+    _dragState.el.style.transform = `translate(${dx}px,${dy}px)`;
+  }
 });
 
 document.addEventListener('mouseup', function() {
@@ -1163,8 +1202,9 @@ function buildSCardHTML(d, imgUrl) {
     : `rgba(0,0,0,.05)`;
 
   // ── Subject image ──
+  const mo = manualOverrides;
   const subEl = hasSub
-    ? `<img src="${subjectUrl}" alt="" style="position:absolute;bottom:0;${sd}:-8px;height:84%;max-height:1100px;object-fit:contain;z-index:3;pointer-events:none">`
+    ? `<img data-drag="subject" src="${subjectUrl}" alt="" style="position:absolute;bottom:0;${sd}:-8px;height:${Math.round(84*mo.subScale)}%;max-height:${Math.round(1100*mo.subScale)}px;object-fit:contain;z-index:3;cursor:grab;transform:translate(${mo.subDx}px,${mo.subDy}px);transform-origin:bottom center">`
     : '';
 
   // ── Breaking News badge: white text, transparent bg, white border ──
