@@ -713,7 +713,12 @@ async function geminiRequest(prompt, cfg={}, onWait, useSearch=false) {
     if (res.ok) {
       const r=await res.json();
       const t=r.candidates?.[0]?.content?.parts?.[0]?.text||'{}';
-      return JSON.parse(t.replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'').trim());
+      // Robust JSON extraction: strip markdown fences, then find the outermost {...} block
+      // (grounded responses often include extra text/citations around the JSON)
+      const stripped = t.replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'').trim();
+      const start = stripped.indexOf('{'), end = stripped.lastIndexOf('}');
+      const jsonStr = (start !== -1 && end > start) ? stripped.slice(start, end+1) : stripped;
+      return JSON.parse(jsonStr);
     }
     const err=await res.json().catch(()=>({}));
     const msg=err?.error?.message||`HTTP ${res.status}`;
