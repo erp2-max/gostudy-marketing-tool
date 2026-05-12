@@ -1485,11 +1485,12 @@ function buildSCardHTML(d, imgUrl) {
     ? `<img data-drag="subject" src="${subjectUrl}" alt="" style="position:absolute;bottom:0;${sd}:-8px;height:${Math.round(84*mo.subScale)}%;max-height:${Math.round(1100*mo.subScale)}px;object-fit:contain;z-index:3;cursor:grab;${tr('subject')};transform-origin:bottom center;${subGlowCSS}">`
     : '';
 
-  // ── Breaking News badge: white text, transparent bg, white border ──
+  // ── Breaking News badge: white bg + knockout/cutout text (screen blend) ──
+  // mix-blend-mode:screen → white areas stay white, black text reveals card background through
   const bn = (breakingNewsText||'').trim();
   const bnSc = mo.bnScale||1;
   const bnEl = bn
-    ? `<div style="border:2px solid rgba(255,255,255,.9);border-radius:6px;padding:${Math.round(7*bnSc)}px ${Math.round(18*bnSc)}px;font-size:${Math.round(22*bnSc)}px;font-weight:800;color:#fff;white-space:nowrap;display:inline-flex;align-items:center;gap:${Math.round(8*bnSc)}px"><span style="background:#FF3B30;color:#fff;border-radius:3px;padding:2px ${Math.round(8*bnSc)}px;font-size:${Math.round(15*bnSc)}px;font-weight:900">▶</span>${escH(bn)}</div>`
+    ? `<div style="mix-blend-mode:screen;display:inline-flex;align-items:center;background:#ffffff;border-radius:${Math.round(4*bnSc)}px;padding:${Math.round(4*bnSc)}px ${Math.round(14*bnSc)}px;font-size:${Math.round(22*bnSc)}px;font-weight:900;font-style:italic;color:#000000;white-space:nowrap;letter-spacing:-0.3px;">${escH(bn)}</div>`
     : '';
 
   // ── Font sizes: derive headline FROM hook size so ratio stays ~1.7:1 ──
