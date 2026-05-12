@@ -469,7 +469,7 @@ function _defaultOverrides() {
     headlineColor:'#ffffff',
     headlineBorder:'rgba(255,255,255,.78)',
     subjectGlow:null,
-    bgSat:0.90, bgBright:0.90,
+    bgSat:0.80, bgBright:0.80,
     hookLineW:{},   // {1:px, 2:px, 3:px}  null/missing = use computed default
     offsets:{
       'logo-row'  :{dx:0,dy:0},
@@ -1466,7 +1466,7 @@ function buildSCardHTML(d, imgUrl) {
   const htags = (d.hashtags||'').split(/\s+/).filter(Boolean).slice(0,3).join('  ');
 
   return `<div class="gs-card-s">
-  <img class="bg" src="${imgUrl}" alt="" style="filter:saturate(${mo.bgSat||0.90}) brightness(${mo.bgBright||0.90})">
+  <img class="bg" src="${imgUrl}" alt="" style="filter:saturate(${mo.bgSat||0.80}) brightness(${mo.bgBright||0.80})">
   <div style="position:absolute;inset:0;background:${gradCSS};z-index:2"></div>
   ${subEl}
   <div style="position:absolute;inset:0;padding:58px 68px 50px;display:flex;flex-direction:column;z-index:6">
