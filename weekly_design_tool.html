@@ -12,6 +12,11 @@
     var s = document.createElement('script');
     s.src='https://html2canvas.hertzen.com/dist/html2canvas.min.js';
     document.head.appendChild(s);
+    // PDF.js for browser-side PDF text extraction
+    var p = document.createElement('script');
+    p.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+    p.onload=function(){ pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'; };
+    document.head.appendChild(p);
   });
 </script>
 <style>
@@ -196,6 +201,15 @@ textarea{min-height:72px;line-height:1.5}
 .copy-btn{background:rgba(166,138,86,.2);border:1px solid rgba(166,138,86,.35);border-radius:6px;padding:4px 12px;font-size:10px;font-weight:700;color:var(--gold-l);cursor:pointer;font-family:inherit;transition:all .15s}
 .copy-btn:hover{background:rgba(166,138,86,.4)}
 .copy-btn.copied{background:rgba(74,222,128,.2);border-color:rgba(74,222,128,.4);color:#4ade80}
+
+/* Thread file upload zone */
+.thread-upload-zone{position:relative;border:1.5px dashed rgba(166,138,86,.35);border-radius:10px;padding:14px 12px;text-align:center;cursor:pointer;transition:all .18s;display:flex;flex-direction:column;align-items:center;gap:5px;background:rgba(255,255,255,.03)}
+.thread-upload-zone:hover,.thread-upload-zone.drag-over{border-color:var(--gold);background:rgba(166,138,86,.08)}
+.thread-file-chip{display:inline-flex;align-items:center;gap:5px;background:rgba(166,138,86,.14);border:1px solid rgba(166,138,86,.28);border-radius:6px;padding:3px 8px 3px 7px;font-size:11px;color:var(--gold-l);max-width:180px}
+.thread-file-chip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.thread-file-chip button{background:none;border:none;color:rgba(200,176,122,.5);cursor:pointer;font-size:13px;line-height:1;padding:0 0 0 2px;flex-shrink:0}
+.thread-file-chip button:hover{color:#f87171}
+.thread-file-chip .ftype{font-size:9px;background:rgba(0,0,0,.25);border-radius:3px;padding:1px 4px;flex-shrink:0}
 
 /* Thread type selector */
 .ttype-btn{background:rgba(255,255,255,.04);border:1.5px solid rgba(166,138,86,.25);border-radius:9px;padding:9px 6px;cursor:pointer;font-family:inherit;color:rgba(200,176,122,.7);font-size:11px;font-weight:700;text-align:center;transition:all .18s;display:flex;flex-direction:column;align-items:center;gap:5px;line-height:1.3}
@@ -762,16 +776,18 @@ function updateGenHint() {
 
 function isGeminiEnabled() { return !!getGeminiKey() && (document.getElementById('use-gemini-toggle')?.checked??true); }
 
-async function geminiRequest(prompt, cfg={}, onWait, useSearch=false) {
+async function geminiRequest(prompt, cfg={}, onWait, useSearch=false, extraParts=[]) {
   const key=getGeminiKey(); if (!key) throw new Error('未設定 API Key');
-  // Google Search grounding requires gemini-2.0-flash (not lite) and no JSON mime type
-  const model = useSearch ? 'gemini-2.0-flash' : 'gemini-2.0-flash-lite';
+  // vision or search grounding both require gemini-2.0-flash (not lite)
+  const needFlash = useSearch || extraParts.length>0;
+  const model = needFlash ? 'gemini-2.0-flash' : 'gemini-2.0-flash-lite';
   const url=`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
   const genCfg = useSearch
     ? {temperature:.85, ...cfg}  // no responseMimeType when using tools
     : {temperature:.85, responseMimeType:'application/json', ...cfg};
+  const parts = [{text:prompt}, ...extraParts];
   const reqBody = {
-    contents:[{parts:[{text:prompt}]}],
+    contents:[{parts}],
     generationConfig: genCfg,
     ...(useSearch ? {tools:[{google_search:{}}]} : {})
   };
@@ -800,42 +816,112 @@ async function geminiRequest(prompt, cfg={}, onWait, useSearch=false) {
   }
 }
 
-// ── Threads content type state ─────────────────────────────────────────────────
+// ── Threads content type state + uploaded files ────────────────────────────────
 let threadContentType = 'listing';
+let threadFiles = []; // [{name, type, text?, base64?, mimeType?}]
+
+async function extractPdfText(file) {
+  if (typeof pdfjsLib==='undefined') return `[PDF: ${file.name} — PDF.js 尚未載入，請稍後再試]`;
+  try {
+    const buf = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({data: buf}).promise;
+    let out = '';
+    for (let i=1; i<=pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const tc   = await page.getTextContent();
+      out += tc.items.map(it=>it.str).join(' ') + '\n';
+    }
+    return out.trim() || `[PDF: ${file.name} — 無法提取文字，可能是掃描檔]`;
+  } catch(e) { return `[PDF: ${file.name} — 讀取失敗：${e.message}]`; }
+}
+
+function fileToBase64(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = e => {
+      const b64 = e.target.result.split(',')[1];
+      res({ mimeType: file.type || 'image/jpeg', data: b64 });
+    };
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+}
+
+async function handleThreadFiles(fileList) {
+  const zone = document.getElementById('thread-upload-zone');
+  if (zone) zone.classList.remove('drag-over');
+  for (const file of Array.from(fileList)) {
+    const ext = file.name.split('.').pop().toLowerCase();
+    let entry = { name: file.name, ext };
+    if (['jpg','jpeg','png','webp'].includes(ext)) {
+      const b = await fileToBase64(file);
+      entry.base64 = b.data; entry.mimeType = b.mimeType;
+    } else if (ext === 'pdf') {
+      entry.text = await extractPdfText(file);
+    } else {
+      entry.text = await new Promise(r => { const fr=new FileReader(); fr.onload=e=>r(e.target.result); fr.readAsText(file,'utf-8'); });
+    }
+    threadFiles.push(entry);
+  }
+  renderThreadFileList();
+}
+
+function removeThreadFile(idx) {
+  threadFiles.splice(idx, 1);
+  renderThreadFileList();
+}
+
+function renderThreadFileList() {
+  const el = document.getElementById('thread-file-list');
+  if (!el) return;
+  el.innerHTML = '';
+  threadFiles.forEach((f, i) => {
+    const icon = f.base64 ? '🖼️' : f.ext==='pdf' ? '📄' : '📝';
+    const chip = document.createElement('div'); chip.className='thread-file-chip';
+    chip.innerHTML=`<span class="ftype">${escH(f.ext.toUpperCase())}</span><span title="${escH(f.name)}">${icon} ${escH(f.name)}</span><button onclick="removeThreadFile(${i})" title="移除">✕</button>`;
+    el.appendChild(chip);
+  });
+}
 
 function setThreadType(type) {
   threadContentType = type;
+  threadFiles = []; // reset files on type switch
   document.querySelectorAll('.ttype-btn').forEach(b=>b.classList.toggle('active', b.dataset.ttype===type));
   const area = document.getElementById('thread-content-area');
   if (!area) return;
+
+  // Upload zone HTML (shown for listing / school / news)
+  const uploadZone = type!=='auto' ? `
+    <div class="thread-upload-zone" id="thread-upload-zone"
+      ondragover="event.preventDefault();this.classList.add('drag-over')"
+      ondragleave="this.classList.remove('drag-over')"
+      ondrop="event.preventDefault();this.classList.remove('drag-over');handleThreadFiles(event.dataTransfer.files)">
+      <span style="font-size:20px">📎</span>
+      <span style="font-size:12px;font-weight:700;color:var(--brand)">拖放或點擊上傳文件</span>
+      <span style="font-size:10px;color:var(--muted)">${type==='listing'?'Offer PDF / 截圖 / SOP / CV':'PDF / 圖片 / TXT'} · 可多選</span>
+      <input type="file" id="thread-file-input" accept=".pdf,.jpg,.jpeg,.png,.webp,.txt" multiple
+        onchange="handleThreadFiles(this.files)"
+        style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%">
+    </div>
+    <div id="thread-file-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;min-height:4px"></div>
+    <div style="font-size:10px;color:var(--muted);margin:6px 0 8px;text-align:center">── 或手動貼入文字 ──</div>` : '';
+
   const cfgs = {
-    listing:{
-      label:'錄取通知 / 學生資料',
-      rows:6,
-      ph:'貼入 Offer 重點和學生背景摘要...\n例：\n學校：LSE Management\n學生背景：韓文系，無商科學位\n申請亮點：靠10000次業務開發經歷轉換...\n獎學金：無',
-      hint:'Vivian 將以「翻轉迷思」角度分析錄取亮點，產出主文＋2則留言串＋限時動態格式'
-    },
-    school:{
-      label:'學校資訊素材',
-      rows:5,
-      ph:'貼入校代會議重點或學校資料...\n例：\n學校：University of Bath\n特色：工程學院全英 TOP8\n交通：距倫敦1.5小時...',
-      hint:'Vivian 將以「獨家內線情報」風格介紹，附台灣人懂的地理比喻'
-    },
-    news:{
-      label:'時事話題素材',
-      rows:4,
+    listing:{label:'錄取通知重點（補充）',rows:4,
+      ph:'可選填補充說明...\n例：學生姓氏王、背景韓文系、有5年日系企業業務經驗',
+      hint:'Vivian 分析 Offer 亮點 → 主文（翻轉迷思）＋ 2則留言串 ＋ 限時動態格式'},
+    school:{label:'學校資訊',rows:5,
+      ph:'貼入校代會議重點或學校資料...\n學校：University of Bath\n特色：工程學院全英 TOP8\n交通：距倫敦1.5小時',
+      hint:'Vivian 以「獨家內線情報」風格介紹，附台灣人懂的地理比喻'},
+    news:{label:'時事話題素材',rows:4,
       ph:'貼入新聞摘要或話題描述...\n例：《甄嬛傳》在英國爆紅，BBC 製作紀錄片...',
-      hint:'從娛樂/考試/新知/盛事角度切入，Vivian 風格「硬核連結」到留學'
-    },
-    auto:{
-      label:'指定方向（選填）',
-      rows:2,
+      hint:'從娛樂/考試/新知/盛事角度切入，Vivian 風格「硬核連結」到留學'},
+    auto:{label:'指定方向（選填）',rows:2,
       ph:'例：英國留學 / 雅思 / 升學 / 留空讓 AI 自動決定',
-      hint:'🌐 AI 自動搜尋 Google Trends + Threads 熱門話題，選最佳角度套用 Vivian 人設生成'
-    }
+      hint:'🌐 AI 自動搜尋 Google Trends + Threads 熱門話題，選最佳角度 → Vivian 人設生成'}
   };
   const c = cfgs[type];
-  area.innerHTML = `<label class="field-label" style="margin-bottom:6px;margin-top:2px">${escH(c.label)}</label><textarea id="inp-thread-content" rows="${c.rows}" style="font-size:12px;line-height:1.6;resize:vertical" placeholder="${escH(c.ph)}"></textarea><div class="field-hint" style="margin-top:5px">${c.hint}</div>`;
+  area.innerHTML = `${uploadZone}<label class="field-label" style="margin-bottom:6px">${escH(c.label)}</label><textarea id="inp-thread-content" rows="${c.rows}" style="font-size:12px;line-height:1.6;resize:vertical" placeholder="${escH(c.ph)}"></textarea><div class="field-hint" style="margin-top:5px">${c.hint}</div>`;
 }
 
 function buildThreadsPrompt(contentType, inputText) {
@@ -1030,16 +1116,53 @@ async function generateThread() {
   const genBtn=document.getElementById('gen-btn'), infoEl=document.getElementById('preview-info');
   if (!isGeminiEnabled()) { alert('Threads 貼文需要 Gemini API Key，請在左側設定'); return; }
 
-  const inputText = (document.getElementById('inp-thread-content')?.value||'').trim();
-  const useSearch = (threadContentType==='auto');
+  const manualText = (document.getElementById('inp-thread-content')?.value||'').trim();
+  const useSearch  = (threadContentType==='auto');
 
-  genBtn.disabled=true;
+  genBtn.disabled=true; genBtn.textContent='準備素材…';
+  infoEl.textContent = '讀取上傳檔案…';
+
+  // ── Process uploaded files ─────────────────────────────────────────────────
+  const textParts = [];   // text extracted from PDFs / TXT
+  const imageParts = [];  // base64 images for Gemini vision
+
+  for (const f of threadFiles) {
+    if (f.base64) {
+      // Image → Gemini inline data part
+      imageParts.push({ inlineData: { mimeType: f.mimeType, data: f.base64 } });
+    } else if (f.text) {
+      textParts.push(`【${f.name}】\n${f.text}`);
+    }
+  }
+
+  // Combine all text content
+  const allText = [manualText, ...textParts].filter(Boolean).join('\n\n');
+
+  // ── Call Gemini ────────────────────────────────────────────────────────────
+  const hasImages = imageParts.length > 0;
+  const hasContent = allText || hasImages;
+
+  if (!hasContent && threadContentType!=='auto') {
+    alert('請上傳文件或填入素材文字');
+    genBtn.disabled=false; genBtn.textContent='▶ 生成內容'; return;
+  }
+
   genBtn.textContent='AI 生成中…';
-  infoEl.textContent = useSearch ? '🌐 搜尋熱門話題 + Vivian AI 生成中…' : '✦ Vivian AI 生成 Threads 貼文…';
+  if (useSearch) {
+    infoEl.textContent='🌐 搜尋熱門話題 + Vivian AI 生成中…';
+  } else if (hasImages) {
+    infoEl.textContent=`🖼️ 分析 ${imageParts.length} 張圖片 + Vivian AI 生成中…`;
+  } else {
+    infoEl.textContent='✦ Vivian AI 生成 Threads 貼文…';
+  }
+
+  // Prompt: if images included, add instruction to read them
+  const imageNote = hasImages ? `\n\n【附圖說明】我上傳了 ${imageParts.length} 張圖片（Offer 截圖 / 相關文件），請先仔細閱讀圖片內容，再與以下文字素材合併分析：` : '';
+  const prompt = buildThreadsPrompt(threadContentType, imageNote + (allText ? '\n'+allText : ''));
 
   let aiData=null;
   try {
-    aiData = await geminiRequest(buildThreadsPrompt(threadContentType, inputText), {temperature:.92}, msg=>{infoEl.textContent=msg;}, useSearch);
+    aiData = await geminiRequest(prompt, {temperature:.92}, msg=>{infoEl.textContent=msg;}, useSearch, imageParts);
   } catch(e) {
     infoEl.textContent=`⚠ AI 失敗：${(e.message||'').slice(0,50)}`;
     await new Promise(r=>setTimeout(r,1500));
@@ -1049,7 +1172,8 @@ async function generateThread() {
   area.innerHTML='';
   renderThreadOutput(aiData||{}, area);
 
-  infoEl.textContent = aiData ? '✓ 完成 · ✦ Vivian AI' : '✓ 完成 · AI 失敗';
+  const src = hasImages ? '· 🖼️ Vision + Vivian AI' : '· ✦ Vivian AI';
+  infoEl.textContent = aiData ? `✓ 完成 ${src}` : '✓ 完成 · AI 失敗';
   document.getElementById('dl-btn').style.display    = 'none';
   document.getElementById('canva-btn').style.display = 'none';
   genBtn.disabled=false; genBtn.textContent='▶ 生成內容';
