@@ -223,6 +223,12 @@ textarea{min-height:72px;line-height:1.5}
 .topic-hint.deadline{background:rgba(251,146,60,.1);border:1px solid rgba(251,146,60,.3);color:rgba(200,100,20,.95)}
 .topic-hint.generic{background:rgba(166,138,86,.1);border:1px solid rgba(166,138,86,.3);color:var(--khaki)}
 
+/* Style preset buttons */
+.preset-btn{background:rgba(255,255,255,.04);border:1.5px solid rgba(166,138,86,.25);border-radius:9px;padding:8px 6px;cursor:pointer;font-family:inherit;color:rgba(200,176,122,.7);font-size:11px;font-weight:700;text-align:center;transition:all .18s;display:flex;flex-direction:column;align-items:center;gap:4px;line-height:1.3}
+.preset-btn:hover{background:rgba(166,138,86,.14);border-color:rgba(166,138,86,.5);color:#e8d8b8}
+.preset-btn.active{border-color:var(--gold);background:rgba(166,138,86,.22);color:#f0e4c4;box-shadow:0 0 10px rgba(166,138,86,.18)}
+.preset-emoji{font-size:20px;line-height:1}
+
 /* Draggable elements hover hint */
 [data-drag]:hover{outline:1.5px dashed rgba(255,255,255,.25);outline-offset:5px}
 [data-drag]:active{cursor:grabbing!important}
@@ -276,6 +282,12 @@ textarea{min-height:72px;line-height:1.5}
     <div class="plat-icon">💬</div>
     <div class="plat-info"><span class="plat-label">Thread</span><span class="plat-size">純文案</span></div>
   </button>
+
+  <div class="sidebar-divider"></div>
+
+  <!-- Style presets -->
+  <div class="sidebar-section-label">視覺風格</div>
+  <div id="preset-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:0 16px 14px"></div>
 
   <div class="sidebar-divider"></div>
 
@@ -455,6 +467,11 @@ function _defaultOverrides() {
   return {
     hlDelta:0, hookDelta:0,
     subScale:1.0, logoScale:1.0, bnScale:1.0,
+    // Style preset fields
+    headlineColor:'#ffffff',
+    headlineBorder:'rgba(255,255,255,.78)',
+    subjectGlow: null,   // CSS filter string or null
+    bgSat:0.75, bgBright:0.90,
     offsets:{
       'logo-row' :{dx:0,dy:0},
       'headline' :{dx:0,dy:0},
@@ -463,6 +480,64 @@ function _defaultOverrides() {
       'subject'   :{dx:0,dy:0},
     }
   };
+}
+
+// ── Style presets ──────────────────────────────────────────────────────────────
+const STYLE_PRESETS = [
+  {
+    id:'default', emoji:'◻', label:'預設',
+    headlineColor:'#ffffff', headlineBorder:'rgba(255,255,255,.78)',
+    subjectGlow:null, bgSat:0.75, bgBright:0.90,
+  },
+  {
+    id:'yellow-pop', emoji:'⚡', label:'黃色爆破',
+    headlineColor:'#FFE132', headlineBorder:'rgba(255,225,50,.85)',
+    subjectGlow:'drop-shadow(0 0 6px #FFE132) drop-shadow(0 0 20px rgba(255,220,0,.55)) drop-shadow(0 0 44px rgba(255,200,0,.28))',
+    bgSat:0.65, bgBright:0.82,
+  },
+  {
+    id:'deep-night', emoji:'🌙', label:'深夜藍',
+    headlineColor:'#7ecfff', headlineBorder:'rgba(100,190,255,.75)',
+    subjectGlow:'drop-shadow(0 0 8px rgba(80,160,255,.8)) drop-shadow(0 0 28px rgba(60,130,220,.45))',
+    bgSat:0.45, bgBright:0.72,
+  },
+  {
+    id:'clean-white', emoji:'☀', label:'明亮清爽',
+    headlineColor:'#ffffff', headlineBorder:'rgba(255,255,255,.9)',
+    subjectGlow:null, bgSat:0.88, bgBright:1.05,
+  },
+];
+
+let currentPresetId = 'default';
+
+function applyPreset(id) {
+  const p = STYLE_PRESETS.find(x=>x.id===id);
+  if (!p) return;
+  currentPresetId = id;
+  manualOverrides.headlineColor  = p.headlineColor;
+  manualOverrides.headlineBorder = p.headlineBorder;
+  manualOverrides.subjectGlow    = p.subjectGlow;
+  manualOverrides.bgSat          = p.bgSat;
+  manualOverrides.bgBright       = p.bgBright;
+  // Sync button active states
+  document.querySelectorAll('.preset-btn').forEach(b=>{
+    b.classList.toggle('active', b.dataset.preset===id);
+  });
+  rebuildSCard();
+}
+
+function initPresetGrid() {
+  const grid = document.getElementById('preset-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  STYLE_PRESETS.forEach(p=>{
+    const btn = document.createElement('button');
+    btn.className = 'preset-btn' + (p.id===currentPresetId?' active':'');
+    btn.dataset.preset = p.id;
+    btn.innerHTML = `<span class="preset-emoji">${p.emoji}</span>${p.label}`;
+    btn.onclick = ()=>applyPreset(p.id);
+    grid.appendChild(btn);
+  });
 }
 let manualOverrides = _defaultOverrides();
 let _dragState = null;
@@ -1211,7 +1286,14 @@ function rebuildSCard() {
 }
 
 function resetLayout() {
+  // Preserve current preset style, only reset positions & sizes
+  const p = STYLE_PRESETS.find(x=>x.id===currentPresetId) || STYLE_PRESETS[0];
   manualOverrides = _defaultOverrides();
+  manualOverrides.headlineColor  = p.headlineColor;
+  manualOverrides.headlineBorder = p.headlineBorder;
+  manualOverrides.subjectGlow    = p.subjectGlow;
+  manualOverrides.bgSat          = p.bgSat;
+  manualOverrides.bgBright       = p.bgBright;
   ['hlDelta','hookDelta'].forEach(k=>{
     const el=document.getElementById('fsize-'+k); if(el) el.textContent='+0';
   });
@@ -1340,8 +1422,9 @@ function buildSCardHTML(d, imgUrl) {
   const off = k => mo.offsets?.[k] || {dx:0,dy:0};
   const tr  = k => { const o=off(k); return `transform:translate(${o.dx}px,${o.dy}px)`; };
   const subOff = off('subject');
+  const subGlowCSS = mo.subjectGlow ? `filter:${mo.subjectGlow}` : '';
   const subEl = hasSub
-    ? `<img data-drag="subject" src="${subjectUrl}" alt="" style="position:absolute;bottom:0;${sd}:-8px;height:${Math.round(84*mo.subScale)}%;max-height:${Math.round(1100*mo.subScale)}px;object-fit:contain;z-index:3;cursor:grab;${tr('subject')};transform-origin:bottom center">`
+    ? `<img data-drag="subject" src="${subjectUrl}" alt="" style="position:absolute;bottom:0;${sd}:-8px;height:${Math.round(84*mo.subScale)}%;max-height:${Math.round(1100*mo.subScale)}px;object-fit:contain;z-index:3;cursor:grab;${tr('subject')};transform-origin:bottom center;${subGlowCSS}">`
     : '';
 
   // ── Breaking News badge: white text, transparent bg, white border ──
@@ -1377,7 +1460,7 @@ function buildSCardHTML(d, imgUrl) {
   const htags = (d.hashtags||'').split(/\s+/).filter(Boolean).slice(0,3).join('  ');
 
   return `<div class="gs-card-s">
-  <img class="bg" src="${imgUrl}" alt="" style="filter:saturate(0.75) brightness(0.9)">
+  <img class="bg" src="${imgUrl}" alt="" style="filter:saturate(${mo.bgSat||0.75}) brightness(${mo.bgBright||0.9})">
   <div style="position:absolute;inset:0;background:${gradCSS};z-index:2"></div>
   ${subEl}
   <div style="position:absolute;inset:0;padding:58px 68px 50px;display:flex;flex-direction:column;z-index:6">
@@ -1395,7 +1478,7 @@ function buildSCardHTML(d, imgUrl) {
       </div>
 
       <!-- ② Headline: white outline box, right-aligned text, auto-sized -->
-      <div data-field="headline" data-drag="headline" style="border:2px solid rgba(255,255,255,.78);border-radius:6px;padding:14px 24px;font-size:${hlFontSz}px;font-weight:900;color:#fff;line-height:1.28;text-shadow:0 2px 8px rgba(0,0,0,.22);word-break:keep-all;overflow-wrap:break-word;text-align:right;margin-bottom:22px;cursor:grab;${tr('headline')}">${escH(d.headline||'')}</div>
+      <div data-field="headline" data-drag="headline" style="border:2px solid ${mo.headlineBorder||'rgba(255,255,255,.78)'};border-radius:6px;padding:14px 24px;font-size:${hlFontSz}px;font-weight:900;color:${mo.headlineColor||'#fff'};line-height:1.28;text-shadow:0 2px 8px rgba(0,0,0,.22);word-break:keep-all;overflow-wrap:break-word;text-align:right;margin-bottom:22px;cursor:grab;${tr('headline')}">${escH(d.headline||'')}</div>
 
       <!-- ③ Gold accent bar -->
       <div style="width:68px;height:4px;background:${fc};border-radius:2px;margin-bottom:20px;${barAlign}"></div>
@@ -1689,6 +1772,7 @@ function copyText(text,btn){
   if (k){document.getElementById('gemini-key').value=k;showGeminiStatus(true);}
   document.getElementById('inp-topic').addEventListener('input',e=>updateTopicHint(e.target.value.trim()));
   initSceneGrid();
+  initPresetGrid();
   updateSceneCycleRow();
   setPlatform('ad'); // sync toolbar title with default platform
 })();
