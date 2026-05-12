@@ -224,10 +224,10 @@ textarea{min-height:72px;line-height:1.5}
 .topic-hint.generic{background:rgba(166,138,86,.1);border:1px solid rgba(166,138,86,.3);color:var(--khaki)}
 
 /* Draggable elements hover hint */
-[data-drag="text-group"]:hover{outline:1.5px dashed rgba(255,255,255,.28);outline-offset:6px}
-[data-drag="text-group"]:active{cursor:grabbing!important}
-[data-drag="subject"]:hover{outline:1.5px dashed rgba(166,138,86,.5);outline-offset:4px}
-[data-drag="subject"]:active{cursor:grabbing!important}
+[data-drag]:hover{outline:1.5px dashed rgba(255,255,255,.25);outline-offset:5px}
+[data-drag]:active{cursor:grabbing!important}
+[data-drag="subject"]:hover{outline-color:rgba(166,138,86,.55)}
+[data-drag="logo-row"]:hover{outline-color:rgba(100,200,255,.45)}
 
 /* Card templates */
 .gs-card-s{width:1080px;height:1350px;position:relative;overflow:hidden;font-family:'Noto Sans TC','Microsoft JhengHei',sans-serif}
@@ -451,8 +451,21 @@ let breakingNewsText = 'Breaking News！';
 let hookYellowLine   = 2; // which hook line (1/2/3) renders in yellow
 
 // ── Manual layout overrides (drag + font adjust) ──────────────────────────────
-let manualOverrides = { textDx:0, textDy:0, hlDelta:0, hookDelta:0, subDx:0, subDy:0, subScale:1.0 };
-let _dragState = null; // drag tracking: {el, scale, startX, startY, startDx, startDy}
+function _defaultOverrides() {
+  return {
+    hlDelta:0, hookDelta:0,
+    subScale:1.0, logoScale:1.0, bnScale:1.0,
+    offsets:{
+      'logo-row' :{dx:0,dy:0},
+      'headline' :{dx:0,dy:0},
+      'hook-group':{dx:0,dy:0},
+      'hashtags'  :{dx:0,dy:0},
+      'subject'   :{dx:0,dy:0},
+    }
+  };
+}
+let manualOverrides = _defaultOverrides();
+let _dragState = null;
 
 // ── Image URL map ─────────────────────────────────────────────────────────────
 const Q = '?auto=format&fit=crop&w=1080&q=80';
@@ -549,7 +562,7 @@ function clearSubject() {
   document.getElementById('subject-clear-btn').style.display='none';
   document.getElementById('subject-side-row').style.display='none';
   // Reset subject overrides
-  manualOverrides.subDx=0; manualOverrides.subDy=0; manualOverrides.subScale=1.0;
+  manualOverrides.offsets['subject']={dx:0,dy:0}; manualOverrides.subScale=1.0;
   const scaleEl=document.getElementById('sub-scale-val'); if(scaleEl) scaleEl.textContent='100%';
   if(generated) renderOutput(generated);
 }
@@ -990,6 +1003,24 @@ function buildEditPanel(d) {
       adjRow.appendChild(fRow);
     });
 
+    // ── Logo + BN scale controls ──
+    [
+      {label:'Logo 大小', key:'logoScale', id:'logo-scale-val'},
+      {label:'Breaking News 大小', key:'bnScale', id:'bn-scale-val'},
+    ].forEach(({label:sl, key:sk, id:sid})=>{
+      const r2=document.createElement('div'); r2.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:6px';
+      const l2=document.createElement('span'); l2.style.cssText='font-size:11px;color:var(--muted);flex:1'; l2.textContent=sl;
+      const bM2=document.createElement('button'); bM2.textContent='－'; bM2.className='side-btn';
+      bM2.style.cssText='padding:3px 10px;font-size:13px;font-weight:700;border-radius:5px;cursor:pointer;font-family:inherit;border:1px solid var(--border);background:transparent;color:var(--muted)';
+      const v2=document.createElement('span'); v2.id=sid; v2.style.cssText='font-size:12px;font-weight:700;color:var(--gold);min-width:42px;text-align:center';
+      v2.textContent=Math.round((manualOverrides[sk]||1)*100)+'%';
+      const bP2=document.createElement('button'); bP2.textContent='＋'; bP2.className='side-btn'; bP2.style.cssText=bM2.style.cssText;
+      bM2.onclick=()=>{ manualOverrides[sk]=Math.max(0.3,+((manualOverrides[sk]||1)-0.1).toFixed(2)); v2.textContent=Math.round(manualOverrides[sk]*100)+'%'; rebuildSCard(); };
+      bP2.onclick=()=>{ manualOverrides[sk]=Math.min(3.0,+((manualOverrides[sk]||1)+0.1).toFixed(2)); v2.textContent=Math.round(manualOverrides[sk]*100)+'%'; rebuildSCard(); };
+      r2.appendChild(l2); r2.appendChild(bM2); r2.appendChild(v2); r2.appendChild(bP2);
+      adjRow.appendChild(r2);
+    });
+
     // ── Subject size control (only when subject uploaded) ──
     if (subjectUrl) {
       const subSzRow=document.createElement('div'); subSzRow.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:6px';
@@ -1068,8 +1099,11 @@ async function smartLayout() {
   if (btn) { btn.innerHTML='⏳ 分析中…'; btn.disabled=true; }
   try {
     const r = await analyzeCardImage(imgUrl);
-    manualOverrides.textDx    = r.textDx;
-    manualOverrides.textDy    = r.textDy;
+    // Smart layout positions hook-group and headline; headline shifts half as much vertically
+    manualOverrides.offsets['hook-group'] = {dx: r.textDx, dy: r.textDy};
+    manualOverrides.offsets['headline']   = {dx: r.textDx, dy: Math.round(r.textDy*0.5)};
+    manualOverrides.offsets['logo-row']   = {dx: r.textDx, dy: Math.round(r.textDy*0.3)};
+    manualOverrides.offsets['hashtags']   = {dx: r.textDx, dy: r.textDy};
     manualOverrides.hlDelta   = r.hlDelta;
     manualOverrides.hookDelta = r.hookDelta;
     ['hlDelta','hookDelta'].forEach(k=>{
@@ -1177,13 +1211,13 @@ function rebuildSCard() {
 }
 
 function resetLayout() {
-  manualOverrides = { textDx:0, textDy:0, hlDelta:0, hookDelta:0, subDx:0, subDy:0, subScale:1.0 };
+  manualOverrides = _defaultOverrides();
   ['hlDelta','hookDelta'].forEach(k=>{
-    const el = document.getElementById('fsize-'+k);
-    if (el) el.textContent = '+0';
+    const el=document.getElementById('fsize-'+k); if(el) el.textContent='+0';
   });
-  const scaleEl = document.getElementById('sub-scale-val');
-  if (scaleEl) scaleEl.textContent = '100%';
+  ['sub','logo','bn'].forEach(k=>{
+    const el=document.getElementById(k+'-scale-val'); if(el) el.textContent='100%';
+  });
   rebuildSCard();
 }
 
@@ -1195,11 +1229,9 @@ document.addEventListener('mousedown', function(e) {
   const inner = dragEl.closest('[style*="transform:scale"]') || dragEl.closest('.card-preview-shell > div');
   if (!inner) return;
   const shell = inner.parentElement;
-  const dW = parseInt(shell?.style.width) || 360;
-  const nW = parseInt(inner.style.width) || 1080;
-  const sc = dW / nW;
-  const startDx = dtype==='subject' ? manualOverrides.subDx : manualOverrides.textDx;
-  const startDy = dtype==='subject' ? manualOverrides.subDy : manualOverrides.textDy;
+  const sc = (parseInt(shell?.style.width)||360) / (parseInt(inner.style.width)||1080);
+  if (!manualOverrides.offsets[dtype]) manualOverrides.offsets[dtype]={dx:0,dy:0};
+  const {dx:startDx, dy:startDy} = manualOverrides.offsets[dtype];
   _dragState = { el:dragEl, dtype, sc, startX:e.clientX, startY:e.clientY, startDx, startDy };
   dragEl.style.cursor = 'grabbing';
   e.preventDefault();
@@ -1207,21 +1239,14 @@ document.addEventListener('mousedown', function(e) {
 
 document.addEventListener('mousemove', function(e) {
   if (!_dragState) return;
-  const sdx = e.clientX - _dragState.startX;
-  const sdy = e.clientY - _dragState.startY;
-  const dx = Math.round(_dragState.startDx + sdx / _dragState.sc);
-  const dy = Math.round(_dragState.startDy + sdy / _dragState.sc);
-  if (_dragState.dtype === 'subject') {
-    manualOverrides.subDx = dx; manualOverrides.subDy = dy;
-    _dragState.el.style.transform = `translate(${dx}px,${dy}px)`;
-  } else {
-    manualOverrides.textDx = dx; manualOverrides.textDy = dy;
-    _dragState.el.style.transform = `translate(${dx}px,${dy}px)`;
-  }
+  const dx = Math.round(_dragState.startDx + (e.clientX-_dragState.startX) / _dragState.sc);
+  const dy = Math.round(_dragState.startDy + (e.clientY-_dragState.startY) / _dragState.sc);
+  manualOverrides.offsets[_dragState.dtype] = {dx, dy};
+  _dragState.el.style.transform = `translate(${dx}px,${dy}px)`;
 });
 
 document.addEventListener('mouseup', function() {
-  if (_dragState) { _dragState.el.style.cursor = 'grab'; _dragState = null; }
+  if (_dragState) { _dragState.el.style.cursor='grab'; _dragState=null; }
 });
 
 function liveUpdateCard(field, value) {
@@ -1291,10 +1316,11 @@ function buildCaptionPanel(d) {
 
 // ── Card HTML ─────────────────────────────────────────────────────────────────
 // Shared logo helper
-function buildLogoEl(h=44) {
+function buildLogoEl(h=44, scale=1) {
+  const sh=Math.round(h*scale);
   return logoUrl
-    ? `<img src="${logoUrl}" alt="Logo" style="height:${h}px;max-width:${h*4}px;object-fit:contain;filter:drop-shadow(0 2px 8px rgba(0,0,0,.7))">`
-    : `<span style="font-size:${Math.round(h*.58)}px;font-weight:900;color:#fff;letter-spacing:.2em;text-shadow:0 2px 8px rgba(0,0,0,.8)">GOSTUDY</span>`;
+    ? `<img src="${logoUrl}" alt="Logo" style="height:${sh}px;max-width:${sh*4}px;object-fit:contain;filter:drop-shadow(0 2px 8px rgba(0,0,0,.7))">`
+    : `<span style="font-size:${Math.round(sh*.58)}px;font-weight:900;color:#fff;letter-spacing:.2em;text-shadow:0 2px 8px rgba(0,0,0,.8)">GOSTUDY</span>`;
 }
 
 function buildSCardHTML(d, imgUrl) {
@@ -1311,14 +1337,18 @@ function buildSCardHTML(d, imgUrl) {
 
   // ── Subject image ──
   const mo = manualOverrides;
+  const off = k => mo.offsets?.[k] || {dx:0,dy:0};
+  const tr  = k => { const o=off(k); return `transform:translate(${o.dx}px,${o.dy}px)`; };
+  const subOff = off('subject');
   const subEl = hasSub
-    ? `<img data-drag="subject" src="${subjectUrl}" alt="" style="position:absolute;bottom:0;${sd}:-8px;height:${Math.round(84*mo.subScale)}%;max-height:${Math.round(1100*mo.subScale)}px;object-fit:contain;z-index:3;cursor:grab;transform:translate(${mo.subDx}px,${mo.subDy}px);transform-origin:bottom center">`
+    ? `<img data-drag="subject" src="${subjectUrl}" alt="" style="position:absolute;bottom:0;${sd}:-8px;height:${Math.round(84*mo.subScale)}%;max-height:${Math.round(1100*mo.subScale)}px;object-fit:contain;z-index:3;cursor:grab;${tr('subject')};transform-origin:bottom center">`
     : '';
 
   // ── Breaking News badge: white text, transparent bg, white border ──
   const bn = (breakingNewsText||'').trim();
+  const bnSc = mo.bnScale||1;
   const bnEl = bn
-    ? `<div style="border:2px solid rgba(255,255,255,.9);border-radius:6px;padding:7px 18px;font-size:22px;font-weight:800;color:#fff;white-space:nowrap;display:inline-flex;align-items:center;gap:8px"><span style="background:#FF3B30;color:#fff;border-radius:3px;padding:2px 8px;font-size:15px;font-weight:900">▶</span>${escH(bn)}</div>`
+    ? `<div style="border:2px solid rgba(255,255,255,.9);border-radius:6px;padding:${Math.round(7*bnSc)}px ${Math.round(18*bnSc)}px;font-size:${Math.round(22*bnSc)}px;font-weight:800;color:#fff;white-space:nowrap;display:inline-flex;align-items:center;gap:${Math.round(8*bnSc)}px"><span style="background:#FF3B30;color:#fff;border-radius:3px;padding:2px ${Math.round(8*bnSc)}px;font-size:${Math.round(15*bnSc)}px;font-weight:900">▶</span>${escH(bn)}</div>`
     : '';
 
   // ── Font sizes: derive headline FROM hook size so ratio stays ~1.7:1 ──
@@ -1331,11 +1361,11 @@ function buildSCardHTML(d, imgUrl) {
   const hlScale  = hlLen <= 12 ? 1.0 : hlLen <= 18 ? 0.85 : hlLen <= 26 ? 0.70 : 0.58;
   const hlFontSz = Math.max(22, Math.round(hookFS * 0.56 * hlScale) + (manualOverrides.hlDelta||0));
 
-  // ── Hook lines HTML ──
+  // ── Hook lines HTML (no clamp: wrap only when hitting container edge) ──
   const yLine = hookYellowLine || 2;
   const hookLinesHtml = [{txt:h1,n:1},{txt:h2,n:2},{txt:h3,n:3}]
     .filter(({txt})=>txt.trim())
-    .map(({txt,n})=>`<div data-field="hookLine${n}" style="font-size:${hookFS}px;font-weight:900;color:${n===yLine?'#FFE132':'#fff'};line-height:1.05;text-shadow:0 3px 18px rgba(0,0,0,.65);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;max-height:${Math.round(hookFS*2.2)}px">${escH(txt)}</div>`)
+    .map(({txt,n})=>`<div data-field="hookLine${n}" style="font-size:${hookFS}px;font-weight:900;color:${n===yLine?'#FFE132':'#fff'};line-height:1.1;text-shadow:0 3px 18px rgba(0,0,0,.65);word-break:keep-all;overflow-wrap:break-word">${escH(txt)}</div>`)
     .join('');
 
   // ── Single group container: everything together, constrained to text side ──
@@ -1355,28 +1385,28 @@ function buildSCardHTML(d, imgUrl) {
     <!-- Spacer above: flex:1 → group sits at ~40% from top -->
     <div style="flex:1"></div>
 
-    <!-- ALL TEXT in one grouped block, clustered upper-center -->
-    <div data-drag="text-group" style="display:flex;flex-direction:column;max-width:${groupW}px;${groupMargin};transform:translate(${manualOverrides.textDx||0}px,${manualOverrides.textDy||0}px);cursor:grab">
+    <!-- ALL TEXT — each element individually draggable -->
+    <div style="display:flex;flex-direction:column;max-width:${groupW}px;${groupMargin}">
 
       <!-- ① Logo + BN: right-aligned header -->
-      <div style="display:flex;align-items:center;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-bottom:14px">
-        ${buildLogoEl(44)}
+      <div data-drag="logo-row" style="display:flex;align-items:center;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-bottom:14px;cursor:grab;${tr('logo-row')}">
+        ${buildLogoEl(44, mo.logoScale||1)}
         ${bnEl}
       </div>
 
       <!-- ② Headline: white outline box, right-aligned text, auto-sized -->
-      <div data-field="headline" style="border:2px solid rgba(255,255,255,.78);border-radius:6px;padding:14px 24px;font-size:${hlFontSz}px;font-weight:900;color:#fff;line-height:1.28;text-shadow:0 2px 8px rgba(0,0,0,.22);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;text-align:right;margin-bottom:22px">${escH(d.headline||'')}</div>
+      <div data-field="headline" data-drag="headline" style="border:2px solid rgba(255,255,255,.78);border-radius:6px;padding:14px 24px;font-size:${hlFontSz}px;font-weight:900;color:#fff;line-height:1.28;text-shadow:0 2px 8px rgba(0,0,0,.22);word-break:keep-all;overflow-wrap:break-word;text-align:right;margin-bottom:22px;cursor:grab;${tr('headline')}">${escH(d.headline||'')}</div>
 
       <!-- ③ Gold accent bar -->
       <div style="width:68px;height:4px;background:${fc};border-radius:2px;margin-bottom:20px;${barAlign}"></div>
 
-      <!-- ④ Hook lines: large text, aligned to text side -->
-      <div style="${hooksTA};margin-bottom:14px">
+      <!-- ④ Hook lines: large text, individually draggable -->
+      <div data-drag="hook-group" style="${hooksTA};margin-bottom:14px;cursor:grab;${tr('hook-group')}">
         ${hookLinesHtml}
       </div>
 
       <!-- ⑤ Hashtags -->
-      <div data-field="hashtags" style="font-size:20px;color:rgba(255,255,255,.46);letter-spacing:.04em;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${escH(htags)}</div>
+      <div data-field="hashtags" data-drag="hashtags" style="font-size:20px;color:rgba(255,255,255,.46);letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:grab;${tr('hashtags')}">${escH(htags)}</div>
     </div>
 
     <!-- Spacer below: flex:1.5 → group center ≈ 40% from card top -->
