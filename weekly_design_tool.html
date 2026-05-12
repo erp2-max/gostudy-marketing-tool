@@ -389,6 +389,13 @@ textarea{min-height:72px;line-height:1.5}
             <span class="toggle-track"></span>
           </label>
         </div>
+        <div class="ai-toggle-row" id="search-toggle-row" style="display:none">
+          <span class="ai-toggle-label">🌐 搜尋最新資訊</span>
+          <label class="toggle-sw">
+            <input type="checkbox" id="use-search-toggle" onchange="updateGenHint()">
+            <span class="toggle-track"></span>
+          </label>
+        </div>
         <button class="gen-main-btn" id="gen-btn" onclick="generate()">▶ 生成內容</button>
         <div style="text-align:center;margin-top:8px;font-size:10px;color:var(--muted)"><span id="gen-hint">輸入議題後一鍵生成 · 無需 API Key</span></div>
       </div>
@@ -417,7 +424,7 @@ textarea{min-height:72px;line-height:1.5}
   <div class="status-bar">
     <span class="sdot"></span>
     <span>GOSTUDY · 行銷圖卡生成工具 v3.0</span>
-    <span style="margin-left:auto;opacity:.5">圖片：Unsplash CC0 · AI：Gemini Flash（免費）· 匯出：PNG 全尺寸</span>
+    <span style="margin-left:auto;opacity:.5">圖片：Unsplash CC0 · AI：Gemini Flash + Google 搜尋（免費）· 匯出：PNG 全尺寸</span>
   </div>
 </div>
 </div>
@@ -671,20 +678,36 @@ function showGeminiStatus(ok) {
   document.getElementById('gemini-status').className   = 'api-status '+(ok?'ok':'none');
   document.getElementById('gemini-dot').style.background = ok?'#4ade80':'rgba(74,222,128,.2)';
   document.getElementById('ai-toggle-row').style.display = ok?'flex':'none';
+  document.getElementById('search-toggle-row').style.display = ok?'flex':'none';
   updateGenHint();
 }
 
+function isSearchEnabled() { return !!(document.getElementById('use-search-toggle')?.checked); }
+
 function updateGenHint() {
   const useAI = !!getGeminiKey() && (document.getElementById('use-gemini-toggle')?.checked??true);
-  document.getElementById('gen-hint').textContent = useAI?'✦ Gemini Flash AI 即時生成':'輸入議題後一鍵生成 · 無需 API Key';
+  const useSearch = useAI && isSearchEnabled();
+  document.getElementById('gen-hint').textContent = useSearch
+    ? '🌐 Gemini Flash + Google 即時搜尋'
+    : useAI ? '✦ Gemini Flash AI 即時生成' : '輸入議題後一鍵生成 · 無需 API Key';
 }
 
 function isGeminiEnabled() { return !!getGeminiKey() && (document.getElementById('use-gemini-toggle')?.checked??true); }
 
-async function geminiRequest(prompt, cfg={}, onWait) {
+async function geminiRequest(prompt, cfg={}, onWait, useSearch=false) {
   const key=getGeminiKey(); if (!key) throw new Error('未設定 API Key');
-  const url=`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${key}`;
-  const body=JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:.85,responseMimeType:'application/json',...cfg}});
+  // Google Search grounding requires gemini-2.0-flash (not lite) and no JSON mime type
+  const model = useSearch ? 'gemini-2.0-flash' : 'gemini-2.0-flash-lite';
+  const url=`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+  const genCfg = useSearch
+    ? {temperature:.85, ...cfg}  // no responseMimeType when using tools
+    : {temperature:.85, responseMimeType:'application/json', ...cfg};
+  const reqBody = {
+    contents:[{parts:[{text:prompt}]}],
+    generationConfig: genCfg,
+    ...(useSearch ? {tools:[{google_search:{}}]} : {})
+  };
+  const body=JSON.stringify(reqBody);
   for (let attempt=0; attempt<=1; attempt++) {
     const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body});
     if (res.ok) {
@@ -704,13 +727,14 @@ async function geminiRequest(prompt, cfg={}, onWait) {
   }
 }
 
-function buildGeminiPrompt(topic, plat) {
+function buildGeminiPrompt(topic, plat, withSearch=false) {
   const isMulti = plat==='ig'||plat==='fb';
   const desc={ad:'廣告圖卡（單張）',ig:'Instagram 社群多頁圖卡（封面+表格+3內容頁）',fb:'Facebook 社群多頁圖卡（封面+表格+3內容頁）',blog:'官網部落格封面（橫式800×600）',thread:'Threads 純文案'}[plat]||'';
   const multiExtra = isMulti ? `
   "tableRows":[{"num":"01","title":"重點標題12字內","brief":"說明6字內"},{"num":"02","title":"...","brief":"..."},{"num":"03","title":"...","brief":"..."}],
   "contentPages":[{"title":"重點1標題12字內","body":"說明文字60字內，英國留學角度，不溢出"},{"title":"重點2標題","body":"60字內"},{"title":"重點3標題","body":"60字內"}],` : '';
-  return `你是 GoStudy 的台灣社群行銷助理。GoStudy 是專業英國留學顧問。品牌語氣：專業親切、有溫度、繁體中文台灣用語。
+  const searchNote = withSearch ? `\n【注意】你已啟用 Google 搜尋工具，請先搜尋此議題的最新資訊再生成，確保數據、排名、時間資訊都是最新的。` : '';
+  return `你是 GoStudy 的台灣社群行銷助理。GoStudy 是專業英國留學顧問。品牌語氣：專業親切、有溫度、繁體中文台灣用語。${searchNote}
 議題：「${topic.replace(/^(時事|新聞)[_：:\s]*/i,'')}」  平台：${desc}
 
 直接回傳 JSON，不加 markdown：
@@ -809,8 +833,10 @@ async function generate() {
 
   let aiData=null;
   if (isGeminiEnabled()) {
-    genBtn.textContent='AI 生成中…'; infoEl.textContent='✦ Gemini Flash 生成文案中…';
-    try { aiData=await geminiRequest(buildGeminiPrompt(topic,platform),{temperature:.85},msg=>{infoEl.textContent=msg;}); }
+    const withSearch = isSearchEnabled();
+    genBtn.textContent='AI 生成中…';
+    infoEl.textContent = withSearch ? '🌐 Google 搜尋 + Gemini Flash 生成中…' : '✦ Gemini Flash 生成文案中…';
+    try { aiData=await geminiRequest(buildGeminiPrompt(topic,platform,withSearch),{temperature:.85},msg=>{infoEl.textContent=msg;},withSearch); }
     catch(e) { infoEl.textContent=`⚠ AI 失敗：${(e.message||'').slice(0,50)}`; await new Promise(r=>setTimeout(r,1500)); }
   }
 
