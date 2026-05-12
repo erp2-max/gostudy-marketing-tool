@@ -1,0 +1,169 @@
+當收到一張 Offer，請依照以下步驟整理內容。
+
+STEP 1｜確認基本資料
+
+請先確認並整理以下資訊：
+
+學校完整英文名稱
+
+學校中文名稱
+
+科系完整名稱（不可自行縮寫）
+
+入學學期（Fall / Spring / Summer + 年份）
+
+校區（若有分校）
+
+
+
+STEP 2｜學校層級排名（School Level）
+
+請依國家選擇主要榜單，參考來源(2026 美國大學排名/2025 美國研究所排名/2026 英國排名學校/2026 澳洲排名學校/2026 加拿大排名學校)不可亂用。
+
+英國：
+
+使用 QS World University Rankings + The Complete University Guide
+
+美國：
+
+使用 U.S. News National Universities
+
+若工程或專業領域強，可補 U.S. News Subject Ranking
+
+加拿大：
+
+使用 Maclean’s
+
+澳洲：
+
+使用 QS
+
+專業型商學院（如 INSEAD）：
+
+使用 FT / QS Subject / 專項榜單
+
+輸出格式範例：
+
+「全球排名 TOP40｜全英排名 TOP25」
+
+或
+
+「全美公立 TOP35」
+
+
+
+STEP 3｜科系層級排名（Program Level）
+
+確認是否有科系專項榜單：
+
+Finance / MSF：
+
+查 TFE Times
+
+Engineering：
+
+查 QS Subject（Electrical & Electronic Engineering 等）
+
+或 U.S. News Engineering
+
+Supply Chain：
+
+查 QS Business Subject 或產業排名
+
+商學院：
+
+查 QS Business / FT Ranking
+
+若有專項排名，請與學校排名並列，但需分層。
+
+範例格式：
+
+「全美公立 TOP35｜TFE Times 財金 TOP15」
+
+或
+
+「全球 TOP70｜工程學科全球 TOP100」
+
+
+
+STEP 4｜核對 Offer 內容（不可憑印象）
+
+必須從錄取信中確認：
+
+是否為 Official Admission / Final Decision
+
+Conditional 或 Unconditional
+
+GPA / IELTS 條件
+
+訂金金額與截止日
+
+獎學金名稱與金額
+
+獎學金發放條件
+
+不得自行推測或美化。
+
+
+
+STEP 5｜整理亮點（固定四點結構）
+
+亮點請依以下順序：
+
+第一行：排名層級（學校 + 科系，如有）
+
+第二行：學校定位一句
+
+第三行：科系核心強項
+
+第四行：就業／產業連結
+
+第五行：獎學金（如有）
+
+每點以 ✨ 開頭。
+
+
+
+STEP 6｜限時動態固定格式
+
+文字：
+
+恭喜 X 同學(僅需姓氏) 錄取
+
+國家 + 學校中文
+
+School English Name
+
+傳連文字：
+
+一句定位（不可重複排名）
+
+亮點：
+
+第一行寫排名
+
+接四個 ✨ 重點
+
+-
+
+範例參考:
+
+恭喜王同學 錄取
+
+美國普渡大學
+
+Purdue University
+
+美國頂尖研究型大學，工程與理工實力聞名
+
+ 
+
+全球排名 TOP100 全美排名 TOP50
+
+✨ 美國頂尖公立研究型大學，理工與商業並重
+
+✨ Finance 為專業型碩士（MSF）
+
+✨ 課程聚焦 公司財務、投資分析、金融決策
+
+✨ 校友網絡龐大，企業與產業辨識度高
