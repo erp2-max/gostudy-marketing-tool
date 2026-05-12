@@ -473,7 +473,8 @@ function _defaultOverrides() {
   return {
     hlDelta:0, hookDelta:0,
     subScale:1.0, logoScale:2.0, bnScale:1.0,   // logo defaults to 200%
-    headlineW:null, hookGroupW:null,              // null = full container width
+    headlineW:null, hookGroupW:null,
+    textStroke:2,                                  // white outline px on hook lines & headline
     headlineColor:'#ffffff',
     headlineBorder:'rgba(255,255,255,.78)',
     subjectGlow:null,
@@ -1077,6 +1078,20 @@ function buildEditPanel(d) {
       adjRow.appendChild(fRow);
     });
 
+    // ── Text stroke control ──
+    const strokeRow=document.createElement('div'); strokeRow.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:6px';
+    const strokeLbl=document.createElement('span'); strokeLbl.style.cssText='font-size:11px;color:var(--muted);flex:1'; strokeLbl.textContent='字體白色外框';
+    const strokeM=document.createElement('button'); strokeM.textContent='－'; strokeM.className='side-btn';
+    strokeM.style.cssText='padding:3px 10px;font-size:13px;font-weight:700;border-radius:5px;cursor:pointer;font-family:inherit;border:1px solid var(--border);background:transparent;color:var(--muted)';
+    const strokeVal=document.createElement('span'); strokeVal.id='stroke-val';
+    strokeVal.style.cssText='font-size:12px;font-weight:700;color:var(--gold);min-width:36px;text-align:center';
+    strokeVal.textContent=(manualOverrides.textStroke||0)+'px';
+    const strokeP=document.createElement('button'); strokeP.textContent='＋'; strokeP.className='side-btn'; strokeP.style.cssText=strokeM.style.cssText;
+    strokeM.onclick=()=>{ manualOverrides.textStroke=Math.max(0,(manualOverrides.textStroke||0)-1); strokeVal.textContent=manualOverrides.textStroke+'px'; rebuildSCard(); };
+    strokeP.onclick=()=>{ manualOverrides.textStroke=Math.min(16,(manualOverrides.textStroke||0)+1); strokeVal.textContent=manualOverrides.textStroke+'px'; rebuildSCard(); };
+    strokeRow.appendChild(strokeLbl); strokeRow.appendChild(strokeM); strokeRow.appendChild(strokeVal); strokeRow.appendChild(strokeP);
+    adjRow.appendChild(strokeRow);
+
     // ── Logo + BN scale controls ──
     [
       {label:'Logo 大小', key:'logoScale', id:'logo-scale-val'},
@@ -1498,7 +1513,8 @@ function buildSCardHTML(d, imgUrl) {
       // Default: ceil(chars/2) chars per line → exactly 2 lines
       const defaultW = Math.ceil(charLen / 2) * hookFS + Math.round(hookFS * 0.4);
       const lineW = mo.hookLineW?.[n] ?? defaultW;
-      return `<div data-field="hookLine${n}" data-drag="hookLine${n}" style="font-size:${hookFS}px;font-weight:900;color:${n===yLine?'#FFE132':'#fff'};line-height:1.1;text-shadow:0 3px 18px rgba(0,0,0,.65);overflow-wrap:break-word;min-width:${lineW}px;max-width:none;position:relative;cursor:grab;${tr('hookLine'+n)}">${escH(txt)}<div data-no-export="1" data-resize="hookLine${n}" class="rz-handle"></div></div>`;
+      const strokeCSS = (mo.textStroke||0) > 0 ? `-webkit-text-stroke:${mo.textStroke}px #fff;paint-order:stroke fill;` : '';
+      return `<div data-field="hookLine${n}" data-drag="hookLine${n}" style="font-size:${hookFS}px;font-weight:900;color:${n===yLine?'#FFE132':'#fff'};line-height:1.1;text-shadow:0 3px 18px rgba(0,0,0,.65);overflow-wrap:break-word;min-width:${lineW}px;max-width:none;position:relative;cursor:grab;${strokeCSS}${tr('hookLine'+n)}">${escH(txt)}<div data-no-export="1" data-resize="hookLine${n}" class="rz-handle"></div></div>`;
     })
     .join('');
 
@@ -1529,7 +1545,7 @@ function buildSCardHTML(d, imgUrl) {
       </div>
 
       <!-- ② Headline: white outline box, right-aligned text, auto-sized -->
-      <div data-field="headline" data-drag="headline" style="border:2px solid ${mo.headlineBorder||'rgba(255,255,255,.78)'};border-radius:6px;padding:14px 24px;font-size:${hlFontSz}px;font-weight:900;color:${mo.headlineColor||'#fff'};line-height:1.28;text-shadow:0 2px 8px rgba(0,0,0,.22);word-break:keep-all;overflow-wrap:break-word;text-align:right;margin-bottom:22px;cursor:grab;position:relative;${mo.headlineW?'width:'+mo.headlineW+'px':''};${tr('headline')}">${escH(d.headline||'')}<div data-no-export="1" data-resize="headline" class="rz-handle"></div></div>
+      <div data-field="headline" data-drag="headline" style="border:2px solid ${mo.headlineBorder||'rgba(255,255,255,.78)'};border-radius:6px;padding:14px 24px;font-size:${hlFontSz}px;font-weight:900;color:${mo.headlineColor||'#fff'};line-height:1.28;text-shadow:0 2px 8px rgba(0,0,0,.22);${(mo.textStroke||0)>0?`-webkit-text-stroke:${mo.textStroke}px rgba(0,0,0,.35);paint-order:stroke fill;`:''}word-break:keep-all;overflow-wrap:break-word;text-align:right;margin-bottom:22px;cursor:grab;position:relative;${mo.headlineW?'width:'+mo.headlineW+'px':''};${tr('headline')}">${escH(d.headline||'')}<div data-no-export="1" data-resize="headline" class="rz-handle"></div></div>
 
       <!-- ③ Gold accent bar -->
       <div style="width:68px;height:4px;background:${fc};border-radius:2px;margin-bottom:20px;${barAlign}"></div>
