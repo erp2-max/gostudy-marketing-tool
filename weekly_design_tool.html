@@ -119,15 +119,6 @@ textarea{min-height:72px;line-height:1.5}
 .scene-cycle-btn:hover{border-color:var(--green);color:var(--brand)}
 
 
-/* AI toggle */
-.ai-toggle-row{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:rgba(99,179,237,.06);border:1px solid rgba(99,179,237,.18);border-radius:9px;margin-bottom:10px}
-.ai-toggle-label{font-size:11px;font-weight:700;color:rgba(99,179,237,.8);display:flex;align-items:center;gap:6px}
-.toggle-sw{position:relative;width:34px;height:18px;flex-shrink:0}
-.toggle-sw input{opacity:0;width:0;height:0;position:absolute}
-.toggle-track{position:absolute;inset:0;border-radius:18px;background:rgba(99,179,237,.25);border:1px solid rgba(99,179,237,.3);cursor:pointer;transition:all .2s}
-.toggle-track::after{content:'';position:absolute;width:12px;height:12px;left:2px;top:2px;border-radius:50%;background:#fff;transition:transform .2s}
-.toggle-sw input:checked+.toggle-track{background:rgba(99,179,237,.7);border-color:rgba(99,179,237,.8)}
-.toggle-sw input:checked+.toggle-track::after{transform:translateX(16px)}
 
 /* Gen button */
 .gen-btn-wrap{padding:12px 18px 18px;border-top:1px solid var(--border);background:linear-gradient(180deg,transparent,rgba(22,160,133,.04))}
@@ -202,27 +193,17 @@ textarea{min-height:72px;line-height:1.5}
 .copy-btn:hover{background:rgba(166,138,86,.4)}
 .copy-btn.copied{background:rgba(74,222,128,.2);border-color:rgba(74,222,128,.4);color:#4ade80}
 
-/* Thread file upload zone */
-.thread-upload-zone{position:relative;border:1.5px dashed rgba(166,138,86,.35);border-radius:10px;padding:14px 12px;text-align:center;cursor:pointer;transition:all .18s;display:flex;flex-direction:column;align-items:center;gap:5px;background:rgba(255,255,255,.03)}
-.thread-upload-zone:hover,.thread-upload-zone.drag-over{border-color:var(--gold);background:rgba(166,138,86,.08)}
-.thread-file-chip{display:inline-flex;align-items:center;gap:5px;background:rgba(166,138,86,.14);border:1px solid rgba(166,138,86,.28);border-radius:6px;padding:3px 8px 3px 7px;font-size:11px;color:var(--gold-l);max-width:180px}
-.thread-file-chip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
-.thread-file-chip button{background:none;border:none;color:rgba(200,176,122,.5);cursor:pointer;font-size:13px;line-height:1;padding:0 0 0 2px;flex-shrink:0}
-.thread-file-chip button:hover{color:#f87171}
-.thread-file-chip .ftype{font-size:9px;background:rgba(0,0,0,.25);border-radius:3px;padding:1px 4px;flex-shrink:0}
 
-/* Thread type selector */
-.ttype-btn{background:rgba(255,255,255,.04);border:1.5px solid rgba(166,138,86,.25);border-radius:9px;padding:9px 6px;cursor:pointer;font-family:inherit;color:rgba(200,176,122,.7);font-size:11px;font-weight:700;text-align:center;transition:all .18s;display:flex;flex-direction:column;align-items:center;gap:5px;line-height:1.3}
-.ttype-btn:hover{background:rgba(166,138,86,.14);border-color:rgba(166,138,86,.5);color:#e8d8b8}
-.ttype-btn.active{border-color:var(--gold);background:rgba(166,138,86,.22);color:#f0e4c4;box-shadow:0 0 10px rgba(166,138,86,.18)}
-.ttype-emoji{font-size:18px;line-height:1}
-
-/* Thread output */
-.thread-output{width:100%;max-width:580px;display:flex;flex-direction:column;gap:12px}
-.thread-card{background:rgba(255,255,255,.06);border:1px solid rgba(166,138,86,.2);border-radius:14px;overflow:hidden}
-.thread-card-head{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid rgba(166,138,86,.12);background:rgba(0,0,0,.25)}
-.thread-card-title{font-size:11px;font-weight:700;color:var(--gold-l)}
-.thread-card-body{padding:12px 14px;font-size:13px;line-height:1.8;color:rgba(216,200,168,.95);white-space:pre-wrap;word-break:break-word}
+/* Article input */
+.article-row{display:flex;gap:6px;margin-bottom:6px}
+.article-file-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border:1.5px dashed var(--border);border-radius:7px;font-size:11px;font-weight:700;color:var(--brand);cursor:pointer;background:var(--bg);transition:all .15s;white-space:nowrap}
+.article-file-btn:hover{border-color:var(--green);background:rgba(22,160,133,.06)}
+.article-clear-btn{padding:6px 10px;border:1px solid rgba(220,80,80,.3);border-radius:7px;font-size:11px;color:rgba(220,80,80,.7);cursor:pointer;background:transparent;font-family:inherit;transition:all .15s}
+.article-clear-btn:hover{background:rgba(220,80,80,.08)}
+.article-hint{font-size:10px;color:var(--muted);margin-top:3px;line-height:1.5;display:none}
+.article-hint.show{display:block}
+.article-hint .a-title{font-weight:700;color:var(--brand)}
+.article-hint .a-type{display:inline-block;background:var(--khaki-l);color:var(--brand);border-radius:4px;padding:1px 7px;font-size:9px;font-weight:700;margin-left:4px}
 
 /* Spinner */
 .spinner-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:80px 40px;color:rgba(200,176,122,.5);font-size:13px;width:100%}
@@ -233,15 +214,6 @@ textarea{min-height:72px;line-height:1.5}
 .empty-preview{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:80px 40px;color:rgba(200,176,122,.4);font-size:13px;width:100%;text-align:center}
 .empty-icon{font-size:52px;opacity:.25;animation:pulse-e 3s ease-in-out infinite}
 @keyframes pulse-e{0%,100%{opacity:.2;transform:scale(1)}50%{opacity:.35;transform:scale(1.06)}}
-
-/* Topic hint */
-.topic-hint{display:none;align-items:center;gap:5px;font-size:10px;padding:4px 9px;border-radius:6px;line-height:1.4}
-.topic-hint.show{display:flex}
-.topic-hint.news{background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);color:rgba(220,160,20,.95)}
-.topic-hint.ranking{background:rgba(99,179,237,.1);border:1px solid rgba(99,179,237,.3);color:rgba(60,140,200,.95)}
-.topic-hint.school{background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.3);color:rgba(20,160,80,.95)}
-.topic-hint.deadline{background:rgba(251,146,60,.1);border:1px solid rgba(251,146,60,.3);color:rgba(200,100,20,.95)}
-.topic-hint.generic{background:rgba(166,138,86,.1);border:1px solid rgba(166,138,86,.3);color:var(--khaki)}
 
 
 /* Draggable elements hover hint */
@@ -278,7 +250,7 @@ textarea{min-height:72px;line-height:1.5}
   <div class="sidebar-header">
     <div class="sidebar-brand">GOSTUDY · Design Tool</div>
     <h1 class="sidebar-title">行銷圖卡生成工具</h1>
-    <div class="sidebar-subtitle">AI 一鍵生成 v3.0</div>
+    <div class="sidebar-subtitle">文章解析 → 圖卡生成 v3.1</div>
   </div>
 
   <div class="sidebar-section-label">選擇平台</div>
@@ -299,35 +271,11 @@ textarea{min-height:72px;line-height:1.5}
     <div class="plat-icon">📰</div>
     <div class="plat-info"><span class="plat-label">部落格</span><span class="plat-size">800×600 · 圖＋文</span></div>
   </button>
-  <button class="plat-btn" id="btn-thread" onclick="setPlatform('thread')">
-    <div class="plat-icon">💬</div>
-    <div class="plat-info"><span class="plat-label">Thread</span><span class="plat-size">純文案</span></div>
-  </button>
 
   <div class="sidebar-divider"></div>
 
   <div class="sidebar-divider"></div>
-
-  <button onclick="toggleClaude()" aria-expanded="false" aria-controls="claude-section" style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:10px 22px;background:none;border:none;cursor:pointer;font-family:inherit">
-    <div style="display:flex;align-items:center;gap:8px">
-      <span style="font-size:10px;font-weight:700;color:rgba(166,138,86,.55);letter-spacing:2px;text-transform:uppercase">✦ Claude AI 生成</span>
-      <span id="claude-dot" style="width:7px;height:7px;border-radius:50%;background:rgba(74,222,128,.2);display:inline-block;transition:all .3s"></span>
-    </div>
-    <span id="claude-arrow" style="color:rgba(166,138,86,.35);font-size:12px">▶</span>
-  </button>
-  <div id="claude-section" style="display:none">
-    <div class="api-section" style="padding-top:0">
-      <div style="font-size:10px;color:rgba(200,176,122,.4);margin-bottom:8px;line-height:1.7">前往 <span style="color:var(--gold)">console.anthropic.com</span><br>登入 → API Keys → Create Key → 貼上</div>
-      <div class="api-row">
-        <input class="api-input" type="password" id="claude-key" placeholder="sk-ant-api...">
-        <button class="api-save-btn" onclick="saveClaudeKey()">儲存</button>
-      </div>
-      <div class="api-status none" id="claude-status">尚未設定 · 使用關鍵字模板</div>
-    </div>
-  </div>
-
-  <div class="sidebar-divider"></div>
-  <div style="padding:8px 22px 16px;font-size:10px;color:rgba(200,176,122,.35);line-height:1.7">圖片：Unsplash CC0 · 免費商用<br>匯出：PNG 全尺寸直接上傳社群</div>
+  <div style="padding:8px 22px 16px;font-size:10px;color:rgba(200,176,122,.35);line-height:1.7">圖片：Unsplash CC0 · 免費商用<br>貼入文章 → 自動解析 → 一鍵生成圖卡<br>匯出：PNG 全尺寸直接上傳社群</div>
 </div>
 
 <!-- MAIN -->
@@ -407,37 +355,23 @@ textarea{min-height:72px;line-height:1.5}
           </div>
         </div>
 
-        <!-- Step 2: Topic (hidden when Thread platform active) -->
-        <div class="field" id="topic-field">
-          <label class="field-label" for="inp-topic"><span class="step-badge">2</span>議題 / 關鍵字 *</label>
-          <textarea id="inp-topic" rows="3" placeholder="例：2025 QS 排名 · 英國大學&#10;例：英國留學 5 大優勢&#10;例：申請英國頂大的準備時程"></textarea>
-          <div id="topic-hint" class="topic-hint"></div>
-          <div class="field-hint">AI 自動生成標題、文案、Hashtag</div>
+        <!-- Step 2: Article content -->
+        <div class="field" id="article-field">
+          <label class="field-label"><span class="step-badge">2</span>文章內容 *</label>
+          <div class="article-row">
+            <label class="article-file-btn" for="txt-upload">📄 上傳 .txt</label>
+            <input type="file" id="txt-upload" accept=".txt,text/plain" style="display:none">
+            <button class="article-clear-btn" id="article-clear-btn" onclick="clearArticle()" style="display:none">✕ 清除</button>
+          </div>
+          <textarea id="inp-article" rows="9" placeholder="貼入文章內容…&#10;&#10;• 第一行自動成為首圖標題&#10;• 支援 Markdown / 條列格式&#10;• 或直接上傳 .txt 檔&#10;&#10;系統將自動分析內容，&#10;依結構選擇最適合的版面"></textarea>
+          <div id="article-hint" class="article-hint"></div>
         </div>
 
-        <!-- Thread platform: content type selector + dynamic input -->
-        <div class="field" id="thread-input-section" style="display:none">
-          <label class="field-label"><span class="step-badge">1</span>貼文類型</label>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:14px">
-            <button class="ttype-btn active" data-ttype="listing" onclick="setThreadType('listing')"><span class="ttype-emoji">🎓</span>錄取榜單</button>
-            <button class="ttype-btn" data-ttype="school" onclick="setThreadType('school')"><span class="ttype-emoji">🏛️</span>校代資訊</button>
-            <button class="ttype-btn" data-ttype="news" onclick="setThreadType('news')"><span class="ttype-emoji">📰</span>時事話題</button>
-            <button class="ttype-btn" data-ttype="auto" onclick="setThreadType('auto')"><span class="ttype-emoji">🌐</span>自動搜尋熱門</button>
-          </div>
-          <div id="thread-content-area"></div>
-        </div>
 
       </div>
       <div class="gen-btn-wrap">
-        <div class="ai-toggle-row" id="ai-toggle-row" style="display:none">
-          <span class="ai-toggle-label" id="ai-toggle-label">✦ Claude AI 生成</span>
-          <label class="toggle-sw">
-            <input type="checkbox" id="use-claude-toggle" checked onchange="updateGenHint()">
-            <span class="toggle-track"></span>
-          </label>
-        </div>
         <button class="gen-main-btn" id="gen-btn" onclick="generate()">▶ 生成內容</button>
-        <div style="text-align:center;margin-top:8px;font-size:10px;color:var(--muted)"><span id="gen-hint">輸入議題後一鍵生成 · 無需 API Key</span></div>
+        <div style="text-align:center;margin-top:8px;font-size:10px;color:var(--muted)"><span id="gen-hint">貼入文章即可一鍵生成 · 無需 API Key</span></div>
       </div>
     </div>
 
@@ -453,7 +387,7 @@ textarea{min-height:72px;line-height:1.5}
           <div style="font-size:14px;font-weight:600;color:rgba(200,176,122,.55)">選好平台就開始吧</div>
           <div style="display:flex;flex-direction:column;gap:6px;margin-top:4px">
             <div style="font-size:11px;color:rgba(200,176,122,.38)">① 上傳圖片 或 選擇場景</div>
-            <div style="font-size:11px;color:rgba(200,176,122,.38)">② 輸入議題或關鍵字</div>
+            <div style="font-size:11px;color:rgba(200,176,122,.38)">② 貼入文章或上傳 .txt</div>
             <div style="font-size:11px;color:rgba(200,176,122,.38)">▶ 點擊「生成內容」</div>
           </div>
         </div>
@@ -464,7 +398,7 @@ textarea{min-height:72px;line-height:1.5}
   <div class="status-bar">
     <span class="sdot"></span>
     <span>GOSTUDY · 行銷圖卡生成工具 v3.0</span>
-    <span style="margin-left:auto;opacity:.5">圖片：Unsplash CC0 · AI：Claude Haiku (Anthropic) · 匯出：PNG 全尺寸</span>
+    <span style="margin-left:auto;opacity:.5">圖片：Unsplash CC0 · 純前端解析 · 匯出：PNG 全尺寸</span>
   </div>
 </div>
 </div>
@@ -546,21 +480,15 @@ const PLAT = {
   ig:     {label:'IG 社群 · 多頁',     size:'1080 × 1350px · 5頁', cardW:1080,cardH:1350,dispW:200,dispH:250},
   fb:     {label:'FB 社群 · 多頁',     size:'1080 × 1350px · 5頁', cardW:1080,cardH:1350,dispW:200,dispH:250},
   blog:   {label:'部落格 · 封面圖',    size:'800 × 600px',          cardW:800, cardH:600, dispW:480,dispH:360},
-  thread: {label:'Thread · 純文案',   size:'文字',                  cardW:0,   cardH:0,   dispW:0,  dispH:0},
 };
 
 function setPlatform(p) {
   platform = p;
-  ['ad','ig','fb','blog','thread'].forEach(x => document.getElementById('btn-'+x)?.classList.toggle('active', x===p));
+  ['ad','ig','fb','blog'].forEach(x => document.getElementById('btn-'+x)?.classList.toggle('active', x===p));
   const cfg = PLAT[p];
   document.getElementById('toolbar-title').textContent = cfg.label;
   document.getElementById('toolbar-size').textContent  = cfg.size;
-  const isThread = p==='thread';
-  document.getElementById('img-field').style.display          = isThread ? 'none' : '';
-  document.getElementById('asset-field').style.display        = (isThread||p==='blog') ? 'none' : '';
-  document.getElementById('topic-field').style.display        = isThread ? 'none' : '';
-  document.getElementById('thread-input-section').style.display = isThread ? '' : 'none';
-  if (isThread) setThreadType(threadContentType); // init dynamic input area
+  document.getElementById('asset-field').style.display = (p==='blog') ? 'none' : '';
   clearPreview();
 }
 
@@ -716,466 +644,255 @@ function cycleScenePhoto() {
   if (generated) renderOutput(generated);
 }
 
-// ── Topic hint ────────────────────────────────────────────────────────────────
-function updateTopicHint(raw) {
-  const hint = document.getElementById('topic-hint');
-  if (!hint || !raw) { if(hint) hint.className='topic-hint'; return; }
-  const isRanking  = /排名|QS|Times|榜單/.test(raw);
-  const isSchool   = /(LSE|UCL|帝國|Imperial|KCL|Manchester|Edinburgh|Bristol|Warwick|Durham)/.test(raw);
-  const isDeadline = /截止|deadline|申請時程|UCAS/.test(raw);
-  const isNews     = /^時事[_\s]|新聞|熱門|爆紅|celebrity|名人|校友/.test(raw);
-  if      (isNews)     { hint.className='topic-hint show news';     hint.innerHTML='📰 時事模板 &middot; 名人校友切入'; }
-  else if (isRanking)  { hint.className='topic-hint show ranking';  hint.innerHTML='📊 排名模板 &middot; 數據驅動角度'; }
-  else if (isSchool)   { hint.className='topic-hint show school';   hint.innerHTML='🎓 學校模板 &middot; 申請指南角度'; }
-  else if (isDeadline) { hint.className='topic-hint show deadline'; hint.innerHTML='⏰ 時程模板 &middot; 截止倒數角度'; }
-  else                 { hint.className='topic-hint show generic';  hint.innerHTML='✦ 通用模板 &middot; 留學資訊角度'; }
-}
 
-// ── Claude AI ─────────────────────────────────────────────────────────────────
-function getClaudeKey() { return localStorage.getItem('gs_claude_key')||''; }
+// ── Article parser ─────────────────────────────────────────────────────────────
+function parseArticle(rawText) {
+  const lines = rawText.split('\n').map(l => l.trim()).filter(Boolean);
+  if (!lines.length) return null;
 
-function toggleClaude() {
-  const sec=document.getElementById('claude-section'), arrow=document.getElementById('claude-arrow');
-  const open=sec.style.display==='none';
-  sec.style.display=open?'block':'none'; arrow.textContent=open?'▼':'▶';
-  document.querySelector('[aria-controls="claude-section"]').setAttribute('aria-expanded',open);
-}
+  // Title: first non-empty line, strip Markdown # and bold markers
+  const title = lines[0].replace(/^#+\s*/, '').replace(/\*+/g, '').trim();
 
-function saveClaudeKey() {
-  const k=document.getElementById('claude-key').value.trim();
-  if (!k) { alert('請輸入 Claude API Key'); return; }
-  if (!k.startsWith('sk-ant-')||k.length<20) { alert('格式有誤，Claude Key 以 sk-ant- 開頭'); return; }
-  localStorage.setItem('gs_claude_key',k); showClaudeStatus(true);
-}
+  // Parse sections
+  const sections = [];
+  let cur = null;
 
-function showClaudeStatus(ok) {
-  document.getElementById('claude-status').textContent = ok?'✓ Key 已儲存 · 使用 Claude Haiku':'尚未設定 · 使用關鍵字模板';
-  document.getElementById('claude-status').className   = 'api-status '+(ok?'ok':'none');
-  document.getElementById('claude-dot').style.background = ok?'#4ade80':'rgba(74,222,128,.2)';
-  document.getElementById('ai-toggle-row').style.display = ok?'flex':'none';
-  updateGenHint();
-}
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i];
+    const clean = line.replace(/^#+\s*/, '').replace(/\*+/g, '').trim();
 
-function updateGenHint() {
-  const useAI = !!getClaudeKey() && (document.getElementById('use-claude-toggle')?.checked??true);
-  document.getElementById('gen-hint').textContent = useAI
-    ? '✦ Claude Haiku AI 即時生成' : '輸入議題後一鍵生成 · 無需 API Key';
-}
+    // Detect heading: Markdown h1-h4, CJK numbered (一、二、), digit-dot, or ≤20 char label ending with ：
+    const isBulletLine = /^[-•*·▶►→✅📌💡✓☑]/.test(clean) || /^\d+[\.、)]\s/.test(clean);
+    const isHeading = /^#{1,4}\s/.test(line) ||
+      /^[一二三四五六七八九十百]+[、\.：]\s*\S/.test(line) ||
+      /^\d+[\.、)]\s*[^\s]/.test(line) ||
+      (clean.length <= 22 && /[：:]$/.test(clean) && i > 1) ||
+      // 短行啟發式：≤12字、不是子彈、不以標點結尾、前面有段落分隔
+      (!isBulletLine && clean.length >= 2 && clean.length <= 12 &&
+       !/[，。！？、…]$/.test(clean) && i > 1 && cur && cur.bullets.length >= 1);
 
-function isClaudeEnabled() { return !!getClaudeKey() && (document.getElementById('use-claude-toggle')?.checked??true); }
-
-async function claudeRequest(prompt, cfg={}, onWait, _unused=false, imageParts=[]) {
-  const key=getClaudeKey(); if (!key) throw new Error('未設定 API Key');
-  const url='https://api.anthropic.com/v1/messages';
-  // 組裝 content：文字在前，圖片在後
-  const content = [{type:'text', text:prompt}];
-  for (const img of imageParts) {
-    // 相容舊格式 {inlineData:{mimeType,data}} 與 Claude 原生格式
-    const src = img.inlineData || img;
-    const mimeType = src.mimeType || src.media_type || 'image/jpeg';
-    const data = src.data;
-    if (data) content.push({type:'image', source:{type:'base64', media_type:mimeType, data}});
-  }
-  const reqBody = {
-    model: 'claude-3-5-haiku-20241022',
-    max_tokens: 4096,
-    temperature: cfg.temperature||.85,
-    messages: [{role:'user', content}]
-  };
-  const res = await fetch(url, {
-    method:'POST',
-    headers:{
-      'Content-Type':'application/json',
-      'x-api-key': key,
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true'
-    },
-    body: JSON.stringify(reqBody)
-  });
-  if (res.ok) {
-    const r=await res.json();
-    const t=r.content?.[0]?.text||'{}';
-    // 移除 markdown code fence，取出最外層 JSON {...}
-    const stripped = t.replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'').trim();
-    const start=stripped.indexOf('{'), end=stripped.lastIndexOf('}');
-    const jsonStr=(start!==-1&&end>start)?stripped.slice(start,end+1):stripped;
-    return JSON.parse(jsonStr);
-  }
-  const err=await res.json().catch(()=>({}));
-  const msg=err?.error?.message||`HTTP ${res.status}`;
-  if (res.status===429) {
-    if(onWait) onWait('⏳ 速率限制，稍後重試…');
-    await new Promise(r=>setTimeout(r,5000));
-    throw new Error('速率限制，請稍後再試');
-  }
-  if (res.status===401) throw new Error('API Key 無效，請重新確認');
-  if (res.status===400) throw new Error('請求格式有誤：'+msg);
-  throw new Error(msg);
-}
-
-// ── Threads content type state + uploaded files ────────────────────────────────
-let threadContentType = 'listing';
-let threadFiles = []; // [{name, type, text?, base64?, mimeType?}]
-
-async function extractPdfText(file) {
-  if (typeof pdfjsLib==='undefined') return `[PDF: ${file.name} — PDF.js 尚未載入，請稍後再試]`;
-  try {
-    const buf = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({data: buf}).promise;
-    let out = '';
-    for (let i=1; i<=pdf.numPages; i++) {
-      const page = await pdf.getPage(i);
-      const tc   = await page.getTextContent();
-      out += tc.items.map(it=>it.str).join(' ') + '\n';
-    }
-    return out.trim() || `[PDF: ${file.name} — 無法提取文字，可能是掃描檔]`;
-  } catch(e) { return `[PDF: ${file.name} — 讀取失敗：${e.message}]`; }
-}
-
-function fileToBase64(file) {
-  return new Promise((res, rej) => {
-    const r = new FileReader();
-    r.onload = e => {
-      const b64 = e.target.result.split(',')[1];
-      res({ mimeType: file.type || 'image/jpeg', data: b64 });
-    };
-    r.onerror = rej;
-    r.readAsDataURL(file);
-  });
-}
-
-async function handleThreadFiles(fileList) {
-  const zone = document.getElementById('thread-upload-zone');
-  if (zone) zone.classList.remove('drag-over');
-  for (const file of Array.from(fileList)) {
-    const ext = file.name.split('.').pop().toLowerCase();
-    let entry = { name: file.name, ext };
-    if (['jpg','jpeg','png','webp'].includes(ext)) {
-      const b = await fileToBase64(file);
-      entry.base64 = b.data; entry.mimeType = b.mimeType;
-    } else if (ext === 'pdf') {
-      entry.text = await extractPdfText(file);
+    if (isHeading) {
+      if (cur && cur.bullets.length) sections.push(cur);
+      cur = { heading: clean.replace(/[：:]$/, '').replace(/^[\d一二三四五六七八九十]+[\.、)]\s*/, ''), bullets: [] };
+    } else if (cur) {
+      const b = clean.replace(/^[-•*·▶►→✅📌💡✓☑]\s*/, '').replace(/^\d+[\.、)]\s*/, '').trim();
+      if (b && b.length >= 3 && b.length <= 120) cur.bullets.push(b);
     } else {
-      entry.text = await new Promise(r => { const fr=new FileReader(); fr.onload=e=>r(e.target.result); fr.readAsText(file,'utf-8'); });
+      // Before first heading: collect intro bullets
+      if (!cur) cur = { heading: '重點整理', bullets: [] };
+      const b = clean.replace(/^[-•*·]\s*/, '').trim();
+      if (b && b.length >= 3 && b.length <= 120) cur.bullets.push(b);
     }
-    threadFiles.push(entry);
   }
-  renderThreadFileList();
+  if (cur && cur.bullets.length) sections.push(cur);
+
+  // Fallback: no headings found → treat all non-title lines as one bullet section
+  if (!sections.length) {
+    const bullets = lines.slice(1)
+      .map(l => l.replace(/^[-•*·▶]\s*/,'').replace(/^#+\s*/,'').trim())
+      .filter(l => l.length >= 4 && l.length <= 100)
+      .slice(0, 7);
+    if (bullets.length) sections.push({ heading: '重點整理', bullets });
+  }
+
+  // Extract stats/numbers (e.g. 98%, 3萬, £12,000, 2年)
+  const statsRe = /(?:[\d,，]+(?:\.\d+)?\s*(?:%|％|萬|億|千|百|倍|名|所|個|年|月|天|人|鎊|元|USD|GBP|排名))/g;
+  const stats = [...new Set(rawText.match(statsRe) || [])].slice(0, 4);
+
+  // Key points: prefer short (≤30 char) bullets from each section
+  const keyPoints = [];
+  for (const s of sections) {
+    for (const b of s.bullets) {
+      if (b.length <= 30 && keyPoints.length < 4) keyPoints.push(b);
+    }
+  }
+  if (keyPoints.length < 3) {
+    for (const s of sections) {
+      for (const b of s.bullets) {
+        if (!keyPoints.includes(b) && keyPoints.length < 4) keyPoints.push(b.slice(0,32));
+      }
+    }
+  }
+
+  // Content type detection
+  const ft = rawText;
+  const hasSteps = /步驟|流程|第[一二三四五六七八九十\d]+步|如何|how\s?to|依序|程序|方法/.test(ft);
+  const hasComparison = /比較|vs\.?|versus|優缺|差異|相較|對比/.test(ft);
+  const hasManyStats = stats.length >= 3;
+  // stats > steps > comparison > general（數據最強信號優先）
+  const contentType = hasManyStats ? 'stats' : hasSteps ? 'steps' : hasComparison ? 'comparison' : 'general';
+
+  return { title, sections, stats, keyPoints, contentType };
 }
 
-function removeThreadFile(idx) {
-  threadFiles.splice(idx, 1);
-  renderThreadFileList();
+// Detect best layout for one section
+function detectSectionLayout(section, articleContentType, sectionIdx) {
+  const { heading, bullets } = section;
+  const allBulletText = bullets.join(' ');
+  if (/步驟|流程|依序|第.*步|How\s?to/i.test(heading) || (articleContentType==='steps' && sectionIdx===0))
+    return 'steps';
+  if (/比較|vs\.?|差異|優缺/i.test(heading) || articleContentType==='comparison')
+    return 'comparison';
+  if (/數據|統計|排名|比例|成效|結果/i.test(heading) || articleContentType==='stats')
+    return 'stats';
+  if (bullets.length >= 3 && bullets.every(b => b.length <= 40))
+    return 'bullets';
+  return 'body'; // default: title + paragraph body
 }
 
-function renderThreadFileList() {
-  const el = document.getElementById('thread-file-list');
-  if (!el) return;
-  el.innerHTML = '';
-  threadFiles.forEach((f, i) => {
-    const icon = f.base64 ? '🖼️' : f.ext==='pdf' ? '📄' : '📝';
-    const chip = document.createElement('div'); chip.className='thread-file-chip';
-    chip.innerHTML=`<span class="ftype">${escH(f.ext.toUpperCase())}</span><span title="${escH(f.name)}">${icon} ${escH(f.name)}</span><button onclick="removeThreadFile(${i})" title="移除">✕</button>`;
-    el.appendChild(chip);
+// ── Build data from article ───────────────────────────────────────────────────
+function buildDataFromArticle(parsed) {
+  if (!parsed) return null;
+  const { title, sections, stats, keyPoints, contentType } = parsed;
+
+  // Headline: trim title to 18 chars
+  const headline = title.slice(0, 18) + (title.length > 18 ? '…' : '');
+  const subheadline = (sections[0]?.heading && sections[0].heading !== '重點整理')
+    ? sections[0].heading.slice(0, 22)
+    : (keyPoints[0]?.slice(0, 22) || '重點解析');
+
+  // Hook lines: split headline into readable chunks
+  const words = headline.replace(/[，。！？：:,\.!?]/g, ' ').trim().split(/\s+/);
+  let hookLine1, hookLine2, hookLine3 = '';
+  if (words.length === 1 || headline.length <= 8) {
+    hookLine1 = headline; hookLine2 = subheadline.slice(0, 8);
+  } else if (headline.length <= 12) {
+    const mid = Math.ceil(headline.length / 2);
+    hookLine1 = headline.slice(0, mid); hookLine2 = headline.slice(mid);
+  } else {
+    const mid = Math.ceil(headline.length * 0.45);
+    hookLine1 = headline.slice(0, mid);
+    hookLine2 = headline.slice(mid, mid + 9);
+    hookLine3 = headline.slice(mid + 9, mid + 17) || '';
+  }
+
+  // Key points for table (P2)
+  const kpForTable = keyPoints.length >= 3 ? keyPoints : sections.slice(0, 4).map(s => s.heading);
+  const tableRows = kpForTable.slice(0, 4).map((kp, i) => ({
+    num: String(i + 1).padStart(2, '0'),
+    title: kp.slice(0, 16),
+    brief: sections[i]?.bullets?.[0]?.slice(0, 12) || ''
+  }));
+
+  // Content pages: each section becomes a page (max 4 pages = P3–P6)
+  const contentPages = sections.slice(0, 4).map((s, i) => {
+    const layout = detectSectionLayout(s, contentType, i);
+    // For stats layout: try to extract stat/label pairs from bullets
+    let statsForPage = [];
+    if (layout === 'stats') {
+      const sre = /([\d,，]+(?:\.\d+)?(?:%|％|萬|億|千|百|倍|名|所|個|年|月|天|人|鎊|元|USD|GBP|排名))/g;
+      s.bullets.forEach(b => {
+        const m = b.match(sre);
+        if (m) statsForPage.push({ value: m[0], label: b.replace(sre,'').replace(/^[：:\s]+|[：:\s]+$/g,'').slice(0,14) });
+      });
+      if (statsForPage.length < 2) statsForPage = stats.slice(0,4).map(v=>({value:v,label:''}));
+    }
+    return {
+      title: s.heading.slice(0, 16),
+      body: s.bullets.slice(0, 3).join('\n'),
+      layout,
+      bullets: s.bullets.slice(0, 5),
+      statsForPage
+    };
   });
-}
 
-function setThreadType(type) {
-  threadContentType = type;
-  threadFiles = []; // reset files on type switch
-  document.querySelectorAll('.ttype-btn').forEach(b=>b.classList.toggle('active', b.dataset.ttype===type));
-  const area = document.getElementById('thread-content-area');
-  if (!area) return;
-
-  // Upload zone HTML (shown for listing / school / news)
-  const uploadZone = type!=='auto' ? `
-    <div class="thread-upload-zone" id="thread-upload-zone"
-      ondragover="event.preventDefault();this.classList.add('drag-over')"
-      ondragleave="this.classList.remove('drag-over')"
-      ondrop="event.preventDefault();this.classList.remove('drag-over');handleThreadFiles(event.dataTransfer.files)">
-      <span style="font-size:20px">📎</span>
-      <span style="font-size:12px;font-weight:700;color:var(--brand)">拖放或點擊上傳文件</span>
-      <span style="font-size:10px;color:var(--muted)">${type==='listing'?'Offer PDF / 截圖 / SOP / CV':'PDF / 圖片 / TXT'} · 可多選</span>
-      <input type="file" id="thread-file-input" accept=".pdf,.jpg,.jpeg,.png,.webp,.txt" multiple
-        onchange="handleThreadFiles(this.files)"
-        style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%">
-    </div>
-    <div id="thread-file-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;min-height:4px"></div>
-    <div style="font-size:10px;color:var(--muted);margin:6px 0 8px;text-align:center">── 或手動貼入文字 ──</div>` : '';
-
-  const cfgs = {
-    listing:{label:'錄取通知重點（補充）',rows:4,
-      ph:'可選填補充說明...\n例：學生姓氏王、背景韓文系、有5年日系企業業務經驗',
-      hint:'Vivian 分析 Offer 亮點 → 主文（翻轉迷思）＋ 2則留言串 ＋ 限時動態格式'},
-    school:{label:'學校資訊',rows:5,
-      ph:'貼入校代會議重點或學校資料...\n學校：University of Bath\n特色：工程學院全英 TOP8\n交通：距倫敦1.5小時',
-      hint:'Vivian 以「獨家內線情報」風格介紹，附台灣人懂的地理比喻'},
-    news:{label:'時事話題素材',rows:4,
-      ph:'貼入新聞摘要或話題描述...\n例：《甄嬛傳》在英國爆紅，BBC 製作紀錄片...',
-      hint:'從娛樂/考試/新知/盛事角度切入，Vivian 風格「硬核連結」到留學'},
-    auto:{label:'指定方向（選填）',rows:2,
-      ph:'例：英國留學 / 雅思 / 升學 / 留空讓 AI 自動決定',
-      hint:'🌐 AI 自動搜尋 Google Trends + Threads 熱門話題，選最佳角度 → Vivian 人設生成'}
-  };
-  const c = cfgs[type];
-  area.innerHTML = `${uploadZone}<label class="field-label" style="margin-bottom:6px">${escH(c.label)}</label><textarea id="inp-thread-content" rows="${c.rows}" style="font-size:12px;line-height:1.6;resize:vertical"></textarea><div class="field-hint" style="margin-top:5px">${c.hint}</div>`;
-  // Set placeholder directly to avoid escH converting \n → <br>
-  const ta = document.getElementById('inp-thread-content');
-  if (ta) ta.placeholder = c.ph;
-}
-
-function buildThreadsPrompt(contentType, inputText) {
-  const persona = `你是 GoStudy 留學代辦社群小編「脆V編」（Vivian）。
-台南出生、擁有10年英國留學經歷，現為英美澳加申請流程的專業留學顧問。
-語氣：「口語＋吐槽＋專業」混合體，溫柔有點幹話，像嘴碎但超挺你的大姊姊。
-風格：採作家劉秝緁風格。多用短句、頻繁換行、精準emoji，感嘆詞（欸？拜託～真的會氣到手抖）。像朋友聊天，不像品牌說教。
-目標族群：18–25歲台灣留學生。
-寫作規則：
-- 主貼文約300字，多換行，條列說明時用純數字就好（不用1️⃣符號）
-- 結尾一定要有開放式提問（讓讀者留言，不要寫結論）
-- 留言串1：實用/知識延伸型，100字內
-- 留言串2：共鳴/吐槽/生活化型，100字內`;
-
-  const typeGuides = {
-    listing:`【類型一：錄取榜單與翻轉迷思】
-切入點：強調「劣勢翻盤」與申請策略，用反直覺問句開場（「誰說…才能…？」）。
-具體拆解顧問如何把平凡背景「神轉譯」成高大上的學術潛力。
-文末給予正面鼓勵並附錄取學校亮點。
-【必須輸出限時動態格式（stories 欄位）】
-格式：恭喜X同學 錄取\\n[國家+學校中文]\\nSchool English Name\\n[一句學校定位]\\n[排名行]\\n✨[四個亮點，每行一個]`,
-    school:`【類型三：第一手學校資訊與校代交流】
-切入點：「獨家內線情報」「好康道相報」氛圍。
-開頭用「剛幫大家整理熱騰騰的申請重點」或「每次跟校代開會就像見老朋友」。
-用台灣人懂的比喻（「約克到倫敦2小時，就像高鐵台北到高雄」）。
-強調：學費CP值、實習機會、交通便利度。`,
-    news:`【類型五：軟性話題、流行文化與辦公室日常】
-切入點：幽默腦洞，把娛樂/時事話題硬核連結到「留學/科系/英國」。
-大量使用時下網路用語（盤子、燒蛋幾咧、TMI）。
-展現小編個人人設，可自嘲或描述辦公室日常。`,
-    auto:`請先使用搜尋工具找出今天台灣 Google Trends 熱門話題（排除政治），再從「考試/新知/娛樂/盛事」四個方向選出最適合切入的議題，判斷屬於五大類型中的哪一種，然後產出內容。在 topicUsed 欄位說明你選了什麼話題以及理由。`
-  };
-
-  const inputSection = inputText ? `\n\n【提供的素材/方向】\n${inputText}` : '';
-
-  return `${persona}
-
-${typeGuides[contentType]}${inputSection}
-
-請依照上述規範，用 Vivian 的聲音產出 Threads 貼文內容。直接回傳 JSON，不加 markdown：
-{
-  "postType": "類型名稱（一句話，例：類型一 — 錄取榜單與翻轉迷思）",
-  "topicUsed": "本次選用的主題或話題（自動搜尋模式填入，其他給空字串）",
-  "mainPost": "主貼文（約300字，多換行，結尾開放式提問）",
-  "reply1": "留言串1 — 實用/知識延伸型（100字內）",
-  "reply2": "留言串2 — 共鳴/吐槽/生活化型（100字內）",
-  "stories": "限時動態格式文字（僅類型一榜單貼文才填，其他留空字串）"
-}`;
-}
-
-function buildAIPrompt(topic, plat, withSearch=false) {
-  const isMulti = plat==='ig'||plat==='fb';
-  const desc={ad:'廣告圖卡（單張）',ig:'Instagram 社群多頁圖卡（封面+表格+3內容頁）',fb:'Facebook 社群多頁圖卡（封面+表格+3內容頁）',blog:'官網部落格封面（橫式800×600）',thread:'Threads 純文案'}[plat]||'';
-  const multiExtra = isMulti ? `
-  "tableRows":[{"num":"01","title":"重點標題12字內","brief":"說明6字內"},{"num":"02","title":"...","brief":"..."},{"num":"03","title":"...","brief":"..."}],
-  "contentPages":[{"title":"重點1標題12字內","body":"說明文字60字內，英國留學角度，不溢出"},{"title":"重點2標題","body":"60字內"},{"title":"重點3標題","body":"60字內"}],` : '';
-  const searchNote = withSearch ? `\n【注意】你已啟用 Google 搜尋工具，請先搜尋此議題的最新資訊再生成，確保數據、排名、時間資訊都是最新的。` : '';
-  return `你是 GoStudy 的台灣社群行銷助理。GoStudy 是專業英國留學顧問。品牌語氣：專業親切、有溫度、繁體中文台灣用語。${searchNote}
-議題：「${topic.replace(/^(時事|新聞)[_：:\s]*/i,'')}」  平台：${desc}
-
-直接回傳 JSON，不加 markdown：
-{
-  "headline":"主標題（15字內，有鉤子或數字）",
-  "subheadline":"副標題（20字內）",
-  "hookLine1":"封面大字第一行（8字內；可白可黃，懸念開場）",
-  "hookLine2":"封面大字第二行（8字內；可白可黃，核心亮點）",
-  "hookLine3":"封面大字第三行（8字內；可白可黃，若不需要給空字串）",
-  "hookYellowLine":2,
-  "keyPoints":["重點1（12字內）","重點2（12字內）","重點3（12字內）"],${multiExtra}
-  "igPost":"IG 貼文（150字內，換行分段，8-10個hashtag）",
-  "fbPost":"Facebook 貼文（200字內，引發互動，結尾問問題）",
-  "threadPost":"Threads（80字內，輕鬆口語，1-2個hashtag）",
-  "blogTitle":"部落格標題（25字內，SEO友善）",
-  "blogIntro":"文章導語（100字內，吸引讀者繼續讀）",
-  "hashtags":"#英國留學 #GoStudy 加4-6個相關標籤"
-}`;
-}
-
-// ── Build local data ──────────────────────────────────────────────────────────
-function buildLocalData() {
-  const raw  = document.getElementById('inp-topic').value.trim();
-  const headline  = raw.split('\n')[0].replace(/^(時事|新聞)[_：:\s]*/i,'').slice(0,20) || raw.slice(0,18);
-  const ref       = headline.slice(0,12);
-  const isRanking = /排名|QS|Times|榜單/.test(raw);
-  const isSchool  = /(LSE|UCL|帝國|Imperial|KCL|Manchester|Edinburgh|Bristol|Warwick|Durham)/.test(raw);
-  const schoolName= raw.match(/LSE|UCL|帝國|Imperial|KCL|Manchester|Edinburgh|Bristol|Warwick|Durham/)?.[0];
-  const isDeadline= /截止|deadline|申請時程|UCAS/.test(raw);
-  const isNews    = /^時事[_\s]|新聞|熱門|爆紅|celebrity|名人|校友/.test(raw);
-
-  let subheadline, keyPoints;
-  if (isRanking) {
-    subheadline=`${ref} 最新結果，對留學生的意義`;
-    keyPoints=[`${ref} 最新分析`,'英國大學全球排名領先','競爭激烈，越早規劃越好','GoStudy 免費分析選校策略'];
-  } else if (isSchool && schoolName) {
-    subheadline=`申請 ${schoolName}，你需要這些準備`;
-    keyPoints=[`${schoolName} 全球頂尖聲望`,'個人陳述是關鍵','競爭激烈早規劃',`GoStudy 專業 ${schoolName} 申請輔導`];
-  } else if (isDeadline) {
-    subheadline=`${ref} — 掌握時程，申請更從容`;
-    keyPoints=['重要時程整理','UCAS 截止日不可錯過','個人陳述提早3個月','GoStudy 協助規劃'];
-  } else if (isNews) {
-    subheadline=`${ref} × 英國留學的啟示`;
-    keyPoints=[`${ref.slice(0,14)} 引爆討論`,'英國大學培育世界人才','英國教育享譽全球','GoStudy 帶你申請夢想科系'];
-  } else {
-    subheadline=`${ref} — 留學生最想知道的事`;
-    keyPoints=[`深入了解「${ref}」`,'英國學位全球認可','越早規劃選擇越多','GoStudy 免費一對一諮詢'];
+  // Ensure at least 3 content pages for multi-page platforms
+  while (contentPages.length < 3) {
+    const fallbacks = [
+      { title: '申請策略', bullets: ['專業顧問一對一分析', '量身規劃申請路線', '文書全程陪伴'], layout: 'bullets' },
+      { title: '立即行動', bullets: ['免費諮詢零門檻', '10 年深耕英國留學', '已協助 3,000+ 名學生'], layout: 'bullets' },
+    ];
+    const fb = fallbacks[contentPages.length % fallbacks.length];
+    contentPages.push({ ...fb, body: fb.bullets.join('\n'), statsForPage: [] });
   }
 
-  const hashtags  = '#英國留學 #GoStudy #海外升學 #留學申請';
-  const kpLines   = keyPoints.slice(0,3).map((p,i)=>['✅','📌','💡'][i]+' '+p).join('\n');
-  const igPost    = `${headline}\n\n${subheadline}\n\n${kpLines}\n\nGoStudy 免費一對一諮詢，幫你規劃最適合的英國申請路線！\n\n📩 點 bio 連結立即預約\n\n${hashtags}`;
-  const fbPost    = `【${headline}】\n\n${subheadline}\n\n${kpLines}\n\nGoStudy 提供完全免費的留學諮詢，歡迎私訊或點連結預約！\n\n${hashtags}\n\n你對「${ref.slice(0,8)}」有什麼問題？歡迎留言！`;
-  const threadPost= `${headline} 💡\n\n${subheadline}\n\nGoStudy 免費諮詢等你 ✨ #英國留學 #GoStudy`;
-  const blogTitle = `${headline}：留學生必知重點整理`;
-  const blogIntro = `想了解${ref}的最新資訊？本文整理關鍵重點，幫助你申請英國大學前做好準備。GoStudy 提供從選校到申請的一站式服務，已協助數百位台灣學生成功錄取英國頂尖大學。`;
+  // Social posts
+  const kpLines = keyPoints.slice(0, 3).map((p, i) => ['✅', '📌', '💡'][i] + ' ' + p).join('\n');
+  const igPost  = `${headline}\n\n${subheadline}\n\n${kpLines}\n\nGoStudy 免費一對一諮詢，幫你規劃最適合的英國申請路線！\n\n📩 點 bio 連結立即預約\n\n#英國留學 #GoStudy #海外升學 #留學申請`;
+  const fbPost  = `【${headline}】\n\n${subheadline}\n\n${kpLines}\n\nGoStudy 提供完全免費的留學諮詢！\n\n#英國留學 #GoStudy #海外升學\n\n你有什麼問題？歡迎留言！`;
+  const blogTitle = `${title.slice(0, 25)}：留學生必知重點整理`;
+  const blogIntro = `想了解${title.slice(0, 14)}的最新資訊？本文整理關鍵重點，幫助你申請英國大學前做好準備。GoStudy 提供從選校到申請的一站式服務，已協助數百位台灣學生成功錄取英國頂尖大學。`;
 
-  // ── 封面大字 (hook lines) ──────────────────────────────────────
-  let hookLine1, hookLine2, hookLine3='';
-  if (isRanking) {
-    hookLine1='這些英國大學'; hookLine2='通通進世界百大';
-  } else if (isSchool && schoolName) {
-    hookLine1=`申請 ${schoolName}`; hookLine2='你需要這些準備';
-  } else if (isDeadline) {
-    hookLine1='申請時程確認了嗎'; hookLine2='現在就要開始準備';
-  } else if (isNews) {
-    hookLine1=ref.slice(0,6)+'之後'; hookLine2='留學計畫要調整';
-  } else {
-    hookLine1='你一定要知道的'; hookLine2=subheadline.slice(0,8)||'留學新資訊';
-  }
+  return {
+    headline, subheadline, hookLine1, hookLine2, hookLine3,
+    tagline: 'GoStudy — 海外名校申請顧問',
+    keyPoints: keyPoints.slice(0, 4),
+    tableRows, contentPages,
+    cta: '立即預約免費諮詢',
+    hashtags: '#英國留學 #GoStudy #海外升學 #留學申請',
+    igPost, fbPost, blogTitle, blogIntro,
+    _contentType: contentType
+  };
+}
 
-  // ── 多頁社群用資料 ──────────────────────────────────────────────
-  const tableBriefs = isRanking
-    ? ['全球排名解析','選校依據更明確','競爭更激烈']
-    : isSchool ? ['頂尖聲望加持','申請難度提升','越早準備越好']
-    : isDeadline ? ['時程更緊湊','截止日不可誤','提前3個月準備']
-    : ['最新動態解析','留學生必知','及早規劃優勢大'];
-  const tableRows = keyPoints.slice(0,3).map((kp,i)=>({num:String(i+1).padStart(2,'0'),title:kp,brief:tableBriefs[i]||''}));
+// ── Article input helpers ─────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  const ta = document.getElementById('inp-article');
+  if (ta) ta.addEventListener('input', () => updateArticleHint(ta.value.trim()));
+  const txtUp = document.getElementById('txt-upload');
+  if (txtUp) txtUp.addEventListener('change', function(e) {
+    const f = e.target.files[0]; this.value = ''; if (!f) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      document.getElementById('inp-article').value = ev.target.result;
+      updateArticleHint(ev.target.result.trim());
+      document.getElementById('article-clear-btn').style.display = '';
+    };
+    reader.readAsText(f, 'UTF-8');
+  });
+});
 
-  const bodyPool = [
-    `掌握${ref}的最新動態，是規劃英國留學的第一步。GoStudy 顧問持續追蹤最新政策，確保你的申請策略始終走在前端。`,
-    `英國頂尖大學申請競爭持續加劇，越早開始準備，成功錄取的機率越高。GoStudy 提供量身訂製的申請藍圖，從選校到文書全程陪伴。`,
-    `把握關鍵時機，主動掌握申請資訊，讓自己在眾多申請者中脫穎而出。立即預約 GoStudy 免費諮詢，規劃屬於你的留學路線。`,
-  ];
-  const contentPages = keyPoints.slice(0,3).map((kp,i)=>({title:kp,body:bodyPool[i]||`深入了解「${kp}」，GoStudy 顧問為你解析完整策略。`}));
+function updateArticleHint(raw) {
+  const hint = document.getElementById('article-hint');
+  if (!hint || !raw) { if (hint) hint.className = 'article-hint'; return; }
+  const parsed = parseArticle(raw);
+  if (!parsed) { hint.className = 'article-hint'; return; }
+  const typeLabel = { steps:'📋 流程步驟', comparison:'⚖️ 比較分析', stats:'📊 數據統計', general:'✦ 條列重點' }[parsed.contentType] || '✦ 通用';
+  const pageCount = Math.min(parsed.sections.length, 4);
+  hint.className = 'article-hint show';
+  hint.innerHTML = `<span class="a-title">「${escH(parsed.title.slice(0,20))}」</span><span class="a-type">${typeLabel}</span><br>${parsed.sections.length} 個段落 · 將生成封面＋總覽＋${pageCount} 頁內容`;
+  document.getElementById('article-clear-btn').style.display = '';
+}
 
-  return { headline, subheadline, hookLine1, hookLine2, hookLine3, tagline:'GoStudy — 海外名校申請顧問', keyPoints, tableRows, contentPages, cta:'立即預約免費諮詢', hashtags, igPost, fbPost, threadPost, blogTitle, blogIntro };
+function clearArticle() {
+  const ta = document.getElementById('inp-article');
+  if (ta) ta.value = '';
+  const hint = document.getElementById('article-hint');
+  if (hint) hint.className = 'article-hint';
+  document.getElementById('article-clear-btn').style.display = 'none';
 }
 
 // ── Generate ──────────────────────────────────────────────────────────────────
 async function generate() {
-  if (platform==='thread') { await generateThread(); return; }
+  const raw = document.getElementById('inp-article').value.trim();
+  if (!raw) { alert('請先貼入文章內容或上傳 .txt 檔'); return; }
+  const genBtn = document.getElementById('gen-btn'), infoEl = document.getElementById('preview-info');
+  genBtn.disabled = true; genBtn.textContent = '解析中…';
+  infoEl.textContent = '✦ 分析文章結構…';
 
-  const topic = document.getElementById('inp-topic').value.trim();
-  if (!topic) { alert('請輸入議題 / 關鍵字'); return; }
-  const genBtn=document.getElementById('gen-btn'), infoEl=document.getElementById('preview-info');
-  genBtn.disabled=true;
+  // Yield to browser so spinner shows
+  await new Promise(r => setTimeout(r, 30));
 
-  let aiData=null;
-  if (isClaudeEnabled()) {
-    genBtn.textContent='AI 生成中…';
-    infoEl.textContent = '✦ Claude Haiku 生成文案中…';
-    try { aiData=await claudeRequest(buildAIPrompt(topic,platform),{temperature:.85},msg=>{infoEl.textContent=msg;}); }
-    catch(e) { infoEl.textContent=`⚠ AI 失敗：${(e.message||'').slice(0,50)}`; await new Promise(r=>setTimeout(r,1500)); }
+  const parsed = parseArticle(raw);
+  if (!parsed) {
+    infoEl.textContent = '⚠ 無法解析，請確認文章格式';
+    genBtn.disabled = false; genBtn.textContent = '▶ 生成內容'; return;
   }
+  const data = buildDataFromArticle(parsed);
 
-  genBtn.textContent='渲染中…';
-  const base=buildLocalData();
-  if (aiData) {
-    ['headline','subheadline','igPost','fbPost','threadPost','blogTitle','blogIntro','hashtags'].forEach(k=>{ if(aiData[k]) base[k]=aiData[k]; });
-    if (aiData.keyPoints?.length>=2) base.keyPoints=aiData.keyPoints;
-    if (aiData.hookLine1) base.hookLine1=aiData.hookLine1;
-    if (aiData.hookLine2) base.hookLine2=aiData.hookLine2;
-    if (aiData.hookLine3 !== undefined) base.hookLine3=aiData.hookLine3||'';
-    if (aiData.hookYellowLine && [1,2,3].includes(+aiData.hookYellowLine)) hookYellowLine=+aiData.hookYellowLine;
-    if (aiData.tableRows?.length>=2)  base.tableRows=aiData.tableRows;
-    if (aiData.contentPages?.length>=2) base.contentPages=aiData.contentPages;
-    base._aiGenerated=true;
-  }
+  genBtn.textContent = '渲染中…';
+  infoEl.textContent = '✦ 生成圖卡…';
+  await new Promise(r => setTimeout(r, 30));
 
-  generated=base;
+  generated = data;
   renderOutput(generated);
   updateSceneCycleRow();
 
-  const aiNote=aiData?' · ✦ Claude AI':(getClaudeKey()?' · 模板(AI失敗)':' · 模板');
-  infoEl.textContent=`✓ 完成${aiNote}`;
+  const typeLabel = { steps:'流程', comparison:'比較', stats:'數據', general:'條列' }[parsed._contentType || parsed.contentType] || '';
+  infoEl.textContent = `✓ 完成 · ${parsed.sections.length} 段落 · ${typeLabel ? typeLabel+'版型' : '自動版型'}`;
   document.getElementById('dl-btn').style.display    = 'inline-flex';
   document.getElementById('canva-btn').style.display = 'inline-flex';
-  genBtn.disabled=false; genBtn.textContent='▶ 生成內容';
-}
-
-async function generateThread() {
-  const genBtn=document.getElementById('gen-btn'), infoEl=document.getElementById('preview-info');
-  if (!isClaudeEnabled()) { alert('Threads 貼文需要 Claude API Key，請在左側設定'); return; }
-
-  const manualText = (document.getElementById('inp-thread-content')?.value||'').trim();
-  const useSearch  = (threadContentType==='auto');
-
-  genBtn.disabled=true; genBtn.textContent='準備素材…';
-  infoEl.textContent = '讀取上傳檔案…';
-
-  // ── Process uploaded files ─────────────────────────────────────────────────
-  const textParts = [];   // text extracted from PDFs / TXT
-  const imageParts = [];  // base64 images for Claude vision
-
-  for (const f of threadFiles) {
-    if (f.base64) {
-      // Image → Claude vision part（claudeRequest 內部自動轉換格式）
-      imageParts.push({ inlineData: { mimeType: f.mimeType, data: f.base64 } });
-    } else if (f.text) {
-      textParts.push(`【${f.name}】\n${f.text}`);
-    }
-  }
-
-  // Combine all text content
-  const allText = [manualText, ...textParts].filter(Boolean).join('\n\n');
-
-  // ── Call Claude ────────────────────────────────────────────────────────────
-  const hasImages = imageParts.length > 0;
-  const hasContent = allText || hasImages;
-
-  if (!hasContent && threadContentType!=='auto') {
-    alert('請上傳文件或填入素材文字');
-    genBtn.disabled=false; genBtn.textContent='▶ 生成內容'; return;
-  }
-
-  genBtn.textContent='AI 生成中…';
-  if (useSearch) {
-    infoEl.textContent='🌐 搜尋熱門話題 + Vivian AI 生成中…';
-  } else if (hasImages) {
-    infoEl.textContent=`🖼️ 分析 ${imageParts.length} 張圖片 + Vivian AI 生成中…`;
-  } else {
-    infoEl.textContent='✦ Vivian AI 生成 Threads 貼文…';
-  }
-
-  // Prompt: if images included, add instruction to read them
-  const imageNote = hasImages ? `\n\n【附圖說明】我上傳了 ${imageParts.length} 張圖片（Offer 截圖 / 相關文件），請先仔細閱讀圖片內容，再與以下文字素材合併分析：` : '';
-  const prompt = buildThreadsPrompt(threadContentType, imageNote + (allText ? '\n'+allText : ''));
-
-  let aiData=null;
-  try {
-    aiData = await claudeRequest(prompt, {temperature:.92}, msg=>{infoEl.textContent=msg;}, false, imageParts);
-  } catch(e) {
-    infoEl.textContent=`⚠ AI 失敗：${(e.message||'').slice(0,50)}`;
-    await new Promise(r=>setTimeout(r,1500));
-  }
-
-  const area=document.getElementById('preview-area');
-  area.innerHTML='';
-  renderThreadOutput(aiData||{}, area);
-
-  const src = hasImages ? '· 🖼️ Vision + Claude AI' : '· ✦ Claude AI';
-  infoEl.textContent = aiData ? `✓ 完成 ${src}` : '✓ 完成 · AI 失敗';
-  document.getElementById('dl-btn').style.display    = 'none';
-  document.getElementById('canva-btn').style.display = 'none';
-  genBtn.disabled=false; genBtn.textContent='▶ 生成內容';
+  genBtn.disabled = false; genBtn.textContent = '▶ 生成內容';
 }
 
 // ── Render ────────────────────────────────────────────────────────────────────
@@ -1185,7 +902,6 @@ function renderOutput(d) {
   currentData = Object.assign({}, d, {keyPoints:[...(d.keyPoints||[])], contentPages:[...(d.contentPages||[])], tableRows:[...(d.tableRows||[])]});
   const area=document.getElementById('preview-area');
   area.innerHTML='';
-  if (platform==='thread') { renderThreadOutput(d,area); return; }
   if (platform==='ig'||platform==='fb') { renderMultiPageOutput(d,area); return; }
   const cfg=PLAT[platform], bg=getBgImg();
   const html=platform==='blog'?buildLCardHTML(d,bg):buildSCardHTML(d,bg);
@@ -1243,7 +959,7 @@ function buildEditPanel(d) {
   wrap.appendChild(hdr); wrap.appendChild(body);
 
   // Yellow-line selector (only for ad/ig/fb platforms with hook lines)
-  if (!isBlog && platform!=='thread') {
+  if (!isBlog) {
     const yRow=document.createElement('div'); yRow.className='edit-row'; yRow.style.alignItems='center';
     const yLbl=document.createElement('label'); yLbl.className='edit-lbl'; yLbl.textContent='黃色第幾行';
     const yBtns=document.createElement('div'); yBtns.style.cssText='display:flex;gap:5px';
@@ -1623,45 +1339,6 @@ function liveUpdateCard(field, value) {
   });
 }
 
-function renderThreadOutput(d, area) {
-  const wrap=document.createElement('div'); wrap.className='thread-output';
-
-  // Header row: label + type badge + topic used
-  const ttl=document.createElement('div');
-  ttl.style.cssText='font-size:10px;font-weight:700;color:rgba(200,176,122,.7);letter-spacing:2px;text-transform:uppercase;padding:4px 0 8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap';
-  ttl.innerHTML=`✦ Threads 草稿${d.postType?`<span style="font-size:10px;background:rgba(166,138,86,.2);border:1px solid rgba(166,138,86,.3);border-radius:4px;padding:2px 8px;color:var(--gold-l);letter-spacing:0;font-weight:600">${escH(d.postType)}</span>`:''}`;
-  wrap.appendChild(ttl);
-  if (d.topicUsed && d.topicUsed.trim()) {
-    const tb=document.createElement('div'); tb.style.cssText='font-size:11px;color:rgba(200,176,122,.55);padding:0 0 10px'; tb.textContent='🌐 選用話題：'+d.topicUsed; wrap.appendChild(tb);
-  }
-
-  // Sections: main post + replies + optional stories
-  const sections=[
-    {label:'💬 主貼文',       text: d.mainPost||''},
-    {label:'↩¹ 留言串 1｜實用延伸', text: d.reply1||''},
-    {label:'↩² 留言串 2｜共鳴吐槽', text: d.reply2||''},
-  ];
-  if (d.stories && d.stories.trim()) sections.push({label:'📸 限時動態格式', text:d.stories});
-
-  sections.filter(s=>s.text.trim()).forEach(({label,text})=>{
-    const charCount = [...text].filter(c=>/\S/.test(c)).length;
-    const card=document.createElement('div'); card.className='thread-card';
-    card.innerHTML=`<div class="thread-card-head"><span class="thread-card-title">${escH(label)}</span><div style="display:flex;align-items:center;gap:8px"><span style="font-size:10px;color:var(--muted)">${charCount} 字</span><button class="copy-btn" onclick="copyText(${JSON.stringify(text)},this)">複製</button></div></div><div class="thread-card-body">${escH(text)}</div>`;
-    wrap.appendChild(card);
-  });
-
-  // Copy all button
-  const allText = [d.mainPost, d.reply1, d.reply2].filter(Boolean).join('\n\n──────\n\n');
-  if (allText.trim()) {
-    const copyAll=document.createElement('button');
-    copyAll.className='copy-btn'; copyAll.style.cssText='margin-top:4px;width:100%;padding:9px;font-size:12px;border-radius:10px';
-    copyAll.textContent='📋 一鍵複製全部（主文＋留言串）';
-    copyAll.onclick=()=>copyText(allText, copyAll);
-    wrap.appendChild(copyAll);
-  }
-
-  area.appendChild(wrap);
-}
 
 function buildCaptionPanel(d) {
   const map={
@@ -1839,98 +1516,178 @@ function buildTableCardHTML(d, imgUrl) {
   </div></div>`;
 }
 
-// ── Multi-page: Content card (P3–P5) — 3 distinct layout variants ─────────────
+// ── Multi-page: Content card (P3–P6) — layout determined by article structure ──
 function buildContentCardHTML(d, cp, imgUrl, pageNum, total) {
-  const fc=colorAccent;
-  const cpIdx=pageNum-3; // 0,1,2
-  const numLabel=String(cpIdx+1).padStart(2,'0');
-  const titleHtml=`<div data-field="cp${cpIdx}-title" style="font-size:62px;font-weight:900;color:#fff;line-height:1.12;text-shadow:0 4px 28px rgba(0,0,0,.9);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${escH(cp.title||'')}</div>`;
-  const bodyHtml=`<div data-field="cp${cpIdx}-body" style="font-size:29px;color:#ddd0b0;line-height:1.8;overflow:hidden;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;max-height:270px">${escH(cp.body||'')}</div>`;
-  const ctaBtn=`<div style="display:inline-block;background:linear-gradient(135deg,${colorDark},${colorMid});border-radius:10px;padding:12px 32px;font-size:24px;font-weight:800;color:#fff;overflow:hidden;white-space:nowrap">${escH(d.cta||'立即預約免費諮詢')}</div>`;
-  const frameOuter=``;
-  const frameInner=``;
+  const fc = colorAccent;
+  const cpIdx = pageNum - 3;          // 0 = P3, 1 = P4 …
+  const numLabel = String(cpIdx + 1).padStart(2, '0');
+  const layout = cp.layout || 'body'; // 'bullets' | 'steps' | 'stats' | 'comparison' | 'body'
 
-  // ── Variant 0 (P3): Ghost number watermark · side-gradient · number top-left ──
-  if (cpIdx===0) {
-    return `<div class="gs-card-s">
-  <img class="bg" src="${imgUrl}" alt="" style="filter:saturate(0.75) brightness(0.82)">
-  <div style="position:absolute;inset:0;background:linear-gradient(100deg,rgba(0,0,0,.97) 0%,rgba(0,0,0,.82) 48%,rgba(0,0,0,.42) 100%);z-index:2"></div>
-  <!-- Ghost number watermark -->
-  <div style="position:absolute;right:60px;top:60px;font-size:520px;font-weight:900;color:rgba(166,138,86,.08);line-height:1;pointer-events:none;z-index:3;letter-spacing:-.04em">${numLabel}</div>
-  <div style="${frameOuter}"></div>
-  <div style="${frameInner}"></div>
-  <div class="content" style="z-index:6">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+  // ── Shared fragments ──────────────────────────────────────────────────────────
+  const bgFilters = ['saturate(0.75) brightness(0.82)', 'saturate(0.72) brightness(0.78)', 'saturate(0.68) brightness(0.76)', 'saturate(0.70) brightness(0.80)'];
+  const bgF = bgFilters[cpIdx % bgFilters.length];
+  const overlays = [
+    'linear-gradient(100deg,rgba(0,0,0,.97) 0%,rgba(0,0,0,.82) 48%,rgba(0,0,0,.42) 100%)',
+    'linear-gradient(180deg,rgba(0,0,0,.48) 0%,rgba(0,0,0,.78) 40%,rgba(0,0,0,.97) 100%)',
+    'linear-gradient(145deg,rgba(0,0,0,.96) 0%,rgba(0,0,0,.7) 50%,rgba(0,0,0,.9) 100%)',
+    'linear-gradient(160deg,rgba(0,0,0,.92) 0%,rgba(0,0,0,.65) 60%,rgba(0,0,0,.95) 100%)',
+  ];
+  const bgOverlay = overlays[cpIdx % overlays.length];
+
+  const headerHtml = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
       ${buildLogoEl(44)}
       <div style="font-size:20px;font-weight:600;color:rgba(166,138,86,.6)">${pageNum} / ${total}</div>
+    </div>`;
+
+  const footerHtml = `
+    <div style="border-top:1px solid rgba(166,138,86,.2);padding-top:16px;display:flex;align-items:center;justify-content:space-between">
+      <div style="display:inline-block;background:linear-gradient(135deg,${colorDark},${colorMid});border-radius:10px;padding:10px 28px;font-size:22px;font-weight:800;color:#fff">${escH(d.cta||'立即預約免費諮詢')}</div>
+      <div style="font-size:15px;color:rgba(166,138,86,.4)">go-study.com.tw</div>
+    </div>`;
+
+  const sectionTitle = `<div data-field="cp${cpIdx}-title" style="font-size:56px;font-weight:900;color:#fff;line-height:1.12;text-shadow:0 4px 28px rgba(0,0,0,.9);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;margin-bottom:20px">${escH(cp.title||'')}</div>`;
+
+  const bgBase = `<div class="gs-card-s">
+  <img class="bg" src="${imgUrl}" alt="" style="filter:${bgF}">
+  <div style="position:absolute;inset:0;background:${bgOverlay};z-index:2"></div>`;
+
+  // ── BULLETS: 條列式重點 ────────────────────────────────────────────────────────
+  if (layout === 'bullets') {
+    const bullets = (cp.bullets || (cp.body||'').split('\n').filter(Boolean)).slice(0, 5);
+    const icons = ['▶', '▶', '▶', '▶', '▶'];
+    const bulletsHtml = bullets.map((b, i) => `
+      <div style="display:flex;align-items:flex-start;gap:18px;padding:18px 0;${i<bullets.length-1?'border-bottom:1px solid rgba(166,138,86,.18)':''}">
+        <div style="min-width:10px;height:10px;border-radius:2px;background:${fc};flex-shrink:0;margin-top:12px"></div>
+        <div data-field="cp${cpIdx}-body" style="font-size:30px;color:#ddd0b0;line-height:1.55;flex:1">${escH(b)}</div>
+      </div>`).join('');
+    return `${bgBase}
+  <div class="content" style="z-index:6">${headerHtml}
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:8px 0">
+      ${sectionTitle}
+      <div style="width:60px;height:4px;background:${fc};border-radius:2px;margin-bottom:18px"></div>
+      ${bulletsHtml}
     </div>
+    ${footerHtml}
+  </div></div>`;
+  }
+
+  // ── STEPS: 流程步驟 ───────────────────────────────────────────────────────────
+  if (layout === 'steps') {
+    const steps = (cp.bullets || (cp.body||'').split('\n').filter(Boolean)).slice(0, 4);
+    const stepsHtml = steps.map((s, i) => `
+      <div style="display:flex;align-items:flex-start;gap:20px;margin-bottom:${i<steps.length-1?'24':'0'}px">
+        <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0">
+          <div style="width:52px;height:52px;border-radius:50%;background:${fc};display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:900;color:#1a1410;flex-shrink:0">${i+1}</div>
+          ${i<steps.length-1?`<div style="width:3px;flex:1;min-height:20px;background:rgba(166,138,86,.3);margin:4px 0"></div>`:''}
+        </div>
+        <div style="flex:1;padding-top:6px">
+          <div style="font-size:29px;color:#ddd0b0;line-height:1.5">${escH(s)}</div>
+        </div>
+      </div>`).join('');
+    return `${bgBase}
+  <div class="content" style="z-index:6">${headerHtml}
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:8px 0">
+      ${sectionTitle}
+      <div style="width:60px;height:4px;background:${fc};border-radius:2px;margin-bottom:24px"></div>
+      ${stepsHtml}
+    </div>
+    ${footerHtml}
+  </div></div>`;
+  }
+
+  // ── STATS: 數據統計 ───────────────────────────────────────────────────────────
+  if (layout === 'stats') {
+    const statItems = (cp.statsForPage||[]).slice(0, 4);
+    // If not enough stat items, build from bullets
+    while (statItems.length < 2) {
+      const b = (cp.bullets||[])[statItems.length];
+      if (!b) break;
+      const m = b.match(/([\d,，]+(?:\.\d+)?(?:%|％|萬|億|千|百|倍|名|所|個|年|月|天|人|鎊|元))/);
+      statItems.push({ value: m?.[0]||b.slice(0,6), label: m ? b.replace(m[0],'').replace(/^[：:\s]+/,'').slice(0,14) : '' });
+    }
+    const cols = statItems.length <= 2 ? 'repeat(2,1fr)' : 'repeat(2,1fr)';
+    const statsHtml = statItems.slice(0, 4).map(({value, label}) => `
+      <div style="background:rgba(0,0,0,.42);border:1.5px solid rgba(166,138,86,.38);border-radius:16px;padding:28px 18px;text-align:center">
+        <div style="font-size:68px;font-weight:900;color:${fc};line-height:1;margin-bottom:10px">${escH(value)}</div>
+        ${label ? `<div style="font-size:24px;color:rgba(200,176,122,.75);line-height:1.3">${escH(label)}</div>` : ''}
+      </div>`).join('');
+    return `${bgBase}
+  <div class="content" style="z-index:6">${headerHtml}
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:8px 0">
+      ${sectionTitle}
+      <div style="width:60px;height:4px;background:${fc};border-radius:2px;margin-bottom:28px"></div>
+      <div style="display:grid;grid-template-columns:${cols};gap:20px">${statsHtml}</div>
+    </div>
+    ${footerHtml}
+  </div></div>`;
+  }
+
+  // ── COMPARISON: 比較分析 ──────────────────────────────────────────────────────
+  if (layout === 'comparison') {
+    const items = (cp.bullets || (cp.body||'').split('\n').filter(Boolean)).slice(0, 6);
+    const half = Math.ceil(items.length / 2);
+    const leftItems = items.slice(0, half);
+    const rightItems = items.slice(half);
+    const colHtml = (arr, label, color) => `
+      <div style="flex:1;background:rgba(0,0,0,.4);border:1.5px solid ${color};border-radius:12px;padding:22px 18px">
+        <div style="font-size:22px;font-weight:800;color:${color};margin-bottom:14px;letter-spacing:1px">${escH(label)}</div>
+        ${arr.map(b=>`<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:12px"><div style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0;margin-top:8px"></div><div style="font-size:26px;color:#ddd0b0;line-height:1.4">${escH(b)}</div></div>`).join('')}
+      </div>`;
+    return `${bgBase}
+  <div class="content" style="z-index:6">${headerHtml}
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:8px 0">
+      ${sectionTitle}
+      <div style="width:60px;height:4px;background:${fc};border-radius:2px;margin-bottom:24px"></div>
+      <div style="display:flex;gap:18px">
+        ${colHtml(leftItems,'優點','rgba(74,222,128,.8)')}
+        ${colHtml(rightItems,'注意','rgba(251,191,36,.8)')}
+      </div>
+    </div>
+    ${footerHtml}
+  </div></div>`;
+  }
+
+  // ── BODY (default): title + paragraph — 3 visual variants cycling ─────────────
+  const bodyHtml = `<div data-field="cp${cpIdx}-body" style="font-size:29px;color:#ddd0b0;line-height:1.8;overflow:hidden;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;max-height:270px">${escH(cp.body||cp.bullets?.join('\n')||'')}</div>`;
+
+  if (cpIdx % 3 === 0) {
+    return `${bgBase}
+  <div style="position:absolute;right:60px;top:60px;font-size:520px;font-weight:900;color:rgba(166,138,86,.08);line-height:1;pointer-events:none;z-index:3;letter-spacing:-.04em">${numLabel}</div>
+  <div class="content" style="z-index:6">${headerHtml}
     <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:12px 0">
       <div style="font-size:90px;font-weight:900;color:${fc};line-height:1;margin-bottom:16px">${numLabel}</div>
-      ${titleHtml}
-      <div style="width:72px;height:4px;background:${fc};border-radius:2px;margin:22px 0 22px"></div>
+      ${sectionTitle}
+      <div style="width:72px;height:4px;background:${fc};border-radius:2px;margin:22px 0"></div>
       ${bodyHtml}
     </div>
-    <div style="border-top:1px solid rgba(166,138,86,.2);padding-top:16px;display:flex;align-items:center;justify-content:space-between">
-      ${ctaBtn}
-      <div style="font-size:16px;color:rgba(166,138,86,.4)">go-study.com.tw</div>
-    </div>
+    ${footerHtml}
   </div></div>`;
   }
-
-  // ── Variant 1 (P4): Accent title band · top-to-bottom gradient · no number ──
-  if (cpIdx===1) {
-    return `<div class="gs-card-s">
-  <img class="bg" src="${imgUrl}" alt="" style="filter:saturate(0.72) brightness(0.78)">
-  <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.48) 0%,rgba(0,0,0,.75) 38%,rgba(0,0,0,.97) 100%);z-index:2"></div>
-  <div style="${frameOuter}"></div>
-  <div style="${frameInner}"></div>
-  <div class="content" style="z-index:6">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-      ${buildLogoEl(44)}
-      <div style="font-size:20px;font-weight:600;color:rgba(166,138,86,.6)">${pageNum} / ${total}</div>
-    </div>
+  if (cpIdx % 3 === 1) {
+    return `${bgBase}
+  <div class="content" style="z-index:6">${headerHtml}
     <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:28px">
-      <!-- Full-width accent band behind title -->
-      <div style="background:rgba(166,138,86,.16);border-top:3px solid ${fc};border-bottom:3px solid ${fc};padding:28px 0;margin-bottom:28px">
-        ${titleHtml}
-      </div>
+      <div style="background:rgba(166,138,86,.16);border-top:3px solid ${fc};border-bottom:3px solid ${fc};padding:28px 0;margin-bottom:28px">${sectionTitle}</div>
       ${bodyHtml}
     </div>
-    <div style="border-top:1px solid rgba(166,138,86,.2);padding-top:16px;display:flex;align-items:center;justify-content:space-between">
-      ${ctaBtn}
-      <div style="font-size:16px;color:rgba(166,138,86,.4)">go-study.com.tw</div>
-    </div>
+    ${footerHtml}
   </div></div>`;
   }
-
-  // ── Variant 2 (P5): Diagonal gradient · quote box · decorative corners ──
-  return `<div class="gs-card-s">
-  <img class="bg" src="${imgUrl}" alt="" style="filter:saturate(0.68) brightness(0.76)">
-  <div style="position:absolute;inset:0;background:linear-gradient(145deg,rgba(0,0,0,.96) 0%,rgba(0,0,0,.7) 50%,rgba(0,0,0,.88) 100%);z-index:2"></div>
-  <!-- Decorative corner marks -->
+  // cpIdx % 3 === 2 — quote-box
+  return `${bgBase}
   <div style="position:absolute;top:72px;left:72px;width:60px;height:60px;border-top:4px solid ${fc};border-left:4px solid ${fc};pointer-events:none;z-index:7"></div>
   <div style="position:absolute;bottom:72px;right:72px;width:60px;height:60px;border-bottom:4px solid ${fc};border-right:4px solid ${fc};pointer-events:none;z-index:7"></div>
-  <div style="${frameOuter}"></div>
-  <div style="${frameInner}"></div>
-  <div class="content" style="z-index:6">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-      ${buildLogoEl(44)}
-      <div style="font-size:20px;font-weight:600;color:rgba(166,138,86,.6)">${pageNum} / ${total}</div>
-    </div>
+  <div class="content" style="z-index:6">${headerHtml}
     <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:12px 0">
-      <!-- Quote-style bordered content box -->
       <div style="border:2px solid rgba(166,138,86,.45);border-radius:12px;padding:36px 40px;background:rgba(0,0,0,.38);position:relative">
-        <!-- Gold quote mark -->
         <div style="position:absolute;top:-28px;left:32px;font-size:90px;color:${fc};line-height:1;font-family:Georgia,serif">"</div>
-        ${titleHtml}
-        <div style="width:60px;height:3px;background:${fc};border-radius:2px;margin:20px 0 20px"></div>
+        ${sectionTitle}
+        <div style="width:60px;height:3px;background:${fc};border-radius:2px;margin:20px 0"></div>
         ${bodyHtml}
       </div>
     </div>
-    <div style="border-top:1px solid rgba(166,138,86,.2);padding-top:16px;display:flex;align-items:center;justify-content:space-between">
-      ${ctaBtn}
-      <div style="font-size:16px;color:rgba(166,138,86,.4)">go-study.com.tw</div>
-    </div>
+    ${footerHtml}
   </div></div>`;
 }
 
@@ -1983,7 +1740,7 @@ function showToast(msg, duration=3500) {
 }
 
 // ── Open in Canva ──────────────────────────────────────────────────────────────
-const CANVA_URLS={ig:'https://www.canva.com/create/instagram-posts/',fb:'https://www.canva.com/create/facebook-posts/',blog:'https://www.canva.com/create/blog-banners/',thread:'https://www.canva.com/'};
+const CANVA_URLS={ig:'https://www.canva.com/create/instagram-posts/',fb:'https://www.canva.com/create/facebook-posts/',blog:'https://www.canva.com/create/blog-banners/'};
 
 async function openInCanva(el, label, w, h) {
   if (typeof html2canvas==='undefined') { alert('匯出套件尚未載入，請稍後再試'); return; }
@@ -2037,14 +1794,13 @@ function clearPreview() {
   generated=null;
 }
 
-function resetAll() { document.getElementById('inp-topic').value=''; clearPreview(); }
+function resetAll() { clearArticle(); clearPreview(); }
 
 function copyCanvaPrompt() {
   if (!generated) return;
-  const topic=document.getElementById('inp-topic')?.value?.trim()||'';
   const pMap={ig:'Instagram 貼文（1080×1350px）',fb:'Facebook 貼文（1080×1350px）',blog:'部落格封面（800×600px）'};
-  const text=`請用 Canva 幫我生成 GoStudy 的${pMap[platform]||''}\n【議題】${topic}\n【標題】${generated.headline}\n【副標題】${generated.subheadline}\n【重點】\n${(generated.keyPoints||[]).map((p,i)=>`${i+1}. ${p}`).join('\n')}\n【CTA】${generated.cta}\n【品牌】GoStudy 英國留學顧問（台灣）\n【視覺】品牌色：深綠 #0e6b59 + 卡其金 #c8b89a；專業雜誌感\n【語言】繁體中文`;
-  navigator.clipboard.writeText(text).then(()=>showToast('✓ 已複製！貼到 Claude 即可用 Canva 生成')).catch(()=>{const ta=document.createElement('textarea');ta.value=text;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);showToast('✓ 已複製！');});
+  const text=`請用 Canva 幫我生成 GoStudy 的${pMap[platform]||''}\n【標題】${generated.headline}\n【副標題】${generated.subheadline}\n【重點】\n${(generated.keyPoints||[]).map((p,i)=>`${i+1}. ${p}`).join('\n')}\n【CTA】${generated.cta}\n【品牌】GoStudy 英國留學顧問（台灣）\n【視覺】品牌色：深綠 #0e6b59 + 卡其金 #c8b89a；專業雜誌感\n【語言】繁體中文`;
+  navigator.clipboard.writeText(text).then(()=>showToast('✓ 已複製！可貼入 Canva 或其他工具')).catch(()=>{const ta=document.createElement('textarea');ta.value=text;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);showToast('✓ 已複製！');});
 }
 
 function showToast(msg) {
@@ -2061,13 +1817,9 @@ function copyText(text,btn){
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 (function init() {
-  const k=localStorage.getItem('gs_claude_key');
-  if (k){document.getElementById('claude-key').value=k;showClaudeStatus(true);}
-  document.getElementById('inp-topic').addEventListener('input',e=>updateTopicHint(e.target.value.trim()));
   initSceneGrid();
-  setThreadType('listing'); // init thread input area (hidden until thread tab is clicked)
   updateSceneCycleRow();
-  setPlatform('ad'); // sync toolbar title with default platform
+  setPlatform('ad');
 })();
 </script>
 </body>
