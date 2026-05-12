@@ -234,6 +234,7 @@ textarea{min-height:72px;line-height:1.5}
 [data-drag]:active{cursor:grabbing!important}
 [data-drag="subject"]:hover{outline-color:rgba(166,138,86,.55)}
 [data-drag="logo-row"]:hover{outline-color:rgba(100,200,255,.45)}
+[data-drag^="hookLine"]:hover .rz-handle{opacity:1}
 
 /* Resize handles (text width) */
 .rz-handle{position:absolute;right:-2px;top:0;height:100%;width:22px;cursor:ew-resize;z-index:20;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .18s}
@@ -477,10 +478,14 @@ function _defaultOverrides() {
     headlineBorder:'rgba(255,255,255,.78)',
     subjectGlow:null,
     bgSat:0.75, bgBright:0.90,
+    hookLineW:{},   // {1:px, 2:px, 3:px}  null/missing = use computed default
     offsets:{
-      'logo-row' :{dx:0,dy:0},
-      'headline' :{dx:0,dy:0},
+      'logo-row'  :{dx:0,dy:0},
+      'headline'  :{dx:0,dy:0},
       'hook-group':{dx:0,dy:0},
+      'hookLine1' :{dx:0,dy:0},
+      'hookLine2' :{dx:0,dy:0},
+      'hookLine3' :{dx:0,dy:0},
       'hashtags'  :{dx:0,dy:0},
       'subject'   :{dx:0,dy:0},
     }
@@ -1314,8 +1319,10 @@ document.addEventListener('mousedown', function(e) {
     const shell = inner.parentElement;
     const sc = (parseInt(shell?.style.width)||360) / (parseInt(inner.style.width)||1080);
     const parent = rzEl.parentElement;
-    const startW = (rtype==='headline' ? manualOverrides.headlineW : manualOverrides.hookGroupW)
-      || Math.round(parent.getBoundingClientRect().width / sc);
+    const storedW = rtype==='headline' ? manualOverrides.headlineW
+      : rtype.startsWith('hookLine') ? (manualOverrides.hookLineW?.[parseInt(rtype.replace('hookLine',''))] ?? null)
+      : manualOverrides.hookGroupW;
+    const startW = storedW || Math.round(parent.getBoundingClientRect().width / sc);
     _resizeState = { rtype, sc, startX:e.clientX, startW, handle:rzEl };
     rzEl.classList.add('active');
     e.preventDefault(); e.stopPropagation();
@@ -1341,10 +1348,17 @@ document.addEventListener('mousemove', function(e) {
   // ── Resize ──
   if (_resizeState) {
     const delta = (e.clientX - _resizeState.startX) / _resizeState.sc;
-    const newW = Math.max(200, Math.min(980, Math.round(_resizeState.startW + delta)));
-    if (_resizeState.rtype==='headline') {
+    const newW = Math.max(120, Math.min(980, Math.round(_resizeState.startW + delta)));
+    const rt = _resizeState.rtype;
+    if (rt === 'headline') {
       manualOverrides.headlineW = newW;
       _resizeState.handle.closest('[data-drag="headline"]').style.width = newW+'px';
+    } else if (rt.startsWith('hookLine')) {
+      const n = parseInt(rt.replace('hookLine',''));
+      if (!manualOverrides.hookLineW) manualOverrides.hookLineW = {};
+      manualOverrides.hookLineW[n] = newW;
+      const lineEl = _resizeState.handle.closest(`[data-field="hookLine${n}"]`);
+      if (lineEl) lineEl.style.maxWidth = newW+'px';
     } else {
       manualOverrides.hookGroupW = newW;
       _resizeState.handle.closest('[data-drag="hook-group"]').style.maxWidth = newW+'px';
@@ -1477,11 +1491,16 @@ function buildSCardHTML(d, imgUrl) {
   const hlScale  = hlLen <= 12 ? 1.0 : hlLen <= 18 ? 0.85 : hlLen <= 26 ? 0.70 : 0.58;
   const hlFontSz = Math.max(22, Math.round(hookFS * 0.56 * hlScale) + (manualOverrides.hlDelta||0));
 
-  // ── Hook lines HTML (no clamp: wrap only when hitting container edge) ──
+  // ── Hook lines HTML — each line has own resize handle + drag ──
   const yLine = hookYellowLine || 2;
+  // Default width → ~3.2 chars wide so 6-8 char text wraps to 2 lines
+  const defaultHookW = Math.round(hookFS * 3.2);
   const hookLinesHtml = [{txt:h1,n:1},{txt:h2,n:2},{txt:h3,n:3}]
     .filter(({txt})=>txt.trim())
-    .map(({txt,n})=>`<div data-field="hookLine${n}" style="font-size:${hookFS}px;font-weight:900;color:${n===yLine?'#FFE132':'#fff'};line-height:1.1;text-shadow:0 3px 18px rgba(0,0,0,.65);word-break:keep-all;overflow-wrap:break-word">${escH(txt)}</div>`)
+    .map(({txt,n})=>{
+      const lineW = mo.hookLineW?.[n] ?? defaultHookW;
+      return `<div data-field="hookLine${n}" data-drag="hookLine${n}" style="font-size:${hookFS}px;font-weight:900;color:${n===yLine?'#FFE132':'#fff'};line-height:1.1;text-shadow:0 3px 18px rgba(0,0,0,.65);overflow-wrap:break-word;max-width:${lineW}px;position:relative;cursor:grab;${tr('hookLine'+n)}">${escH(txt)}<div data-no-export="1" data-resize="hookLine${n}" class="rz-handle"></div></div>`;
+    })
     .join('');
 
   // ── Single group container: everything together, constrained to text side ──
@@ -1504,8 +1523,8 @@ function buildSCardHTML(d, imgUrl) {
     <!-- ALL TEXT — each element individually draggable -->
     <div style="display:flex;flex-direction:column;max-width:${groupW}px;${groupMargin}">
 
-      <!-- ① Logo + BN: right-aligned header -->
-      <div data-drag="logo-row" style="display:flex;align-items:center;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-bottom:14px;cursor:grab;${tr('logo-row')}">
+      <!-- ① Logo + BN: right-aligned header (width:100% ensures flex-end hits card right) -->
+      <div data-drag="logo-row" style="width:100%;display:flex;align-items:center;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-bottom:14px;cursor:grab;${tr('logo-row')}">
         ${buildLogoEl(44, mo.logoScale||1)}
         ${bnEl}
       </div>
@@ -1516,10 +1535,9 @@ function buildSCardHTML(d, imgUrl) {
       <!-- ③ Gold accent bar -->
       <div style="width:68px;height:4px;background:${fc};border-radius:2px;margin-bottom:20px;${barAlign}"></div>
 
-      <!-- ④ Hook lines: large text, individually draggable -->
-      <div data-drag="hook-group" style="${hooksTA};margin-bottom:14px;cursor:grab;position:relative;${mo.hookGroupW?'max-width:'+mo.hookGroupW+'px':''};${tr('hook-group')}">
+      <!-- ④ Hook lines: each line has own drag + resize handle -->
+      <div data-drag="hook-group" style="${hooksTA};margin-bottom:14px;cursor:grab;${tr('hook-group')}">
         ${hookLinesHtml}
-        <div data-no-export="1" data-resize="hook-group" class="rz-handle"></div>
       </div>
 
       <!-- ⑤ Hashtags -->
