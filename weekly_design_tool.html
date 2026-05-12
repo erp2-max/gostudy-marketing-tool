@@ -1,0 +1,1387 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GOSTUDY · 行銷圖卡生成工具</title>
+<script>
+  window.addEventListener('DOMContentLoaded', function() {
+    var f = document.createElement('link'); f.rel='stylesheet';
+    f.href='https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap';
+    document.head.appendChild(f);
+    var s = document.createElement('script');
+    s.src='https://html2canvas.hertzen.com/dist/html2canvas.min.js';
+    document.head.appendChild(s);
+  });
+</script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --brand:#0e6b59;--green:#16a085;--khaki:#b09060;--khaki-l:#f2ece0;--khaki-m:#d8c8a8;
+  --bg:#f4f0e8;--surface:#fff;--border:#ddd0b8;--text:#1e1a14;--muted:#7a6e5a;
+  --gold:#A68A56;--gold-l:#C9B07A;--sidebar-w:240px;--input-w:300px;
+}
+html,body{height:100%;font-family:'Noto Sans TC','Microsoft JhengHei',sans-serif;background:var(--bg);color:var(--text)}
+.app{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:var(--sidebar-w);min-width:var(--sidebar-w);background:#1a1410;color:#e8dcc8;display:flex;flex-direction:column;overflow-y:auto}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.workspace{flex:1;display:flex;overflow:hidden}
+.input-col{width:var(--input-w);min-width:var(--input-w);background:var(--surface);border-right:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column}
+.preview-col{flex:1;background:#2a2420;overflow-y:auto;display:flex;flex-direction:column}
+
+/* Sidebar */
+.sidebar-header{padding:20px 22px 16px;border-bottom:1px solid rgba(166,138,86,.25)}
+.sidebar-brand{font-size:11px;font-weight:700;color:var(--gold);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px}
+.sidebar-title{font-size:16px;font-weight:900;color:#f0e8d0;letter-spacing:.5px}
+.sidebar-subtitle{font-size:11px;color:rgba(200,176,122,1);margin-top:2px}
+.sidebar-section-label{font-size:10px;font-weight:700;color:rgba(166,138,86,.6);letter-spacing:2px;text-transform:uppercase;padding:16px 22px 6px}
+.sidebar-divider{height:1px;background:rgba(166,138,86,.15);margin:8px 22px}
+
+/* Platform buttons */
+.plat-btn{display:flex;align-items:center;gap:12px;padding:10px 22px;cursor:pointer;background:none;border:none;width:100%;text-align:left;font-family:inherit;color:rgba(220,200,160,.75);border-left:3px solid transparent;transition:all .15s}
+.plat-btn:hover{background:rgba(166,138,86,.12);color:#e8d8b8}
+.plat-btn.active{background:rgba(166,138,86,.18);border-left-color:var(--gold);color:#f0e4c4;box-shadow:inset 0 0 24px rgba(166,138,86,.06)}
+.plat-icon{width:36px;height:36px;border-radius:8px;background:rgba(166,138,86,.15);border:1px solid rgba(166,138,86,.3);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.plat-btn.active .plat-icon{background:var(--gold);color:#1a1410}
+.plat-info{display:flex;flex-direction:column}
+.plat-label{font-size:13px;font-weight:600}
+.plat-size{font-size:10px;opacity:.85;margin-top:1px}
+
+/* API */
+.api-section{padding:12px 22px 16px}
+.api-row{display:flex;gap:6px}
+.api-input{flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(166,138,86,.3);border-radius:7px;padding:7px 10px;font-size:11px;color:#e8d8b8;font-family:inherit}
+.api-input:focus{border-color:var(--gold);outline:none}
+.api-input::placeholder{color:rgba(200,176,122,.4)}
+.api-save-btn{background:rgba(166,138,86,.3);border:1px solid rgba(166,138,86,.5);border-radius:7px;padding:7px 10px;font-size:11px;font-weight:700;color:var(--gold-l);cursor:pointer;font-family:inherit;white-space:nowrap}
+.api-save-btn:hover{background:rgba(166,138,86,.5)}
+.api-status{font-size:10px;margin-top:5px;word-break:break-word;line-height:1.5}
+.api-status.ok{color:#4ade80}
+.api-status.none{color:rgba(200,176,122,.85)}
+
+/* Toolbar */
+.toolbar{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;gap:10px;min-height:52px}
+.toolbar-title{font-size:14px;font-weight:700;color:var(--brand);flex:1}
+.toolbar-badge{font-size:10px;background:var(--khaki-l);color:var(--brand);border-radius:20px;padding:2px 8px;font-weight:700;letter-spacing:.5px}
+.btn{padding:7px 16px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:none;font-family:inherit;transition:all .15s;white-space:nowrap}
+.btn-outline{background:var(--surface);color:var(--brand);border:1.5px solid var(--green)}
+.btn-outline:hover{background:var(--khaki-l)}
+.btn-gold{background:var(--gold);color:#1a1410}
+.btn-gold:hover{background:var(--gold-l)}
+.btn:disabled{opacity:.4;cursor:default}
+
+/* Input */
+.input-header{padding:16px 18px 10px;border-bottom:1px solid var(--border)}
+.input-header-title{font-size:12px;font-weight:700;color:var(--brand);letter-spacing:.5px}
+.input-scroll{padding:14px 18px;display:flex;flex-direction:column;gap:14px;flex:1}
+.field{display:flex;flex-direction:column;gap:5px}
+.field-label{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:1px;text-transform:uppercase;display:flex;align-items:center;gap:4px}
+.step-badge{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;background:var(--green);color:#fff;font-size:8px;font-weight:800;flex-shrink:0}
+.field-hint{font-size:10px;color:var(--muted)}
+textarea,select{font-family:inherit;font-size:12px;border:1px solid var(--border);border-radius:7px;padding:8px 10px;background:var(--bg);color:var(--text);resize:vertical;transition:border-color .15s}
+textarea:focus,select:focus{border-color:var(--green);background:#fff;outline:none}
+textarea{min-height:72px;line-height:1.5}
+
+/* Image upload */
+.upload-zone{border:2px dashed var(--border);border-radius:10px;padding:14px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg)}
+.upload-zone:hover{border-color:var(--green);background:rgba(22,160,133,.04)}
+.upload-zone-label{font-size:11px;color:var(--muted);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px}
+.upload-zone-label input[type=file]{display:none}
+.upload-thumbs{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-top:8px}
+.upload-thumb{aspect-ratio:1;border-radius:6px;overflow:hidden;border:2px solid transparent;cursor:pointer;transition:all .15s;position:relative}
+.upload-thumb:hover{border-color:rgba(22,160,133,.5)}
+.upload-thumb.on{border-color:var(--green);box-shadow:0 0 0 1px var(--green)}
+.upload-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.upload-thumb .rm-btn{position:absolute;top:2px;right:2px;width:16px;height:16px;border-radius:50%;background:rgba(0,0,0,.65);color:#fff;font-size:9px;display:none;align-items:center;justify-content:center;cursor:pointer;border:none;font-family:inherit;line-height:1}
+.upload-thumb:hover .rm-btn{display:flex}
+.upload-more{aspect-ratio:1;border-radius:6px;border:1.5px dashed var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--muted);cursor:pointer;transition:all .15s;background:var(--bg)}
+.upload-more:hover{border-color:var(--green);color:var(--green)}
+
+/* Scene flat grid */
+.scene-divider{display:flex;align-items:center;gap:8px;margin:4px 0}
+.scene-divider-line{flex:1;height:1px;background:var(--border)}
+.scene-divider-text{font-size:10px;color:var(--muted);white-space:nowrap}
+.scene-flat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+.scene-flat-btn{border-radius:8px;overflow:hidden;border:2px solid transparent;cursor:pointer;transition:all .15s;padding:0;background:none;position:relative;aspect-ratio:1}
+.scene-flat-btn:hover{border-color:rgba(22,160,133,.5)}
+.scene-flat-btn.on{border-color:var(--green);box-shadow:0 0 0 1px var(--green)}
+.scene-flat-btn img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(.6) brightness(.8);transition:filter .2s}
+.scene-flat-btn.on img,.scene-flat-btn:hover img{filter:saturate(.9) brightness(.9)}
+.scene-flat-btn span{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(0deg,rgba(0,0,0,.65),transparent);color:#fff;font-size:9px;font-weight:700;padding:6px 4px 3px;text-align:center}
+.scene-cycle-row{display:flex;align-items:center;justify-content:space-between;margin-top:4px}
+.scene-cycle-info{font-size:10px;color:var(--muted)}
+.scene-cycle-btn{font-size:10px;padding:3px 10px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--muted);cursor:pointer;font-family:inherit;transition:all .15s}
+.scene-cycle-btn:hover{border-color:var(--green);color:var(--brand)}
+
+
+/* AI toggle */
+.ai-toggle-row{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:rgba(99,179,237,.06);border:1px solid rgba(99,179,237,.18);border-radius:9px;margin-bottom:10px}
+.ai-toggle-label{font-size:11px;font-weight:700;color:rgba(99,179,237,.8);display:flex;align-items:center;gap:6px}
+.toggle-sw{position:relative;width:34px;height:18px;flex-shrink:0}
+.toggle-sw input{opacity:0;width:0;height:0;position:absolute}
+.toggle-track{position:absolute;inset:0;border-radius:18px;background:rgba(99,179,237,.25);border:1px solid rgba(99,179,237,.3);cursor:pointer;transition:all .2s}
+.toggle-track::after{content:'';position:absolute;width:12px;height:12px;left:2px;top:2px;border-radius:50%;background:#fff;transition:transform .2s}
+.toggle-sw input:checked+.toggle-track{background:rgba(99,179,237,.7);border-color:rgba(99,179,237,.8)}
+.toggle-sw input:checked+.toggle-track::after{transform:translateX(16px)}
+
+/* Gen button */
+.gen-btn-wrap{padding:12px 18px 18px;border-top:1px solid var(--border);background:linear-gradient(180deg,transparent,rgba(22,160,133,.04))}
+.gen-main-btn{width:100%;padding:12px;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;border:none;font-family:inherit;background:linear-gradient(135deg,var(--brand),var(--green));color:#fff;letter-spacing:.5px;transition:all .15s;box-shadow:0 4px 16px rgba(14,107,89,.3)}
+.gen-main-btn:not(:disabled):hover{filter:brightness(1.12);transform:translateY(-2px);box-shadow:0 10px 32px rgba(14,107,89,.5)}
+.gen-main-btn:not(:disabled):active{transform:translateY(0)}
+.gen-main-btn:disabled{opacity:.4;cursor:default}
+
+/* Preview */
+.preview-header{display:flex;align-items:center;gap:12px;padding:10px 20px;border-bottom:1px solid rgba(255,255,255,.08)}
+.preview-info{font-size:11px;color:rgba(200,176,122,.72);flex:1}
+.preview-area{flex:1;overflow-y:auto;padding:28px 24px;display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start;justify-content:center}
+
+/* Card wrap */
+.card-wrap{display:flex;flex-direction:column;align-items:center;gap:10px}
+.card-label{font-size:10px;font-weight:700;color:rgba(200,176,122,.88);letter-spacing:2px;text-transform:uppercase}
+.card-preview-shell{border-radius:12px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.6);position:relative}
+.card-btns{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center}
+.card-dl{background:rgba(166,138,86,.2);border:1px solid rgba(166,138,86,.38);border-radius:8px;padding:7px 20px;font-size:11px;font-weight:700;color:var(--gold-l);cursor:pointer;font-family:inherit;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.card-dl:hover{background:rgba(166,138,86,.42);transform:translateY(-1px)}
+.card-canva{background:rgba(100,180,255,.12);border:1px solid rgba(100,180,255,.35);border-radius:8px;padding:7px 20px;font-size:11px;font-weight:700;color:#8ecfff;cursor:pointer;font-family:inherit;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.card-canva:hover{background:rgba(100,180,255,.28);transform:translateY(-1px)}
+/* Toast */
+#gs-toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(16px);background:#1a2a3a;border:1px solid rgba(100,180,255,.4);color:#8ecfff;border-radius:10px;padding:10px 22px;font-size:12px;font-weight:600;pointer-events:none;opacity:0;transition:opacity .25s,transform .25s;z-index:9999;white-space:nowrap}
+#gs-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* Asset upload panel */
+.asset-strip{display:flex;gap:10px;padding:4px 0 6px}
+.asset-col{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:80px}
+.mini-lbl{font-size:9px;font-weight:700;color:rgba(166,138,86,.7);letter-spacing:.8px;text-transform:uppercase;text-align:center}
+.opt{font-size:9px;font-weight:400;color:rgba(166,138,86,.45);text-transform:none;letter-spacing:0}
+.mini-zone{width:80px;height:72px;border:1.5px dashed rgba(166,138,86,.38);border-radius:8px;cursor:pointer;transition:all .15s;background:rgba(255,255,255,.03);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;overflow:hidden;position:relative;flex-shrink:0}
+.mini-zone:hover{border-color:rgba(166,138,86,.7);background:rgba(166,138,86,.1)}
+.mini-zone.has-img{border-style:solid;border-color:rgba(166,138,86,.6)}
+.mini-zone span{font-size:10px;color:rgba(166,138,86,.55);text-align:center;pointer-events:none}
+.mini-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.mini-clear{background:rgba(255,80,80,.15);border:1px solid rgba(255,80,80,.3);border-radius:5px;color:rgba(255,140,140,.8);font-size:9px;cursor:pointer;padding:3px 8px;font-family:inherit;transition:all .15s}
+.mini-clear:hover{background:rgba(255,80,80,.28)}
+.side-toggle-row{display:flex;align-items:center;gap:8px;padding:4px 0 2px}
+.side-btn{padding:4px 14px;border:1px solid rgba(166,138,86,.28);border-radius:6px;background:none;color:rgba(200,176,122,.55);font-size:11px;cursor:pointer;font-family:inherit;transition:all .15s}
+.side-btn.active{background:rgba(166,138,86,.2);border-color:rgba(166,138,86,.65);color:var(--gold-l)}
+.inp-sm{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(166,138,86,.25);border-radius:6px;padding:7px 10px;font-size:12px;color:#e8d8b0;font-family:inherit;outline:none;transition:border-color .15s;margin-top:3px}
+.inp-sm:focus{border-color:rgba(166,138,86,.65)}
+/* Multi-page carousel strip */
+.page-strip{display:flex;flex-direction:row;gap:12px;padding:16px 16px 4px;overflow-x:auto;align-items:flex-start;scrollbar-width:thin}
+.page-strip::-webkit-scrollbar{height:5px}
+.page-strip::-webkit-scrollbar-track{background:rgba(255,255,255,.04)}
+.page-strip::-webkit-scrollbar-thumb{background:rgba(166,138,86,.4);border-radius:3px}
+.page-strip .card-wrap{flex-shrink:0}
+
+/* Edit panel */
+.edit-panel{width:100%;background:rgba(20,15,8,.75);border:1px solid rgba(166,138,86,.3);border-radius:12px;margin:0 0 14px;overflow:hidden}
+.edit-panel-hdr{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;cursor:pointer;user-select:none;background:rgba(166,138,86,.1);border-bottom:1px solid rgba(166,138,86,.2)}
+.edit-panel-hdr span:first-child{font-size:11px;font-weight:700;color:var(--gold-l);letter-spacing:1.5px;text-transform:uppercase}
+.edit-panel-arrow{font-size:10px;color:rgba(166,138,86,.6);transition:transform .2s}
+.edit-panel-body{padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.edit-row{display:flex;align-items:center;gap:10px}
+.edit-lbl{font-size:10px;font-weight:700;color:rgba(166,138,86,.7);letter-spacing:1px;min-width:66px;text-align:right;flex-shrink:0}
+.edit-inp{flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(166,138,86,.25);border-radius:6px;padding:5px 10px;font-size:12px;color:#e8d8b0;font-family:inherit;outline:none;transition:border-color .15s}
+.edit-inp:focus{border-color:rgba(166,138,86,.7);background:rgba(255,255,255,.1)}
+/* Caption panel */
+.gen-captions{width:100%;padding:0 4px 20px;display:flex;flex-direction:column}
+.gen-captions-title{font-size:10px;font-weight:700;color:rgba(200,176,122,.7);letter-spacing:2px;text-transform:uppercase;padding:20px 0 10px;border-top:1px solid rgba(166,138,86,.15);margin-top:4px}
+.caption-block{background:rgba(255,255,255,.04);border:1px solid rgba(166,138,86,.15);border-radius:10px;overflow:hidden;margin-bottom:8px}
+.caption-block-head{display:flex;align-items:center;justify-content:space-between;padding:7px 12px;border-bottom:1px solid rgba(166,138,86,.1);background:rgba(0,0,0,.2)}
+.caption-plat-name{display:flex;align-items:center;gap:7px;font-size:10px;font-weight:700;color:var(--gold-l)}
+.caption-plat-dot{width:18px;height:18px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0}
+.caption-body{padding:10px 12px;font-size:11px;line-height:1.8;color:rgba(216,200,168,.9);white-space:pre-wrap;word-break:break-word;max-height:180px;overflow-y:auto;outline:none;transition:background .15s;border-radius:0 0 8px 8px}
+.caption-body[contenteditable]:hover{background:rgba(255,255,255,.04)}
+.caption-body[contenteditable]:focus{background:rgba(255,255,255,.07);box-shadow:inset 0 0 0 1px rgba(166,138,86,.35)}
+.copy-btn{background:rgba(166,138,86,.2);border:1px solid rgba(166,138,86,.35);border-radius:6px;padding:4px 12px;font-size:10px;font-weight:700;color:var(--gold-l);cursor:pointer;font-family:inherit;transition:all .15s}
+.copy-btn:hover{background:rgba(166,138,86,.4)}
+.copy-btn.copied{background:rgba(74,222,128,.2);border-color:rgba(74,222,128,.4);color:#4ade80}
+
+/* Thread output */
+.thread-output{width:100%;max-width:560px;display:flex;flex-direction:column;gap:12px}
+.thread-card{background:rgba(255,255,255,.06);border:1px solid rgba(166,138,86,.2);border-radius:14px;overflow:hidden}
+.thread-card-head{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid rgba(166,138,86,.12);background:rgba(0,0,0,.25)}
+.thread-card-title{font-size:11px;font-weight:700;color:var(--gold-l)}
+.thread-card-body{padding:12px 14px;font-size:13px;line-height:1.8;color:rgba(216,200,168,.95);white-space:pre-wrap;word-break:break-word}
+
+/* Spinner */
+.spinner-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:80px 40px;color:rgba(200,176,122,.5);font-size:13px;width:100%}
+.spinner{width:40px;height:40px;border:3px solid rgba(166,138,86,.2);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Empty */
+.empty-preview{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:80px 40px;color:rgba(200,176,122,.4);font-size:13px;width:100%;text-align:center}
+.empty-icon{font-size:52px;opacity:.25;animation:pulse-e 3s ease-in-out infinite}
+@keyframes pulse-e{0%,100%{opacity:.2;transform:scale(1)}50%{opacity:.35;transform:scale(1.06)}}
+
+/* Topic hint */
+.topic-hint{display:none;align-items:center;gap:5px;font-size:10px;padding:4px 9px;border-radius:6px;line-height:1.4}
+.topic-hint.show{display:flex}
+.topic-hint.news{background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);color:rgba(220,160,20,.95)}
+.topic-hint.ranking{background:rgba(99,179,237,.1);border:1px solid rgba(99,179,237,.3);color:rgba(60,140,200,.95)}
+.topic-hint.school{background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.3);color:rgba(20,160,80,.95)}
+.topic-hint.deadline{background:rgba(251,146,60,.1);border:1px solid rgba(251,146,60,.3);color:rgba(200,100,20,.95)}
+.topic-hint.generic{background:rgba(166,138,86,.1);border:1px solid rgba(166,138,86,.3);color:var(--khaki)}
+
+/* Card templates */
+.gs-card-s{width:1080px;height:1350px;position:relative;overflow:hidden;font-family:'Noto Sans TC','Microsoft JhengHei',sans-serif}
+.gs-card-s .bg,.gs-card-l .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.gs-card-s .content{position:absolute;inset:0;padding:80px 90px;display:flex;flex-direction:column}
+.gs-card-l{width:800px;height:600px;position:relative;overflow:hidden;font-family:'Noto Sans TC','Microsoft JhengHei',sans-serif}
+.gs-card-l .content{position:absolute;inset:0;padding:50px 60px;display:flex;flex-direction:column}
+
+/* Status bar */
+.status-bar{background:var(--brand);color:rgba(255,255,255,.8);padding:5px 20px;font-size:11px;display:flex;gap:16px;align-items:center}
+.sdot{width:6px;height:6px;border-radius:50%;background:#4ade80;display:inline-block}
+*:focus-visible{outline:2px solid var(--green);outline-offset:2px;border-radius:3px}
+</style>
+</head>
+<body>
+<div id="gs-toast"></div>
+<div class="app">
+
+<!-- SIDEBAR -->
+<div class="sidebar" role="navigation" aria-label="平台設定">
+  <div class="sidebar-header">
+    <div class="sidebar-brand">GOSTUDY · Design Tool</div>
+    <h1 class="sidebar-title">行銷圖卡生成工具</h1>
+    <div class="sidebar-subtitle">AI 一鍵生成 v3.0</div>
+  </div>
+
+  <div class="sidebar-section-label">選擇平台</div>
+
+  <button class="plat-btn active" id="btn-ad" onclick="setPlatform('ad')">
+    <div class="plat-icon">📢</div>
+    <div class="plat-info"><span class="plat-label">廣告圖卡</span><span class="plat-size">1080×1350 · 單張</span></div>
+  </button>
+  <button class="plat-btn" id="btn-ig" onclick="setPlatform('ig')">
+    <div class="plat-icon">📷</div>
+    <div class="plat-info"><span class="plat-label">IG 社群</span><span class="plat-size">1080×1350 · 多頁</span></div>
+  </button>
+  <button class="plat-btn" id="btn-fb" onclick="setPlatform('fb')">
+    <div class="plat-icon">📘</div>
+    <div class="plat-info"><span class="plat-label">FB 社群</span><span class="plat-size">1080×1350 · 多頁</span></div>
+  </button>
+  <button class="plat-btn" id="btn-blog" onclick="setPlatform('blog')">
+    <div class="plat-icon">📰</div>
+    <div class="plat-info"><span class="plat-label">部落格</span><span class="plat-size">800×600 · 圖＋文</span></div>
+  </button>
+  <button class="plat-btn" id="btn-thread" onclick="setPlatform('thread')">
+    <div class="plat-icon">💬</div>
+    <div class="plat-info"><span class="plat-label">Thread</span><span class="plat-size">純文案</span></div>
+  </button>
+
+  <div class="sidebar-divider"></div>
+
+  <button onclick="toggleGemini()" aria-expanded="false" aria-controls="gemini-section" style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:10px 22px;background:none;border:none;cursor:pointer;font-family:inherit">
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:10px;font-weight:700;color:rgba(166,138,86,.55);letter-spacing:2px;text-transform:uppercase">✦ Gemini AI 生成</span>
+      <span id="gemini-dot" style="width:7px;height:7px;border-radius:50%;background:rgba(74,222,128,.2);display:inline-block;transition:all .3s"></span>
+    </div>
+    <span id="gemini-arrow" style="color:rgba(166,138,86,.35);font-size:12px">▶</span>
+  </button>
+  <div id="gemini-section" style="display:none">
+    <div class="api-section" style="padding-top:0">
+      <div style="font-size:10px;color:rgba(200,176,122,.4);margin-bottom:8px;line-height:1.7">免費！前往 <span style="color:var(--gold)">aistudio.google.com</span><br>登入 Google → Get API Key → 貼上</div>
+      <div class="api-row">
+        <input class="api-input" type="password" id="gemini-key" placeholder="AIzaSy...">
+        <button class="api-save-btn" onclick="saveGeminiKey()">儲存</button>
+      </div>
+      <div class="api-status none" id="gemini-status">尚未設定 · 使用關鍵字模板</div>
+    </div>
+  </div>
+
+  <div class="sidebar-divider"></div>
+  <div style="padding:8px 22px 16px;font-size:10px;color:rgba(200,176,122,.35);line-height:1.7">圖片：Unsplash CC0 · 免費商用<br>匯出：PNG 全尺寸直接上傳社群</div>
+</div>
+
+<!-- MAIN -->
+<div class="main" role="main">
+  <div class="toolbar">
+    <span class="toolbar-title" id="toolbar-title">Instagram · 廣告圖卡</span>
+    <span class="toolbar-badge" id="toolbar-size">1080 × 1350px</span>
+    <button class="btn btn-outline" onclick="resetAll()">重置</button>
+    <button class="btn btn-gold" id="dl-btn" onclick="downloadAll()" style="display:none">↓ 下載</button>
+  </div>
+
+  <div class="workspace">
+    <!-- Input -->
+    <div class="input-col">
+      <div class="input-header"><div class="input-header-title">AI 一鍵生成</div></div>
+      <div class="input-scroll">
+
+        <!-- Step 1: Image -->
+        <div class="field" id="img-field">
+          <label class="field-label"><span class="step-badge">1</span>背景圖片</label>
+          <div class="upload-zone" id="upload-zone">
+            <label class="upload-zone-label" for="img-upload">
+              <span style="font-size:22px">🖼️</span>
+              <span style="font-size:12px;font-weight:700;color:var(--brand)">點擊上傳圖片</span>
+              <span style="font-size:10px;color:var(--muted)">最多 10 張 · JPG / PNG / WebP</span>
+              <input type="file" id="img-upload" accept="image/*" multiple>
+            </label>
+          </div>
+          <div id="upload-area" style="display:none">
+            <div class="upload-thumbs" id="upload-thumbs"></div>
+          </div>
+          <div class="scene-divider">
+            <div class="scene-divider-line"></div>
+            <div class="scene-divider-text">或使用場景圖</div>
+            <div class="scene-divider-line"></div>
+          </div>
+          <div class="scene-flat-grid" id="scene-flat-grid"></div>
+          <div class="scene-cycle-row" id="scene-cycle-row" style="display:none">
+            <span class="scene-cycle-info" id="scene-cycle-info">第 1 張 / 共 10 張</span>
+            <button class="scene-cycle-btn" onclick="cycleScenePhoto()">換一張 ↻</button>
+          </div>
+        </div>
+
+        <!-- Step 1b: Brand assets (logo / subject / label) -->
+        <div class="field" id="asset-field">
+          <label class="field-label"><span class="step-badge">1b</span>品牌素材</label>
+          <div class="asset-strip">
+            <div class="asset-col">
+              <div class="mini-lbl">公司 Logo <span class="opt">(選填)</span></div>
+              <label class="mini-zone" id="logo-zone" title="點擊上傳 Logo">
+                <img id="logo-prev" style="display:none;width:100%;height:100%;object-fit:contain">
+                <span id="logo-ph" style="font-size:18px">🏢</span>
+                <span id="logo-ph2">Logo</span>
+                <input type="file" id="logo-upload" accept="image/*">
+              </label>
+              <button class="mini-clear" id="logo-clear-btn" onclick="clearLogo()" style="display:none">✕ 清除</button>
+            </div>
+            <div class="asset-col">
+              <div class="mini-lbl">人像素材 <span class="opt">(去背PNG)</span></div>
+              <label class="mini-zone" id="subject-zone" title="點擊上傳去背人像">
+                <img id="subject-prev" style="display:none;width:100%;height:100%;object-fit:contain">
+                <span id="subject-ph" style="font-size:18px">👤</span>
+                <span id="subject-ph2">素材</span>
+                <input type="file" id="subject-upload" accept="image/*">
+              </label>
+              <button class="mini-clear" id="subject-clear-btn" onclick="clearSubject()" style="display:none">✕ 清除</button>
+            </div>
+            <div class="asset-col" style="flex:1">
+              <div class="mini-lbl">Breaking News 標籤</div>
+              <input type="text" class="inp-sm" id="inp-breaking" value="Breaking News！" placeholder="留空則不顯示" oninput="onBreakingInput(this.value)" style="margin-top:6px">
+              <div id="subject-side-row" style="display:none;margin-top:8px;flex-direction:row;align-items:center;gap:6px">
+                <span class="mini-lbl" style="white-space:nowrap">人像位置</span>
+                <button class="side-btn" id="side-left-btn" onclick="setSubjectSide('left')">靠左</button>
+                <button class="side-btn active" id="side-right-btn" onclick="setSubjectSide('right')">靠右</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: Topic -->
+        <div class="field">
+          <label class="field-label" for="inp-topic"><span class="step-badge">2</span>議題 / 關鍵字 *</label>
+          <textarea id="inp-topic" rows="3" placeholder="例：2025 QS 排名 · 英國大學&#10;例：英國留學 5 大優勢&#10;例：申請英國頂大的準備時程"></textarea>
+          <div id="topic-hint" class="topic-hint"></div>
+          <div class="field-hint">AI 自動生成標題、文案、Hashtag</div>
+        </div>
+
+      </div>
+      <div class="gen-btn-wrap">
+        <div class="ai-toggle-row" id="ai-toggle-row" style="display:none">
+          <span class="ai-toggle-label" id="ai-toggle-label">✦ Gemini AI 生成</span>
+          <label class="toggle-sw">
+            <input type="checkbox" id="use-gemini-toggle" checked onchange="updateGenHint()">
+            <span class="toggle-track"></span>
+          </label>
+        </div>
+        <button class="gen-main-btn" id="gen-btn" onclick="generate()">▶ 生成內容</button>
+        <div style="text-align:center;margin-top:8px;font-size:10px;color:var(--muted)"><span id="gen-hint">輸入議題後一鍵生成 · 無需 API Key</span></div>
+      </div>
+    </div>
+
+    <!-- Preview -->
+    <div class="preview-col">
+      <div class="preview-header">
+        <div class="preview-info" id="preview-info" aria-live="polite">選擇平台，填寫資訊後點擊生成</div>
+        <button id="canva-btn" onclick="copyCanvaPrompt()" style="display:none;align-items:center;gap:5px;padding:5px 11px;background:rgba(100,210,255,.1);border:1px solid rgba(100,210,255,.25);border-radius:8px;color:rgba(100,210,255,.85);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">📋 複製 Canva Prompt</button>
+      </div>
+      <div class="preview-area" id="preview-area">
+        <div class="empty-preview">
+          <div class="empty-icon">✦</div>
+          <div style="font-size:14px;font-weight:600;color:rgba(200,176,122,.55)">選好平台就開始吧</div>
+          <div style="display:flex;flex-direction:column;gap:6px;margin-top:4px">
+            <div style="font-size:11px;color:rgba(200,176,122,.38)">① 上傳圖片 或 選擇場景</div>
+            <div style="font-size:11px;color:rgba(200,176,122,.38)">② 輸入議題或關鍵字</div>
+            <div style="font-size:11px;color:rgba(200,176,122,.38)">▶ 點擊「生成內容」</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="status-bar">
+    <span class="sdot"></span>
+    <span>GOSTUDY · 行銷圖卡生成工具 v3.0</span>
+    <span style="margin-left:auto;opacity:.5">圖片：Unsplash CC0 · AI：Gemini Flash（免費）· 匯出：PNG 全尺寸</span>
+  </div>
+</div>
+</div>
+
+<script>
+// ── State ─────────────────────────────────────────────────────────────────────
+let platform     = 'ad';
+const colorDark = '#0e6b59', colorMid = '#16a085', colorAccent = '#c8b89a';
+let generated    = null;
+let currentScene = 'oxford';
+let scenePhotoIdx = 0;
+let uploadedImages = [];   // [{url, name}]
+let selectedImgUrl = null; // null → use scene
+let logoUrl        = null; // uploaded company logo
+let subjectUrl     = null; // uploaded person/subject PNG
+let subjectSide    = 'right';
+let breakingNewsText = 'Breaking News！';
+let hookYellowLine   = 2; // which hook line (1/2/3) renders in yellow
+
+// ── Image URL map ─────────────────────────────────────────────────────────────
+const Q = '?auto=format&fit=crop&w=1080&q=80';
+const u = id => `https://images.unsplash.com/photo-${id}${Q}`;
+const SCENE_IMGS = {
+  oxford:        [u('1580537659466-0a9bfa916a54'),u('1548504769-900b70ed122e'),u('1571771894821-ce9b6c11b08e'),u('1579548122080-c35fd6820ecb'),u('1596496050755-c923e73e42e1'),u('1530289149048-7bb0e0de7c89'),u('1524178232363-1fb2b075b655'),u('1578662996442-48f60103fc96'),u('1504870712357-65ea720d6078'),u('1606659797898-45ea51f1b7fe')],
+  london:        [u('1529655683826-aba9b3e77383'),u('1513635269975-59663e0ac1ad'),u('1486325212027-8081e485255e'),u('1543832923-44667a44c2fe'),u('1533929736458-ca588d08c8be'),u('1520986606214-8b456906c813'),u('1501701073352-b0b36be3a36a'),u('1535184943325-0c0f8f05c9d2'),u('1448889731948-e4ec37b0b76b'),u('1582655299321-c47cd7d7ae06')],
+  europe_city:   [u('1499856871958-5b9627545d1a'),u('1467269204594-9661b134dd2b'),u('1520939817895-060bdaf4fe1b'),u('1515542622106-78bda8ba0e5b'),u('1534430480872-3498386e7856'),u('1516483638261-f4dbaf036963'),u('1491557345352-5929e343eb89'),u('1501446529957-6226b81e75b3'),u('1543349689-9a4d426bee8e'),u('1472214631813-9b8b0f21e657')],
+  europe_campus: [u('1589820296156-2454bb8a6ad1'),u('1568605117036-5fe5e7bab0b7'),u('1592280771190-3e2e4d571952'),u('1509443885826-2672e6f3e506'),u('1571771894821-ce9b6c11b08e'),u('1580537659466-0a9bfa916a54'),u('1524178232363-1fb2b075b655'),u('1578662996442-48f60103fc96'),u('1596496050755-c923e73e42e1'),u('1530289149048-7bb0e0de7c89')],
+  usa_campus:    [u('1541339907198-e08756dedf3f'),u('1607237138185-eedd9c632b0b'),u('1498243691581-b145c3f54a5a'),u('1580582932707-520aed937b7b'),u('1519452575417-564c1401ecc0'),u('1509062522246-3755977927d7'),u('1562774053-701939374585'),u('1523050854058-8df90110c9f1'),u('1570654639102-bdd95efeca7a'),u('1534361960057-19f4434a337d')],
+  australia:     [u('1523482580672-f109ba8cb9be'),u('1506973035872-a4ec16b8e8d9'),u('1524395451492-28e08dd80059'),u('1546268060-2592ff93ee24'),u('1535093787892-5dc1908006a6'),u('1477959858617-67f85cf4f1df'),u('1504552573-9781c6f56a9a'),u('1542010589005-d1eacc3918f2'),u('1589519160732-57fc498494f8'),u('1555696426-f14de6e56f65')],
+  japan:         [u('1540959733332-eab4deabeeaf'),u('1528360983277-13d401cdc186'),u('1493976040374-85c8e12f0c0e'),u('1480796927426-f609979314bd'),u('1503899036084-c55cdd92da26'),u('1478436127897-769e1b3f0f36'),u('1524413840807-0c3cb6fa808d'),u('1534351590666-13e3e96b5702'),u('1545569341-9eb8b30979d9'),u('1504203700686-f21e703e5f1c')],
+  singapore:     [u('1525625293386-3f8f99389edd'),u('1508964942454-1a56651d54ac'),u('1553434081-0524b39d98c9'),u('1565967511849-76a60a516170'),u('1583248369081-4d5a8b7dfde4'),u('1568702846914-96b305d2aaeb'),u('1559628376-f3fe5f782a2e'),u('1587882898026-3ed1ccd29d16'),u('1576502200916-3808e07386a5'),u('1557804506-669a67965ba0')],
+  library:       [u('1481627834876-b7833e8f5570'),u('1507842217343-583bb7270b66'),u('1521587760476-6c12a4b040da'),u('1568667256549-094345857caf'),u('1524995997946-a1c2e315a42f'),u('1497633762265-9d179a990aa6'),u('1543269865-cbf427effbad'),u('1514894780887-121968d00cf4'),u('1547592166-23ac45744acd'),u('1456513080510-7bf3a84b82f8')],
+  graduation:    [u('1627556704290-2b1f5853ff78'),u('1523580494863-6f3031224c94'),u('1576267423445-b2e0074d68a4'),u('1523301343968-6a6ebf63c672'),u('1564636188792-f87fd7d52fd1'),u('1598618589929-b1433d05cfc6'),u('1605711285791-0219e80e43a3'),u('1541339907198-e08756dedf3f'),u('1580582932707-520aed937b7b'),u('1562774053-701939374585')],
+  nature:        [u('1441974231531-c6227db76b6e'),u('1506905925346-21bda4d32df4'),u('1501854140801-50d01698950b'),u('1448375240586-882707db888b'),u('1490730141103-6cac27aaab94'),u('1470770903676-69b98201ea1c'),u('1542401886-65d6c61db217'),u('1516912481808-3406841bd33c'),u('1518173946687-a4c8892bbd9f'),u('1475483768296-3be699a88dbf')],
+  modern_office: [u('1497366216548-37526070297c'),u('1497366811353-6870744d04b2'),u('1497366754035-f200968a6e72'),u('1531973576160-7125cd663d86'),u('1504384308090-c894fdcc538d'),u('1600508773759-7f0c8ca7bdc0'),u('1553877522-43269d4ea984'),u('1568992688065-536aad8a12f6'),u('1524758631624-e2822e304c36'),u('1497215842788-be93449be57c')],
+};
+
+const FLAT_SCENES = [
+  {key:'oxford',label:'牛津劍橋'},{key:'london',label:'倫敦地標'},
+  {key:'europe_city',label:'歐洲城市'},{key:'europe_campus',label:'歐洲校園'},
+  {key:'usa_campus',label:'美國校園'},{key:'australia',label:'澳洲'},
+  {key:'japan',label:'日本'},{key:'singapore',label:'新加坡'},
+  {key:'library',label:'圖書館'},{key:'graduation',label:'畢業典禮'},
+  {key:'nature',label:'自然風景'},{key:'modern_office',label:'現代辦公'},
+];
+
+// ── Platform ──────────────────────────────────────────────────────────────────
+const PLAT = {
+  ad:     {label:'廣告圖卡 · 單張',    size:'1080 × 1350px',       cardW:1080,cardH:1350,dispW:270,dispH:337.5},
+  ig:     {label:'IG 社群 · 多頁',     size:'1080 × 1350px · 5頁', cardW:1080,cardH:1350,dispW:200,dispH:250},
+  fb:     {label:'FB 社群 · 多頁',     size:'1080 × 1350px · 5頁', cardW:1080,cardH:1350,dispW:200,dispH:250},
+  blog:   {label:'部落格 · 封面圖',    size:'800 × 600px',          cardW:800, cardH:600, dispW:480,dispH:360},
+  thread: {label:'Thread · 純文案',   size:'文字',                  cardW:0,   cardH:0,   dispW:0,  dispH:0},
+};
+
+function setPlatform(p) {
+  platform = p;
+  ['ad','ig','fb','blog','thread'].forEach(x => document.getElementById('btn-'+x)?.classList.toggle('active', x===p));
+  const cfg = PLAT[p];
+  document.getElementById('toolbar-title').textContent = cfg.label;
+  document.getElementById('toolbar-size').textContent  = cfg.size;
+  const noImg = p==='thread';
+  document.getElementById('img-field').style.display    = noImg ? 'none' : '';
+  document.getElementById('asset-field').style.display  = (noImg||p==='blog') ? 'none' : '';
+  clearPreview();
+}
+
+// ── Logo / Subject upload ─────────────────────────────────────────────────────
+document.getElementById('logo-upload').addEventListener('change', function(e) {
+  const f=e.target.files[0]; this.value=''; if(!f) return;
+  if(logoUrl) URL.revokeObjectURL(logoUrl);
+  logoUrl=URL.createObjectURL(f);
+  const prev=document.getElementById('logo-prev');
+  prev.src=logoUrl; prev.style.display='block';
+  document.getElementById('logo-ph').style.display='none';
+  document.getElementById('logo-ph2').style.display='none';
+  document.getElementById('logo-zone').classList.add('has-img');
+  document.getElementById('logo-clear-btn').style.display='';
+  if(generated) renderOutput(generated);
+});
+
+function clearLogo() {
+  if(logoUrl){URL.revokeObjectURL(logoUrl);logoUrl=null;}
+  const prev=document.getElementById('logo-prev'); prev.src=''; prev.style.display='none';
+  document.getElementById('logo-ph').style.display='';
+  document.getElementById('logo-ph2').style.display='';
+  document.getElementById('logo-zone').classList.remove('has-img');
+  document.getElementById('logo-clear-btn').style.display='none';
+  if(generated) renderOutput(generated);
+}
+
+document.getElementById('subject-upload').addEventListener('change', function(e) {
+  const f=e.target.files[0]; this.value=''; if(!f) return;
+  if(subjectUrl) URL.revokeObjectURL(subjectUrl);
+  subjectUrl=URL.createObjectURL(f);
+  const prev=document.getElementById('subject-prev');
+  prev.src=subjectUrl; prev.style.display='block';
+  document.getElementById('subject-ph').style.display='none';
+  document.getElementById('subject-ph2').style.display='none';
+  document.getElementById('subject-zone').classList.add('has-img');
+  document.getElementById('subject-clear-btn').style.display='';
+  document.getElementById('subject-side-row').style.display='flex';
+  if(generated) renderOutput(generated);
+});
+
+function clearSubject() {
+  if(subjectUrl){URL.revokeObjectURL(subjectUrl);subjectUrl=null;}
+  const prev=document.getElementById('subject-prev'); prev.src=''; prev.style.display='none';
+  document.getElementById('subject-ph').style.display='';
+  document.getElementById('subject-ph2').style.display='';
+  document.getElementById('subject-zone').classList.remove('has-img');
+  document.getElementById('subject-clear-btn').style.display='none';
+  document.getElementById('subject-side-row').style.display='none';
+  if(generated) renderOutput(generated);
+}
+
+function setSubjectSide(side) {
+  subjectSide=side;
+  document.getElementById('side-left-btn').classList.toggle('active', side==='left');
+  document.getElementById('side-right-btn').classList.toggle('active', side==='right');
+  if(generated) renderOutput(generated);
+}
+
+function onBreakingInput(val) {
+  breakingNewsText=val;
+  if(generated) renderOutput(generated);
+}
+
+// ── Image upload ──────────────────────────────────────────────────────────────
+document.getElementById('img-upload').addEventListener('change', function(e) {
+  const files = Array.from(e.target.files).slice(0, 10 - uploadedImages.length);
+  files.forEach(f => { if (uploadedImages.length < 10) uploadedImages.push({url: URL.createObjectURL(f), name: f.name}); });
+  this.value = '';
+  renderUploadThumbs();
+  if (files.length > 0 && uploadedImages.length === files.length) selectUploadedImg(0);
+});
+
+function renderUploadThumbs() {
+  const area  = document.getElementById('upload-area');
+  const grid  = document.getElementById('upload-thumbs');
+  const zone  = document.getElementById('upload-zone');
+  grid.innerHTML = '';
+  uploadedImages.forEach((img, i) => {
+    const thumb = document.createElement('div');
+    thumb.className = 'upload-thumb' + (selectedImgUrl===img.url ? ' on' : '');
+    thumb.innerHTML = `<img src="${escH(img.url)}" alt=""><button class="rm-btn" onclick="removeUploadedImg(${i})">✕</button>`;
+    thumb.addEventListener('click', e => { if (!e.target.classList.contains('rm-btn')) selectUploadedImg(i); });
+    grid.appendChild(thumb);
+  });
+  if (uploadedImages.length < 10) {
+    const more = document.createElement('label');
+    more.className = 'upload-more'; more.title = '新增圖片'; more.textContent = '+'; more.htmlFor = 'img-upload';
+    grid.appendChild(more);
+  }
+  const has = uploadedImages.length > 0;
+  area.style.display = has ? '' : 'none';
+  zone.style.display = has ? 'none' : '';
+}
+
+function selectUploadedImg(idx) {
+  selectedImgUrl = uploadedImages[idx]?.url || null;
+  document.querySelectorAll('.upload-thumb').forEach((el,i) => el.classList.toggle('on', i===idx));
+  document.querySelectorAll('.scene-flat-btn').forEach(el => el.classList.remove('on'));
+  document.getElementById('scene-cycle-row').style.display = 'none';
+  if (generated) renderOutput(generated);
+}
+
+function removeUploadedImg(idx) {
+  URL.revokeObjectURL(uploadedImages[idx].url);
+  uploadedImages.splice(idx, 1);
+  if (!uploadedImages.find(i => i.url === selectedImgUrl)) selectedImgUrl = uploadedImages[0]?.url || null;
+  renderUploadThumbs();
+  if (generated) renderOutput(generated);
+}
+
+function getBgImg() {
+  if (selectedImgUrl) return selectedImgUrl;
+  const arr = SCENE_IMGS[currentScene] || SCENE_IMGS.oxford;
+  return arr[scenePhotoIdx % arr.length];
+}
+
+// ── Scene grid ────────────────────────────────────────────────────────────────
+function initSceneGrid() {
+  const grid = document.getElementById('scene-flat-grid');
+  FLAT_SCENES.forEach(({key, label}) => {
+    const btn = document.createElement('button');
+    btn.type='button'; btn.className='scene-flat-btn'+(key===currentScene&&!selectedImgUrl?' on':''); btn.dataset.scene=key;
+    const img = document.createElement('img'); img.src=(SCENE_IMGS[key]||[])[0]||''; img.alt=label; img.loading='lazy';
+    const span = document.createElement('span'); span.textContent=label;
+    btn.appendChild(img); btn.appendChild(span);
+    btn.addEventListener('click', () => {
+      selectedImgUrl = null; currentScene = key; scenePhotoIdx = 0;
+      document.querySelectorAll('.scene-flat-btn').forEach(el => el.classList.toggle('on', el.dataset.scene===key));
+      document.querySelectorAll('.upload-thumb').forEach(el => el.classList.remove('on'));
+      updateSceneCycleRow();
+      if (generated) renderOutput(generated);
+    });
+    grid.appendChild(btn);
+  });
+}
+
+function updateSceneCycleRow() {
+  const row  = document.getElementById('scene-cycle-row');
+  const info = document.getElementById('scene-cycle-info');
+  const total = (SCENE_IMGS[currentScene]||[]).length;
+  row.style.display = selectedImgUrl ? 'none' : 'flex';
+  info.textContent  = `第 ${scenePhotoIdx+1} 張 / 共 ${total} 張`;
+}
+
+function cycleScenePhoto() {
+  const total = (SCENE_IMGS[currentScene]||[]).length;
+  scenePhotoIdx = (scenePhotoIdx + 1) % total;
+  updateSceneCycleRow();
+  if (generated) renderOutput(generated);
+}
+
+// ── Topic hint ────────────────────────────────────────────────────────────────
+function updateTopicHint(raw) {
+  const hint = document.getElementById('topic-hint');
+  if (!hint || !raw) { if(hint) hint.className='topic-hint'; return; }
+  const isRanking  = /排名|QS|Times|榜單/.test(raw);
+  const isSchool   = /(LSE|UCL|帝國|Imperial|KCL|Manchester|Edinburgh|Bristol|Warwick|Durham)/.test(raw);
+  const isDeadline = /截止|deadline|申請時程|UCAS/.test(raw);
+  const isNews     = /^時事[_\s]|新聞|熱門|爆紅|celebrity|名人|校友/.test(raw);
+  if      (isNews)     { hint.className='topic-hint show news';     hint.innerHTML='📰 時事模板 &middot; 名人校友切入'; }
+  else if (isRanking)  { hint.className='topic-hint show ranking';  hint.innerHTML='📊 排名模板 &middot; 數據驅動角度'; }
+  else if (isSchool)   { hint.className='topic-hint show school';   hint.innerHTML='🎓 學校模板 &middot; 申請指南角度'; }
+  else if (isDeadline) { hint.className='topic-hint show deadline'; hint.innerHTML='⏰ 時程模板 &middot; 截止倒數角度'; }
+  else                 { hint.className='topic-hint show generic';  hint.innerHTML='✦ 通用模板 &middot; 留學資訊角度'; }
+}
+
+// ── Gemini ────────────────────────────────────────────────────────────────────
+function getGeminiKey() { return localStorage.getItem('gs_gemini_key')||''; }
+
+function toggleGemini() {
+  const sec=document.getElementById('gemini-section'), arrow=document.getElementById('gemini-arrow');
+  const open=sec.style.display==='none';
+  sec.style.display=open?'block':'none'; arrow.textContent=open?'▼':'▶';
+  document.querySelector('[aria-controls="gemini-section"]').setAttribute('aria-expanded',open);
+}
+
+function saveGeminiKey() {
+  const k=document.getElementById('gemini-key').value.trim();
+  if (!k) { alert('請輸入 Gemini API Key'); return; }
+  if (!k.startsWith('AIzaSy')||k.length<35) { alert('格式有誤，請重新確認'); return; }
+  localStorage.setItem('gs_gemini_key',k); showGeminiStatus(true);
+}
+
+function showGeminiStatus(ok) {
+  document.getElementById('gemini-status').textContent = ok?'✓ Key 已儲存 · 使用 Gemini Flash':'尚未設定 · 使用關鍵字模板';
+  document.getElementById('gemini-status').className   = 'api-status '+(ok?'ok':'none');
+  document.getElementById('gemini-dot').style.background = ok?'#4ade80':'rgba(74,222,128,.2)';
+  document.getElementById('ai-toggle-row').style.display = ok?'flex':'none';
+  updateGenHint();
+}
+
+function updateGenHint() {
+  const useAI = !!getGeminiKey() && (document.getElementById('use-gemini-toggle')?.checked??true);
+  document.getElementById('gen-hint').textContent = useAI?'✦ Gemini Flash AI 即時生成':'輸入議題後一鍵生成 · 無需 API Key';
+}
+
+function isGeminiEnabled() { return !!getGeminiKey() && (document.getElementById('use-gemini-toggle')?.checked??true); }
+
+async function geminiRequest(prompt, cfg={}, onWait) {
+  const key=getGeminiKey(); if (!key) throw new Error('未設定 API Key');
+  const url=`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${key}`;
+  const body=JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:.85,responseMimeType:'application/json',...cfg}});
+  for (let attempt=0; attempt<=1; attempt++) {
+    const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body});
+    if (res.ok) {
+      const r=await res.json();
+      const t=r.candidates?.[0]?.content?.parts?.[0]?.text||'{}';
+      return JSON.parse(t.replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'').trim());
+    }
+    const err=await res.json().catch(()=>({}));
+    const msg=err?.error?.message||`HTTP ${res.status}`;
+    if (res.status===429 && /per_minute|per minute|rpm|rate/i.test(msg) && attempt<1) {
+      for (let s=62;s>0;s--) { if(onWait) onWait(`⏳ 速率限制，${s}s 後重試…`); await new Promise(r=>setTimeout(r,1000)); }
+      if(onWait) onWait('↺ 重試中…'); continue;
+    }
+    if (res.status===400) throw new Error('API Key 格式有誤');
+    if (res.status===403) throw new Error('API Key 無效或未啟用');
+    throw new Error(res.status===429?'今日配額用完，明日重置':msg);
+  }
+}
+
+function buildGeminiPrompt(topic, plat) {
+  const isMulti = plat==='ig'||plat==='fb';
+  const desc={ad:'廣告圖卡（單張）',ig:'Instagram 社群多頁圖卡（封面+表格+3內容頁）',fb:'Facebook 社群多頁圖卡（封面+表格+3內容頁）',blog:'官網部落格封面（橫式800×600）',thread:'Threads 純文案'}[plat]||'';
+  const multiExtra = isMulti ? `
+  "tableRows":[{"num":"01","title":"重點標題12字內","brief":"說明6字內"},{"num":"02","title":"...","brief":"..."},{"num":"03","title":"...","brief":"..."}],
+  "contentPages":[{"title":"重點1標題12字內","body":"說明文字60字內，英國留學角度，不溢出"},{"title":"重點2標題","body":"60字內"},{"title":"重點3標題","body":"60字內"}],` : '';
+  return `你是 GoStudy 的台灣社群行銷助理。GoStudy 是專業英國留學顧問。品牌語氣：專業親切、有溫度、繁體中文台灣用語。
+議題：「${topic.replace(/^(時事|新聞)[_：:\s]*/i,'')}」  平台：${desc}
+
+直接回傳 JSON，不加 markdown：
+{
+  "headline":"主標題（15字內，有鉤子或數字）",
+  "subheadline":"副標題（20字內）",
+  "hookLine1":"封面大字第一行（8字內；可白可黃，懸念開場）",
+  "hookLine2":"封面大字第二行（8字內；可白可黃，核心亮點）",
+  "hookLine3":"封面大字第三行（8字內；可白可黃，若不需要給空字串）",
+  "hookYellowLine":2,
+  "keyPoints":["重點1（12字內）","重點2（12字內）","重點3（12字內）"],${multiExtra}
+  "igPost":"IG 貼文（150字內，換行分段，8-10個hashtag）",
+  "fbPost":"Facebook 貼文（200字內，引發互動，結尾問問題）",
+  "threadPost":"Threads（80字內，輕鬆口語，1-2個hashtag）",
+  "blogTitle":"部落格標題（25字內，SEO友善）",
+  "blogIntro":"文章導語（100字內，吸引讀者繼續讀）",
+  "hashtags":"#英國留學 #GoStudy 加4-6個相關標籤"
+}`;
+}
+
+// ── Build local data ──────────────────────────────────────────────────────────
+function buildLocalData() {
+  const raw  = document.getElementById('inp-topic').value.trim();
+  const headline  = raw.split('\n')[0].replace(/^(時事|新聞)[_：:\s]*/i,'').slice(0,20) || raw.slice(0,18);
+  const ref       = headline.slice(0,12);
+  const isRanking = /排名|QS|Times|榜單/.test(raw);
+  const isSchool  = /(LSE|UCL|帝國|Imperial|KCL|Manchester|Edinburgh|Bristol|Warwick|Durham)/.test(raw);
+  const schoolName= raw.match(/LSE|UCL|帝國|Imperial|KCL|Manchester|Edinburgh|Bristol|Warwick|Durham/)?.[0];
+  const isDeadline= /截止|deadline|申請時程|UCAS/.test(raw);
+  const isNews    = /^時事[_\s]|新聞|熱門|爆紅|celebrity|名人|校友/.test(raw);
+
+  let subheadline, keyPoints;
+  if (isRanking) {
+    subheadline=`${ref} 最新結果，對留學生的意義`;
+    keyPoints=[`${ref} 最新分析`,'英國大學全球排名領先','競爭激烈，越早規劃越好','GoStudy 免費分析選校策略'];
+  } else if (isSchool && schoolName) {
+    subheadline=`申請 ${schoolName}，你需要這些準備`;
+    keyPoints=[`${schoolName} 全球頂尖聲望`,'個人陳述是關鍵','競爭激烈早規劃',`GoStudy 專業 ${schoolName} 申請輔導`];
+  } else if (isDeadline) {
+    subheadline=`${ref} — 掌握時程，申請更從容`;
+    keyPoints=['重要時程整理','UCAS 截止日不可錯過','個人陳述提早3個月','GoStudy 協助規劃'];
+  } else if (isNews) {
+    subheadline=`${ref} × 英國留學的啟示`;
+    keyPoints=[`${ref.slice(0,14)} 引爆討論`,'英國大學培育世界人才','英國教育享譽全球','GoStudy 帶你申請夢想科系'];
+  } else {
+    subheadline=`${ref} — 留學生最想知道的事`;
+    keyPoints=[`深入了解「${ref}」`,'英國學位全球認可','越早規劃選擇越多','GoStudy 免費一對一諮詢'];
+  }
+
+  const hashtags  = '#英國留學 #GoStudy #海外升學 #留學申請';
+  const kpLines   = keyPoints.slice(0,3).map((p,i)=>['✅','📌','💡'][i]+' '+p).join('\n');
+  const igPost    = `${headline}\n\n${subheadline}\n\n${kpLines}\n\nGoStudy 免費一對一諮詢，幫你規劃最適合的英國申請路線！\n\n📩 點 bio 連結立即預約\n\n${hashtags}`;
+  const fbPost    = `【${headline}】\n\n${subheadline}\n\n${kpLines}\n\nGoStudy 提供完全免費的留學諮詢，歡迎私訊或點連結預約！\n\n${hashtags}\n\n你對「${ref.slice(0,8)}」有什麼問題？歡迎留言！`;
+  const threadPost= `${headline} 💡\n\n${subheadline}\n\nGoStudy 免費諮詢等你 ✨ #英國留學 #GoStudy`;
+  const blogTitle = `${headline}：留學生必知重點整理`;
+  const blogIntro = `想了解${ref}的最新資訊？本文整理關鍵重點，幫助你申請英國大學前做好準備。GoStudy 提供從選校到申請的一站式服務，已協助數百位台灣學生成功錄取英國頂尖大學。`;
+
+  // ── 封面大字 (hook lines) ──────────────────────────────────────
+  let hookLine1, hookLine2, hookLine3='';
+  if (isRanking) {
+    hookLine1='這些英國大學'; hookLine2='通通進世界百大';
+  } else if (isSchool && schoolName) {
+    hookLine1=`申請 ${schoolName}`; hookLine2='你需要這些準備';
+  } else if (isDeadline) {
+    hookLine1='申請時程確認了嗎'; hookLine2='現在就要開始準備';
+  } else if (isNews) {
+    hookLine1=ref.slice(0,6)+'之後'; hookLine2='留學計畫要調整';
+  } else {
+    hookLine1='你一定要知道的'; hookLine2=subheadline.slice(0,8)||'留學新資訊';
+  }
+
+  // ── 多頁社群用資料 ──────────────────────────────────────────────
+  const tableBriefs = isRanking
+    ? ['全球排名解析','選校依據更明確','競爭更激烈']
+    : isSchool ? ['頂尖聲望加持','申請難度提升','越早準備越好']
+    : isDeadline ? ['時程更緊湊','截止日不可誤','提前3個月準備']
+    : ['最新動態解析','留學生必知','及早規劃優勢大'];
+  const tableRows = keyPoints.slice(0,3).map((kp,i)=>({num:String(i+1).padStart(2,'0'),title:kp,brief:tableBriefs[i]||''}));
+
+  const bodyPool = [
+    `掌握${ref}的最新動態，是規劃英國留學的第一步。GoStudy 顧問持續追蹤最新政策，確保你的申請策略始終走在前端。`,
+    `英國頂尖大學申請競爭持續加劇，越早開始準備，成功錄取的機率越高。GoStudy 提供量身訂製的申請藍圖，從選校到文書全程陪伴。`,
+    `把握關鍵時機，主動掌握申請資訊，讓自己在眾多申請者中脫穎而出。立即預約 GoStudy 免費諮詢，規劃屬於你的留學路線。`,
+  ];
+  const contentPages = keyPoints.slice(0,3).map((kp,i)=>({title:kp,body:bodyPool[i]||`深入了解「${kp}」，GoStudy 顧問為你解析完整策略。`}));
+
+  return { headline, subheadline, hookLine1, hookLine2, hookLine3, tagline:'GoStudy — 海外名校申請顧問', keyPoints, tableRows, contentPages, cta:'立即預約免費諮詢', hashtags, igPost, fbPost, threadPost, blogTitle, blogIntro };
+}
+
+// ── Generate ──────────────────────────────────────────────────────────────────
+async function generate() {
+  const topic = document.getElementById('inp-topic').value.trim();
+  if (!topic) { alert('請輸入議題 / 關鍵字'); return; }
+  const genBtn=document.getElementById('gen-btn'), infoEl=document.getElementById('preview-info');
+  genBtn.disabled=true;
+
+  let aiData=null;
+  if (isGeminiEnabled()) {
+    genBtn.textContent='AI 生成中…'; infoEl.textContent='✦ Gemini Flash 生成文案中…';
+    try { aiData=await geminiRequest(buildGeminiPrompt(topic,platform),{temperature:.85},msg=>{infoEl.textContent=msg;}); }
+    catch(e) { infoEl.textContent=`⚠ AI 失敗：${(e.message||'').slice(0,50)}`; await new Promise(r=>setTimeout(r,1500)); }
+  }
+
+  genBtn.textContent='渲染中…';
+  const base=buildLocalData();
+  if (aiData) {
+    ['headline','subheadline','igPost','fbPost','threadPost','blogTitle','blogIntro','hashtags'].forEach(k=>{ if(aiData[k]) base[k]=aiData[k]; });
+    if (aiData.keyPoints?.length>=2) base.keyPoints=aiData.keyPoints;
+    if (aiData.hookLine1) base.hookLine1=aiData.hookLine1;
+    if (aiData.hookLine2) base.hookLine2=aiData.hookLine2;
+    if (aiData.hookLine3 !== undefined) base.hookLine3=aiData.hookLine3||'';
+    if (aiData.hookYellowLine && [1,2,3].includes(+aiData.hookYellowLine)) hookYellowLine=+aiData.hookYellowLine;
+    if (aiData.tableRows?.length>=2)  base.tableRows=aiData.tableRows;
+    if (aiData.contentPages?.length>=2) base.contentPages=aiData.contentPages;
+    base._aiGenerated=true;
+  }
+
+  generated=base;
+  renderOutput(generated);
+  updateSceneCycleRow();
+
+  const aiNote=aiData?' · ✦ Gemini AI':(getGeminiKey()?' · 模板(AI失敗)':' · 模板');
+  infoEl.textContent=`✓ 完成${aiNote}`;
+  document.getElementById('dl-btn').style.display    = platform!=='thread'?'inline-flex':'none';
+  document.getElementById('canva-btn').style.display = platform!=='thread'?'inline-flex':'none';
+  genBtn.disabled=false; genBtn.textContent='▶ 生成內容';
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+let currentData = null;
+
+function renderOutput(d) {
+  currentData = Object.assign({}, d, {keyPoints:[...(d.keyPoints||[])], contentPages:[...(d.contentPages||[])], tableRows:[...(d.tableRows||[])]});
+  const area=document.getElementById('preview-area');
+  area.innerHTML='';
+  if (platform==='thread') { renderThreadOutput(d,area); return; }
+  if (platform==='ig'||platform==='fb') { renderMultiPageOutput(d,area); return; }
+  const cfg=PLAT[platform], bg=getBgImg();
+  const html=platform==='blog'?buildLCardHTML(d,bg):buildSCardHTML(d,bg);
+  const lbl=platform==='blog'?'部落格封面':'廣告圖卡';
+  area.appendChild(makeWrap(html,lbl,cfg.cardW,cfg.cardH,cfg.dispW,cfg.dispH));
+  const ep=buildEditPanel(currentData); if(ep) area.appendChild(ep);
+  const panel=buildCaptionPanel(d); if(panel) area.appendChild(panel);
+}
+
+function renderMultiPageOutput(d, area) {
+  const cfg=PLAT[platform], bg=getBgImg();
+  const cp=d.contentPages||[]; const total=2+cp.length;
+  const strip=document.createElement('div'); strip.className='page-strip';
+  strip.appendChild(makeWrap(buildSCardHTML(d,bg),       `封面 1/${total}`,cfg.cardW,cfg.cardH,cfg.dispW,cfg.dispH));
+  strip.appendChild(makeWrap(buildTableCardHTML(d,bg),   `總覽 2/${total}`,cfg.cardW,cfg.cardH,cfg.dispW,cfg.dispH));
+  cp.forEach((page,i)=>strip.appendChild(makeWrap(buildContentCardHTML(d,page,bg,i+3,total),`內容 ${i+3}/${total}`,cfg.cardW,cfg.cardH,cfg.dispW,cfg.dispH)));
+  area.appendChild(strip);
+  const ep=buildEditPanel(currentData); if(ep) area.appendChild(ep);
+  const panel=buildCaptionPanel(d); if(panel) area.appendChild(panel);
+}
+
+// ── Edit Panel ────────────────────────────────────────────────────────────────
+function buildEditPanel(d) {
+  const isBlog = platform==='blog';
+  const isMulti = platform==='ig'||platform==='fb';
+  const coverFields = isBlog
+    ? [{key:'blogTitle',   label:'文章標題', val:d.blogTitle||d.headline||''},
+       {key:'subheadline', label:'副標題',   val:d.subheadline||''},
+       {key:'cta',         label:'CTA 按鈕', val:d.cta||''}]
+    : [{key:'headline',    label:'標題',      val:d.headline||''},
+       {key:'hookLine1',   label:'大字 第1行', val:d.hookLine1||''},
+       {key:'hookLine2',   label:'大字 第2行', val:d.hookLine2||''},
+       {key:'hookLine3',   label:'大字 第3行', val:d.hookLine3||''},
+       ...(isMulti?[
+         {key:'kp0', label:'重點 1', val:d.keyPoints?.[0]||''},
+         {key:'kp1', label:'重點 2', val:d.keyPoints?.[1]||''},
+         {key:'kp2', label:'重點 3', val:d.keyPoints?.[2]||''},
+         {key:'cta', label:'CTA',    val:d.cta||''},
+       ]:[]),
+       {key:'hashtags', label:'Hashtags', val:d.hashtags||''}];
+  const contentFields = isMulti
+    ? (d.contentPages||[]).flatMap((cp,i)=>[
+        {key:`cp${i}-title`, label:`P${i+3} 標題`, val:cp.title||''},
+        {key:`cp${i}-body`,  label:`P${i+3} 內文`, val:cp.body||''},
+      ])
+    : [];
+  const fields = [...coverFields, ...contentFields];
+
+  const wrap=document.createElement('div'); wrap.className='edit-panel';
+  const hdr=document.createElement('div'); hdr.className='edit-panel-hdr';
+  hdr.innerHTML='<span>✏️ 直接編輯文字</span><span class="edit-panel-arrow">▲</span>';
+  const body=document.createElement('div'); body.className='edit-panel-body';
+  let collapsed=false;
+  hdr.onclick=()=>{ collapsed=!collapsed; body.style.display=collapsed?'none':''; hdr.querySelector('.edit-panel-arrow').textContent=collapsed?'▼':'▲'; };
+  wrap.appendChild(hdr); wrap.appendChild(body);
+
+  // Yellow-line selector (only for ad/ig/fb platforms with hook lines)
+  if (!isBlog && platform!=='thread') {
+    const yRow=document.createElement('div'); yRow.className='edit-row'; yRow.style.alignItems='center';
+    const yLbl=document.createElement('label'); yLbl.className='edit-lbl'; yLbl.textContent='黃色第幾行';
+    const yBtns=document.createElement('div'); yBtns.style.cssText='display:flex;gap:5px';
+    [1,2,3].forEach(n=>{
+      const b=document.createElement('button');
+      b.className='side-btn yln-btn'; b.dataset.yln=n; b.textContent=`第${n}行`;
+      b.style.cssText=`padding:5px 11px;font-size:12px;font-weight:700;border-radius:6px;cursor:pointer;font-family:inherit;border:1.5px solid ${n===hookYellowLine?'var(--gold)':'var(--border)'};background:${n===hookYellowLine?'var(--gold)':'transparent'};color:${n===hookYellowLine?'#1a1410':'var(--muted)'}`;
+      b.onclick=()=>setHookYellow(n);
+      yBtns.appendChild(b);
+    });
+    yRow.appendChild(yLbl); yRow.appendChild(yBtns); body.appendChild(yRow);
+  }
+
+  fields.forEach(({key,label,val})=>{
+    const row=document.createElement('div'); row.className='edit-row';
+    const lbl=document.createElement('label'); lbl.className='edit-lbl'; lbl.textContent=label;
+    const inp=document.createElement('input'); inp.type='text'; inp.className='edit-inp'; inp.value=val;
+    inp.oninput=()=>liveUpdateCard(key,inp.value);
+    row.appendChild(lbl); row.appendChild(inp); body.appendChild(row);
+  });
+  return wrap;
+}
+
+function setHookYellow(n) {
+  hookYellowLine = n;
+  // Update selector button styles
+  document.querySelectorAll('.yln-btn').forEach(b=>{
+    const active = +b.dataset.yln === n;
+    b.style.background    = active ? 'var(--gold)' : 'transparent';
+    b.style.color         = active ? '#1a1410' : 'var(--muted)';
+    b.style.borderColor   = active ? 'var(--gold)' : 'var(--border)';
+  });
+  // Live-update hook line colors in preview
+  document.querySelectorAll('.card-preview-shell > div').forEach(card=>{
+    [1,2,3].forEach(i=>{
+      const el=card.querySelector(`[data-field="hookLine${i}"]`);
+      if (el) el.style.color = i===n ? '#FFE132' : '#fff';
+    });
+  });
+}
+
+function liveUpdateCard(field, value) {
+  if (!currentData) return;
+  // Update state
+  if (field.startsWith('kp') && !field.includes('-')) {
+    const idx=parseInt(field[2]);
+    currentData.keyPoints=[...(currentData.keyPoints||[])];
+    currentData.keyPoints[idx]=value;
+  } else if (field.startsWith('cp')) {
+    const [,rest]=field.split('-'); const idx=parseInt(field[2]);
+    currentData.contentPages=[...(currentData.contentPages||[])];
+    currentData.contentPages[idx]={...(currentData.contentPages[idx]||{})};
+    if (rest==='title') currentData.contentPages[idx].title=value;
+    else                currentData.contentPages[idx].body=value;
+  } else { currentData[field]=value; }
+  // Update ALL card shells (multi-page has multiple)
+  document.querySelectorAll('.card-preview-shell > div').forEach(card=>{
+    if (field==='hashtags') {
+      const container=card.querySelector('[data-field-container="hashtags"]');
+      if (container) container.innerHTML=value.split(/\s+/).filter(Boolean).slice(0,4)
+        .map(h=>`<span style="display:inline-block;background:rgba(166,138,86,.15);border:1px solid rgba(166,138,86,.55);border-radius:40px;padding:8px 28px;font-size:24px;color:#C9B07A;margin:0 6px 0 0">${escH(h)}</span>`).join('');
+      const plain=card.querySelector('[data-field="hashtags"]');
+      if (plain) plain.textContent=value.split(/\s+/).filter(Boolean).slice(0,3).join('  ');
+    } else {
+      const el=card.querySelector(`[data-field="${field}"]`);
+      if (el) {
+        el.textContent=value;
+      } else if (['hookLine1','hookLine2','hookLine3'].includes(field) && value.trim()) {
+        // Line was empty (not rendered) but now has content → full re-render
+        renderOutput(currentData);
+      }
+    }
+  });
+}
+
+function renderThreadOutput(d, area) {
+  const wrap=document.createElement('div'); wrap.className='thread-output';
+  const ttl=document.createElement('div');
+  ttl.style.cssText='font-size:10px;font-weight:700;color:rgba(200,176,122,.7);letter-spacing:2px;text-transform:uppercase;padding:4px 0 10px';
+  ttl.textContent='✦ Threads 文案'; wrap.appendChild(ttl);
+  [{label:'💬 Thread 主文',text:d.threadPost||''},{label:'# Hashtags',text:d.hashtags||''}]
+    .filter(p=>p.text.trim()).forEach(({label,text})=>{
+      const card=document.createElement('div'); card.className='thread-card';
+      card.innerHTML=`<div class="thread-card-head"><span class="thread-card-title">${escH(label)}</span><button class="copy-btn" onclick="copyText(${JSON.stringify(text)},this)">複製</button></div><div class="thread-card-body">${escH(text)}</div>`;
+      wrap.appendChild(card);
+    });
+  area.appendChild(wrap);
+}
+
+function buildCaptionPanel(d) {
+  const map={
+    ig:  [{plat:'📷 Instagram',bg:'linear-gradient(135deg,#f09433,#dc2743)',text:d.igPost||''},{plat:'# Hashtags',bg:'rgba(166,138,86,.5)',text:d.hashtags||''}],
+    fb:  [{plat:'f  Facebook',bg:'#1877f2',text:d.fbPost||''},{plat:'# Hashtags',bg:'rgba(166,138,86,.5)',text:d.hashtags||''}],
+    blog:[{plat:'📰 文章標題',bg:'var(--green)',text:d.blogTitle||''},{plat:'✍️ 導語',bg:'var(--brand)',text:d.blogIntro||''},{plat:'# Hashtags',bg:'rgba(166,138,86,.5)',text:d.hashtags||''}]};
+  const sections=(map[platform]||[]).filter(s=>s.text.trim());
+  if (!sections.length) return null;
+  const wrap=document.createElement('div'); wrap.className='gen-captions';
+  const ttl=document.createElement('div'); ttl.className='gen-captions-title'; ttl.textContent='✦ 貼文文案'; wrap.appendChild(ttl);
+  sections.forEach(({plat,bg,text})=>{
+    const block=document.createElement('div'); block.className='caption-block';
+    block.innerHTML=`<div class="caption-block-head"><span class="caption-plat-name"><span class="caption-plat-dot" style="background:${bg}"></span>${escH(plat)}</span><button class="copy-btn" onclick="copyText(this.closest('.caption-block').querySelector('.caption-body').innerText,this)">複製</button></div><div class="caption-body" contenteditable="true" spellcheck="false">${escH(text)}</div>`;
+    wrap.appendChild(block);
+  });
+  return wrap;
+}
+
+// ── Card HTML ─────────────────────────────────────────────────────────────────
+// Shared logo helper
+function buildLogoEl(h=44) {
+  return logoUrl
+    ? `<img src="${logoUrl}" alt="Logo" style="height:${h}px;max-width:${h*4}px;object-fit:contain;filter:drop-shadow(0 2px 8px rgba(0,0,0,.7))">`
+    : `<span style="font-size:${Math.round(h*.58)}px;font-weight:900;color:#fff;letter-spacing:.2em;text-shadow:0 2px 8px rgba(0,0,0,.8)">GOSTUDY</span>`;
+}
+
+function buildSCardHTML(d, imgUrl) {
+  const fc = colorAccent;
+  const sd = subjectSide;
+  const hasSub = !!subjectUrl;
+
+  // ── Gradient: ~5% overall shadow, no heavy side darken ──
+  const gradCSS = hasSub
+    ? (sd==='right'
+        ? `linear-gradient(90deg,rgba(0,0,0,.05) 0%,rgba(0,0,0,.06) 50%,rgba(0,0,0,0) 100%)`
+        : `linear-gradient(270deg,rgba(0,0,0,.05) 0%,rgba(0,0,0,.06) 50%,rgba(0,0,0,0) 100%)`)
+    : `rgba(0,0,0,.05)`;
+
+  // ── Subject image ──
+  const subEl = hasSub
+    ? `<img src="${subjectUrl}" alt="" style="position:absolute;bottom:0;${sd}:-8px;height:84%;max-height:1100px;object-fit:contain;z-index:3;pointer-events:none">`
+    : '';
+
+  // ── Breaking News badge: white text, transparent bg, white border ──
+  const bn = (breakingNewsText||'').trim();
+  const bnEl = bn
+    ? `<div style="border:2px solid rgba(255,255,255,.9);border-radius:6px;padding:7px 18px;font-size:22px;font-weight:800;color:#fff;white-space:nowrap;display:inline-flex;align-items:center;gap:8px"><span style="background:#FF3B30;color:#fff;border-radius:3px;padding:2px 8px;font-size:15px;font-weight:900">▶</span>${escH(bn)}</div>`
+    : '';
+
+  // ── Font sizes: derive headline FROM hook size so ratio stays ~1.7:1 ──
+  const h1 = d.hookLine1||'', h2 = d.hookLine2||'', h3 = d.hookLine3||'';
+  const groupW   = hasSub ? 550 : 920;
+  const maxHLen  = Math.max(...[h1,h2,h3].filter(Boolean).map(t=>t.replace(/\s+/g,'').length), 3);
+  const hookFS   = Math.max(56, Math.min(108, Math.floor(groupW / Math.max(Math.ceil(maxHLen/1.8), 3))));
+  const hlLen    = (d.headline||'').length;
+  const hlScale  = hlLen <= 12 ? 1.0 : hlLen <= 18 ? 0.85 : hlLen <= 26 ? 0.70 : 0.58;
+  const hlFontSz = Math.max(36, Math.round(hookFS * 0.56 * hlScale));
+
+  // ── Hook lines HTML ──
+  const yLine = hookYellowLine || 2;
+  const hookLinesHtml = [{txt:h1,n:1},{txt:h2,n:2},{txt:h3,n:3}]
+    .filter(({txt})=>txt.trim())
+    .map(({txt,n})=>`<div data-field="hookLine${n}" style="font-size:${hookFS}px;font-weight:900;color:${n===yLine?'#FFE132':'#fff'};line-height:1.05;text-shadow:0 3px 18px rgba(0,0,0,.65);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;max-height:${Math.round(hookFS*2.2)}px">${escH(txt)}</div>`)
+    .join('');
+
+  // ── Single group container: everything together, constrained to text side ──
+  const groupMargin = !hasSub ? 'margin:0 auto'
+    : sd==='left' ? 'margin-left:auto' : '';
+  const hooksTA  = hasSub && sd==='left' ? 'text-align:right' : '';
+  const barAlign = hasSub && sd==='left' ? 'margin-left:auto' : '';
+
+  const htags = (d.hashtags||'').split(/\s+/).filter(Boolean).slice(0,3).join('  ');
+
+  return `<div class="gs-card-s">
+  <img class="bg" src="${imgUrl}" alt="" style="filter:saturate(0.75) brightness(0.9)">
+  <div style="position:absolute;inset:0;background:${gradCSS};z-index:2"></div>
+  ${subEl}
+  <div style="position:absolute;inset:0;padding:58px 68px 50px;display:flex;flex-direction:column;z-index:6">
+
+    <!-- Spacer above: flex:1 → group sits at ~40% from top -->
+    <div style="flex:1"></div>
+
+    <!-- ALL TEXT in one grouped block, clustered upper-center -->
+    <div style="display:flex;flex-direction:column;max-width:${groupW}px;${groupMargin}">
+
+      <!-- ① Logo + BN: right-aligned header -->
+      <div style="display:flex;align-items:center;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-bottom:14px">
+        ${buildLogoEl(44)}
+        ${bnEl}
+      </div>
+
+      <!-- ② Headline: white outline box, right-aligned text, auto-sized -->
+      <div data-field="headline" style="border:2px solid rgba(255,255,255,.78);border-radius:6px;padding:14px 24px;font-size:${hlFontSz}px;font-weight:900;color:#fff;line-height:1.28;text-shadow:0 2px 8px rgba(0,0,0,.22);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;text-align:right;margin-bottom:22px">${escH(d.headline||'')}</div>
+
+      <!-- ③ Gold accent bar -->
+      <div style="width:68px;height:4px;background:${fc};border-radius:2px;margin-bottom:20px;${barAlign}"></div>
+
+      <!-- ④ Hook lines: large text, aligned to text side -->
+      <div style="${hooksTA};margin-bottom:14px">
+        ${hookLinesHtml}
+      </div>
+
+      <!-- ⑤ Hashtags -->
+      <div data-field="hashtags" style="font-size:20px;color:rgba(255,255,255,.46);letter-spacing:.04em;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${escH(htags)}</div>
+    </div>
+
+    <!-- Spacer below: flex:1.5 → group center ≈ 40% from card top -->
+    <div style="flex:1.5"></div>
+
+  </div></div>`;
+}
+
+function buildLCardHTML(d, imgUrl) {
+  const fc=colorAccent;
+  return `<div class="gs-card-l"><img class="bg" src="${imgUrl}" alt="">
+  <div style="position:absolute;inset:0;background:linear-gradient(108deg,rgba(5,16,11,.9) 0%,rgba(6,18,12,.74) 42%,rgba(5,14,10,.32) 100%)"></div>
+  <div style="position:absolute;inset:0;border:12px solid ${fc};pointer-events:none;z-index:10"></div>
+  <div style="position:absolute;inset:24px;border:1.5px solid rgba(166,138,86,.32);border-radius:2px;pointer-events:none;z-index:10"></div>
+  <div class="content" style="justify-content:center;max-width:490px">
+    <div style="display:inline-flex;align-items:center;gap:8px;background:${colorMid};border-radius:6px;padding:6px 16px;font-size:13px;font-weight:800;color:#fff;width:fit-content;margin-bottom:18px">GOSTUDY <span style="opacity:.55">·</span> 留學新知</div>
+    <div data-field="blogTitle" style="font-size:46px;font-weight:900;color:#fff;line-height:1.18;text-shadow:0 3px 20px rgba(0,0,0,.75);margin-bottom:14px;word-break:keep-all">${d.blogTitle||d.headline||''}</div>
+    <div style="width:48px;height:3px;background:${fc};border-radius:2px;margin-bottom:14px"></div>
+    <div data-field="subheadline" style="font-size:19px;color:#C9B07A;line-height:1.65;margin-bottom:22px">${d.subheadline||''}</div>
+    <div style="display:flex;align-items:center;gap:14px">
+      <div data-field="cta" style="background:linear-gradient(135deg,${colorDark},${colorMid});border-radius:8px;padding:9px 24px;font-size:15px;font-weight:800;color:#fff">${d.cta||''}</div>
+      <div style="font-size:13px;color:rgba(200,176,122,.55)">go-study.com.tw</div>
+    </div>
+  </div></div>`;
+}
+
+// ── Multi-page: Table card (P2) ───────────────────────────────────────────────
+function buildTableCardHTML(d, imgUrl) {
+  const fc=colorAccent;
+  const rows=(d.tableRows||d.keyPoints.slice(0,3).map((t,i)=>({num:String(i+1).padStart(2,'0'),title:t,brief:''}))).slice(0,4);
+  const rowsHtml=rows.map(({num,title,brief})=>`
+  <div style="display:flex;align-items:center;gap:24px;padding:22px 28px;background:rgba(0,0,0,.52);border-left:6px solid ${fc};border-radius:0 14px 14px 0;overflow:hidden">
+    <div style="font-size:44px;font-weight:900;color:${fc};width:64px;text-align:center;flex-shrink:0;line-height:1">${num}</div>
+    <div style="flex:1;overflow:hidden">
+      <div style="font-size:32px;font-weight:700;color:#f0e8d0;line-height:1.3;overflow:hidden;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical">${escH(title)}</div>
+      ${brief?`<div style="font-size:24px;color:#c9b07a;margin-top:6px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical">${escH(brief)}</div>`:''}
+    </div>
+  </div>`).join('');
+  return `<div class="gs-card-s">
+  <img class="bg" src="${imgUrl}" alt="" style="filter:saturate(0.75) brightness(0.82)">
+  <div style="position:absolute;inset:0;background:linear-gradient(175deg,rgba(0,0,0,.6) 0%,rgba(0,0,0,.82) 50%,rgba(0,0,0,.97) 100%);z-index:2"></div>
+  <div class="content" style="z-index:6">
+    <!-- Header: Logo + badge -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      ${buildLogoEl(44)}
+      <div style="font-size:20px;font-weight:700;color:${fc};background:rgba(166,138,86,.14);border:1.5px solid rgba(166,138,86,.4);border-radius:40px;padding:6px 24px">重點總覽</div>
+    </div>
+    <!-- Headline -->
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:16px 0">
+      <div style="font-size:54px;font-weight:900;color:#fff;line-height:1.12;margin-bottom:14px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;text-shadow:0 3px 20px rgba(0,0,0,.8)">${escH(d.headline||'')}</div>
+      <div style="width:72px;height:4px;background:${fc};border-radius:2px;margin-bottom:24px"></div>
+      <div style="display:flex;flex-direction:column;gap:16px">${rowsHtml}</div>
+    </div>
+    <!-- Footer -->
+    <div style="border-top:1px solid rgba(166,138,86,.22);padding-top:16px;display:flex;align-items:center;justify-content:space-between">
+      <div style="font-size:22px;color:rgba(166,138,86,.55)">滑動查看詳細內容 →</div>
+      <div style="font-size:16px;color:rgba(166,138,86,.4)">go-study.com.tw</div>
+    </div>
+  </div></div>`;
+}
+
+// ── Multi-page: Content card (P3–P5) — 3 distinct layout variants ─────────────
+function buildContentCardHTML(d, cp, imgUrl, pageNum, total) {
+  const fc=colorAccent;
+  const cpIdx=pageNum-3; // 0,1,2
+  const numLabel=String(cpIdx+1).padStart(2,'0');
+  const titleHtml=`<div data-field="cp${cpIdx}-title" style="font-size:62px;font-weight:900;color:#fff;line-height:1.12;text-shadow:0 4px 28px rgba(0,0,0,.9);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${escH(cp.title||'')}</div>`;
+  const bodyHtml=`<div data-field="cp${cpIdx}-body" style="font-size:29px;color:#ddd0b0;line-height:1.8;overflow:hidden;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;max-height:270px">${escH(cp.body||'')}</div>`;
+  const ctaBtn=`<div style="display:inline-block;background:linear-gradient(135deg,${colorDark},${colorMid});border-radius:10px;padding:12px 32px;font-size:24px;font-weight:800;color:#fff;overflow:hidden;white-space:nowrap">${escH(d.cta||'立即預約免費諮詢')}</div>`;
+  const frameOuter=``;
+  const frameInner=``;
+
+  // ── Variant 0 (P3): Ghost number watermark · side-gradient · number top-left ──
+  if (cpIdx===0) {
+    return `<div class="gs-card-s">
+  <img class="bg" src="${imgUrl}" alt="" style="filter:saturate(0.75) brightness(0.82)">
+  <div style="position:absolute;inset:0;background:linear-gradient(100deg,rgba(0,0,0,.97) 0%,rgba(0,0,0,.82) 48%,rgba(0,0,0,.42) 100%);z-index:2"></div>
+  <!-- Ghost number watermark -->
+  <div style="position:absolute;right:60px;top:60px;font-size:520px;font-weight:900;color:rgba(166,138,86,.08);line-height:1;pointer-events:none;z-index:3;letter-spacing:-.04em">${numLabel}</div>
+  <div style="${frameOuter}"></div>
+  <div style="${frameInner}"></div>
+  <div class="content" style="z-index:6">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      ${buildLogoEl(44)}
+      <div style="font-size:20px;font-weight:600;color:rgba(166,138,86,.6)">${pageNum} / ${total}</div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:12px 0">
+      <div style="font-size:90px;font-weight:900;color:${fc};line-height:1;margin-bottom:16px">${numLabel}</div>
+      ${titleHtml}
+      <div style="width:72px;height:4px;background:${fc};border-radius:2px;margin:22px 0 22px"></div>
+      ${bodyHtml}
+    </div>
+    <div style="border-top:1px solid rgba(166,138,86,.2);padding-top:16px;display:flex;align-items:center;justify-content:space-between">
+      ${ctaBtn}
+      <div style="font-size:16px;color:rgba(166,138,86,.4)">go-study.com.tw</div>
+    </div>
+  </div></div>`;
+  }
+
+  // ── Variant 1 (P4): Accent title band · top-to-bottom gradient · no number ──
+  if (cpIdx===1) {
+    return `<div class="gs-card-s">
+  <img class="bg" src="${imgUrl}" alt="" style="filter:saturate(0.72) brightness(0.78)">
+  <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.48) 0%,rgba(0,0,0,.75) 38%,rgba(0,0,0,.97) 100%);z-index:2"></div>
+  <div style="${frameOuter}"></div>
+  <div style="${frameInner}"></div>
+  <div class="content" style="z-index:6">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      ${buildLogoEl(44)}
+      <div style="font-size:20px;font-weight:600;color:rgba(166,138,86,.6)">${pageNum} / ${total}</div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:28px">
+      <!-- Full-width accent band behind title -->
+      <div style="background:rgba(166,138,86,.16);border-top:3px solid ${fc};border-bottom:3px solid ${fc};padding:28px 0;margin-bottom:28px">
+        ${titleHtml}
+      </div>
+      ${bodyHtml}
+    </div>
+    <div style="border-top:1px solid rgba(166,138,86,.2);padding-top:16px;display:flex;align-items:center;justify-content:space-between">
+      ${ctaBtn}
+      <div style="font-size:16px;color:rgba(166,138,86,.4)">go-study.com.tw</div>
+    </div>
+  </div></div>`;
+  }
+
+  // ── Variant 2 (P5): Diagonal gradient · quote box · decorative corners ──
+  return `<div class="gs-card-s">
+  <img class="bg" src="${imgUrl}" alt="" style="filter:saturate(0.68) brightness(0.76)">
+  <div style="position:absolute;inset:0;background:linear-gradient(145deg,rgba(0,0,0,.96) 0%,rgba(0,0,0,.7) 50%,rgba(0,0,0,.88) 100%);z-index:2"></div>
+  <!-- Decorative corner marks -->
+  <div style="position:absolute;top:72px;left:72px;width:60px;height:60px;border-top:4px solid ${fc};border-left:4px solid ${fc};pointer-events:none;z-index:7"></div>
+  <div style="position:absolute;bottom:72px;right:72px;width:60px;height:60px;border-bottom:4px solid ${fc};border-right:4px solid ${fc};pointer-events:none;z-index:7"></div>
+  <div style="${frameOuter}"></div>
+  <div style="${frameInner}"></div>
+  <div class="content" style="z-index:6">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      ${buildLogoEl(44)}
+      <div style="font-size:20px;font-weight:600;color:rgba(166,138,86,.6)">${pageNum} / ${total}</div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:12px 0">
+      <!-- Quote-style bordered content box -->
+      <div style="border:2px solid rgba(166,138,86,.45);border-radius:12px;padding:36px 40px;background:rgba(0,0,0,.38);position:relative">
+        <!-- Gold quote mark -->
+        <div style="position:absolute;top:-28px;left:32px;font-size:90px;color:${fc};line-height:1;font-family:Georgia,serif">"</div>
+        ${titleHtml}
+        <div style="width:60px;height:3px;background:${fc};border-radius:2px;margin:20px 0 20px"></div>
+        ${bodyHtml}
+      </div>
+    </div>
+    <div style="border-top:1px solid rgba(166,138,86,.2);padding-top:16px;display:flex;align-items:center;justify-content:space-between">
+      ${ctaBtn}
+      <div style="font-size:16px;color:rgba(166,138,86,.4)">go-study.com.tw</div>
+    </div>
+  </div></div>`;
+}
+
+// ── Wrap + Export ─────────────────────────────────────────────────────────────
+function makeWrap(html, label, nW, nH, dW, dH) {
+  const wrap=document.createElement('div'); wrap.className='card-wrap';
+  const lbl=document.createElement('div'); lbl.className='card-label'; lbl.textContent=label; wrap.appendChild(lbl);
+  const shell=document.createElement('div'); shell.className='card-preview-shell'; shell.style.cssText=`width:${dW}px;height:${dH}px`;
+  const inner=document.createElement('div'); inner.style.cssText=`width:${nW}px;height:${nH}px;transform:scale(${dW/nW});transform-origin:top left`;
+  inner.innerHTML=html; shell.appendChild(inner); wrap.appendChild(shell);
+  const btns=document.createElement('div'); btns.className='card-btns';
+  const dl=document.createElement('button'); dl.className='card-dl'; dl.innerHTML='⬇ 下載 PNG';
+  dl.onclick=()=>exportCard(inner,label,nW,nH);
+  const cv=document.createElement('button'); cv.className='card-canva'; cv.innerHTML='✏️ 在 Canva 編輯';
+  cv.onclick=()=>openInCanva(inner,label,nW,nH);
+  btns.appendChild(dl); btns.appendChild(cv); wrap.appendChild(btns);
+  return wrap;
+}
+
+async function exportCard(el, label, w, h) {
+  if (typeof html2canvas==='undefined') { alert('匯出套件尚未載入，請稍後再試'); return; }
+  const imgs=el.querySelectorAll('img');
+  imgs.forEach(img => {
+    if (img.src.startsWith('blob:')) return;
+    img.setAttribute('crossorigin','anonymous');
+    if (!img.src.includes('_cors=')) img.src+=(img.src.includes('?')?'&':'?')+'_cors=1';
+  });
+  await Promise.all(Array.from(imgs).map(img => img.complete?Promise.resolve():new Promise(r=>{img.onload=r;img.onerror=r;})));
+  el.style.transform='none';
+  try {
+    const canvas=await html2canvas(el,{scale:1,width:w,height:h,useCORS:true,allowTaint:false,backgroundColor:null,logging:false});
+    const a=document.createElement('a'); a.download=`GOSTUDY-${label.replace(/\s/g,'-')}-${Date.now()}.png`; a.href=canvas.toDataURL('image/png'); a.click();
+  } catch(e) { alert('下載失敗：'+e.message); }
+  finally { el.style.transform=`scale(${parseInt(el.parentElement?.style.width||w)/w})`; }
+}
+
+async function downloadAll() {
+  for (const btn of document.querySelectorAll('.card-dl')) { btn.click(); await new Promise(r=>setTimeout(r,600)); }
+}
+
+// ── Toast ──────────────────────────────────────────────────────────────────────
+let _toastTimer=null;
+function showToast(msg, duration=3500) {
+  const t=document.getElementById('gs-toast'); if(!t) return;
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer=setTimeout(()=>t.classList.remove('show'), duration);
+}
+
+// ── Open in Canva ──────────────────────────────────────────────────────────────
+const CANVA_URLS={ig:'https://www.canva.com/create/instagram-posts/',fb:'https://www.canva.com/create/facebook-posts/',blog:'https://www.canva.com/create/blog-banners/',thread:'https://www.canva.com/'};
+
+async function openInCanva(el, label, w, h) {
+  if (typeof html2canvas==='undefined') { alert('匯出套件尚未載入，請稍後再試'); return; }
+  const btn=document.querySelector('.card-canva');
+  const origText=btn?.innerHTML||'';
+  if(btn){ btn.innerHTML='⏳ 處理中…'; btn.disabled=true; }
+
+  const imgs=el.querySelectorAll('img');
+  imgs.forEach(img => { if(!img.src.startsWith('blob:')) img.setAttribute('crossorigin','anonymous'); });
+  await Promise.all(Array.from(imgs).map(img=>img.complete?Promise.resolve():new Promise(r=>{img.onload=r;img.onerror=r;})));
+  el.style.transform='none';
+
+  try {
+    const canvas=await html2canvas(el,{scale:1,width:w,height:h,useCORS:true,allowTaint:false,backgroundColor:null,logging:false});
+    const blob=await new Promise(r=>canvas.toBlob(r,'image/png'));
+
+    // 1. 先下載圖片
+    const a=document.createElement('a'); a.download=`GOSTUDY-${label.replace(/\s/g,'-')}-${Date.now()}.png`; a.href=URL.createObjectURL(blob); a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+
+    // 2. 嘗試複製到剪貼簿
+    let copied=false;
+    try {
+      await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);
+      copied=true;
+    } catch(_){}
+
+    // 3. 開啟 Canva
+    const canvaUrl=CANVA_URLS[platform]||'https://www.canva.com/';
+    window.open(canvaUrl,'_blank');
+
+    showToast(copied
+      ? '✅ 圖片已下載＆複製到剪貼簿！在 Canva 中按 Ctrl+V 貼上即可'
+      : '✅ 圖片已下載！請在 Canva 中點「上傳」匯入使用');
+  } catch(e) { alert('處理失敗：'+e.message); }
+  finally {
+    el.style.transform=`scale(${parseInt(el.parentElement?.style.width||w)/w})`;
+    if(btn){ btn.innerHTML=origText; btn.disabled=false; }
+  }
+}
+
+
+// ── Reset / Canva / Utils ─────────────────────────────────────────────────────
+function clearPreview() {
+  document.getElementById('preview-area').innerHTML='<div class="empty-preview"><div class="empty-icon">✦</div><div style="font-size:14px;font-weight:600;color:rgba(200,176,122,.55)">準備好開始了嗎？</div></div>';
+  document.getElementById('dl-btn').style.display='none';
+  document.getElementById('canva-btn').style.display='none';
+  generated=null;
+}
+
+function resetAll() { document.getElementById('inp-topic').value=''; clearPreview(); }
+
+function copyCanvaPrompt() {
+  if (!generated) return;
+  const topic=document.getElementById('inp-topic')?.value?.trim()||'';
+  const pMap={ig:'Instagram 貼文（1080×1350px）',fb:'Facebook 貼文（1080×1350px）',blog:'部落格封面（800×600px）'};
+  const text=`請用 Canva 幫我生成 GoStudy 的${pMap[platform]||''}\n【議題】${topic}\n【標題】${generated.headline}\n【副標題】${generated.subheadline}\n【重點】\n${(generated.keyPoints||[]).map((p,i)=>`${i+1}. ${p}`).join('\n')}\n【CTA】${generated.cta}\n【品牌】GoStudy 英國留學顧問（台灣）\n【視覺】品牌色：深綠 #0e6b59 + 卡其金 #c8b89a；專業雜誌感\n【語言】繁體中文`;
+  navigator.clipboard.writeText(text).then(()=>showToast('✓ 已複製！貼到 Claude 即可用 Canva 生成')).catch(()=>{const ta=document.createElement('textarea');ta.value=text;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);showToast('✓ 已複製！');});
+}
+
+function showToast(msg) {
+  let t=document.getElementById('gs-toast');
+  if (!t){t=document.createElement('div');t.id='gs-toast';t.style.cssText='position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#1a2e2a;border:1px solid rgba(99,210,180,.35);color:#9efcdd;padding:10px 20px;border-radius:10px;font-size:12px;font-weight:600;z-index:9999;pointer-events:none;transition:opacity .3s;white-space:nowrap';document.body.appendChild(t);}
+  t.textContent=msg;t.style.opacity='1';clearTimeout(t._tid);t._tid=setTimeout(()=>{t.style.opacity='0';},3000);
+}
+
+function escH(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>')}
+
+function copyText(text,btn){
+  navigator.clipboard.writeText(text).then(()=>{const o=btn.textContent;btn.textContent='✓ 已複製';btn.classList.add('copied');setTimeout(()=>{btn.textContent=o;btn.classList.remove('copied');},1800);}).catch(()=>{const ta=document.createElement('textarea');ta.value=text;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);btn.textContent='✓ 已複製';btn.classList.add('copied');setTimeout(()=>{btn.textContent='複製';btn.classList.remove('copied');},1800);});
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+(function init() {
+  const k=localStorage.getItem('gs_gemini_key');
+  if (k){document.getElementById('gemini-key').value=k;showGeminiStatus(true);}
+  document.getElementById('inp-topic').addEventListener('input',e=>updateTopicHint(e.target.value.trim()));
+  initSceneGrid();
+  updateSceneCycleRow();
+  setPlatform('ad'); // sync toolbar title with default platform
+})();
+</script>
+</body>
+</html>

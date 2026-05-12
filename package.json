@@ -1,0 +1,10 @@
+{
+  "name": "gostudy-weekly-design-tool",
+  "private": true,
+  "scripts": {
+    "dev": "vite --port 5173 --open /weekly_design_tool.html"
+  },
+  "devDependencies": {
+    "vite": "^6.0.0"
+  }
+}

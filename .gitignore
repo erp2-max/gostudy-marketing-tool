@@ -1,0 +1,16 @@
+# Dependencies
+node_modules/
+
+# Local dev
+.claude/
+開啟圖卡工具.bat
+
+# Python scripts & generated outputs (only for local use)
+test.py
+ai生成/
+
+# Company private assets (upload via the tool's upload feature instead)
+公司內部資源/
+
+# Legacy files
+gostudy_standalone.html

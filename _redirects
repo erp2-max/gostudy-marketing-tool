@@ -1,0 +1,3 @@
+# Cloudflare Pages redirect rules
+# Root → main tool
+/   /weekly_design_tool.html   302
