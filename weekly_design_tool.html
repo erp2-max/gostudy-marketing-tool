@@ -293,7 +293,7 @@ textarea{min-height:72px;line-height:1.5}
 
   <!-- Style presets -->
   <div class="sidebar-section-label">視覺風格</div>
-  <div id="preset-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;padding:0 16px 14px"></div>
+  <div id="preset-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:0 16px 14px"></div>
 
   <div class="sidebar-divider"></div>
 
@@ -498,11 +498,6 @@ const STYLE_PRESETS = [
     id:'default', emoji:'◻', label:'預設',
     headlineColor:'#ffffff', headlineBorder:'rgba(255,255,255,.78)',
     subjectGlow:null, bgSat:0.75, bgBright:0.90,
-  },
-  {
-    id:'bright', emoji:'☀', label:'明亮',
-    headlineColor:'#ffffff', headlineBorder:'rgba(255,255,255,.9)',
-    subjectGlow:null, bgSat:0.90, bgBright:1.08,
   },
   {
     id:'filter', emoji:'🎞', label:'濾鏡',
