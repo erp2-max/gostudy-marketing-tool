@@ -1532,10 +1532,7 @@ function buildSCardHTML(d, imgUrl) {
   ${subEl}
   <div style="position:absolute;inset:0;padding:58px 68px 50px;display:flex;flex-direction:column;z-index:6">
 
-    <!-- Spacer above: flex:1 → group sits at ~40% from top -->
-    <div style="flex:1"></div>
-
-    <!-- ALL TEXT — each element individually draggable -->
+    <!-- ALL TEXT — each element individually draggable; starts at top of card -->
     <div style="display:flex;flex-direction:column;max-width:${groupW}px;${groupMargin}">
 
       <!-- ① Logo + BN: right-aligned header (width:100% ensures flex-end hits card right) -->
@@ -1551,16 +1548,14 @@ function buildSCardHTML(d, imgUrl) {
       <div style="width:68px;height:4px;background:${fc};border-radius:2px;margin-bottom:20px;${barAlign}"></div>
 
       <!-- ④ Hook lines: each line has own drag + resize handle -->
-      <div data-drag="hook-group" style="${hooksTA};margin-bottom:14px;cursor:grab;${tr('hook-group')}">
+      <div data-drag="hook-group" style="${hooksTA};cursor:grab;${tr('hook-group')}">
         ${hookLinesHtml}
       </div>
 
-      <!-- ⑤ Hashtags -->
-      <div data-field="hashtags" data-drag="hashtags" style="font-size:20px;color:rgba(255,255,255,.46);letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:grab;${tr('hashtags')}">${escH(htags)}</div>
     </div>
 
-    <!-- Spacer below: flex:1.5 → group center ≈ 40% from card top -->
-    <div style="flex:1.5"></div>
+    <!-- ⑤ Hashtags — margin-top:auto pins to bottom of card -->
+    <div data-field="hashtags" data-drag="hashtags" style="margin-top:auto;max-width:${groupW}px;${groupMargin};font-size:20px;color:rgba(255,255,255,.46);letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:grab;${tr('hashtags')}">${escH(htags)}</div>
 
   </div></div>`;
 }
