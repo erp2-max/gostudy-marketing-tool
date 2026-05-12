@@ -1,9 +1,14 @@
 # Dependencies
 node_modules/
 
-# Local dev
+# Local dev only (vite dev server — not needed for static deployment)
+package.json
+package-lock.json
 .claude/
 開啟圖卡工具.bat
+
+# Nested clone folder
+gostudy-marketing-tool/
 
 # Python scripts & generated outputs (only for local use)
 test.py
