@@ -235,6 +235,11 @@ textarea{min-height:72px;line-height:1.5}
 [data-drag="subject"]:hover{outline-color:rgba(166,138,86,.55)}
 [data-drag="logo-row"]:hover{outline-color:rgba(100,200,255,.45)}
 
+/* Resize handles (text width) */
+.rz-handle{position:absolute;right:-2px;top:0;height:100%;width:22px;cursor:ew-resize;z-index:20;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .18s}
+.rz-handle::after{content:'';display:block;width:4px;height:60%;background:rgba(255,255,255,.55);border-radius:2px;box-shadow:0 0 6px rgba(0,0,0,.5)}
+[data-drag="headline"]:hover .rz-handle,[data-drag="hook-group"]:hover .rz-handle,.rz-handle.active{opacity:1}
+
 /* Card templates */
 .gs-card-s{width:1080px;height:1350px;position:relative;overflow:hidden;font-family:'Noto Sans TC','Microsoft JhengHei',sans-serif}
 .gs-card-s .bg,.gs-card-l .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
@@ -287,7 +292,7 @@ textarea{min-height:72px;line-height:1.5}
 
   <!-- Style presets -->
   <div class="sidebar-section-label">視覺風格</div>
-  <div id="preset-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:0 16px 14px"></div>
+  <div id="preset-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;padding:0 16px 14px"></div>
 
   <div class="sidebar-divider"></div>
 
@@ -466,11 +471,11 @@ let hookYellowLine   = 2; // which hook line (1/2/3) renders in yellow
 function _defaultOverrides() {
   return {
     hlDelta:0, hookDelta:0,
-    subScale:1.0, logoScale:1.0, bnScale:1.0,
-    // Style preset fields
+    subScale:1.0, logoScale:2.0, bnScale:1.0,   // logo defaults to 200%
+    headlineW:null, hookGroupW:null,              // null = full container width
     headlineColor:'#ffffff',
     headlineBorder:'rgba(255,255,255,.78)',
-    subjectGlow: null,   // CSS filter string or null
+    subjectGlow:null,
     bgSat:0.75, bgBright:0.90,
     offsets:{
       'logo-row' :{dx:0,dy:0},
@@ -490,21 +495,14 @@ const STYLE_PRESETS = [
     subjectGlow:null, bgSat:0.75, bgBright:0.90,
   },
   {
-    id:'yellow-pop', emoji:'⚡', label:'黃色爆破',
-    headlineColor:'#FFE132', headlineBorder:'rgba(255,225,50,.85)',
-    subjectGlow:'drop-shadow(0 0 6px #FFE132) drop-shadow(0 0 20px rgba(255,220,0,.55)) drop-shadow(0 0 44px rgba(255,200,0,.28))',
-    bgSat:0.65, bgBright:0.82,
-  },
-  {
-    id:'deep-night', emoji:'🌙', label:'深夜藍',
-    headlineColor:'#7ecfff', headlineBorder:'rgba(100,190,255,.75)',
-    subjectGlow:'drop-shadow(0 0 8px rgba(80,160,255,.8)) drop-shadow(0 0 28px rgba(60,130,220,.45))',
-    bgSat:0.45, bgBright:0.72,
-  },
-  {
-    id:'clean-white', emoji:'☀', label:'明亮清爽',
+    id:'bright', emoji:'☀', label:'明亮',
     headlineColor:'#ffffff', headlineBorder:'rgba(255,255,255,.9)',
-    subjectGlow:null, bgSat:0.88, bgBright:1.05,
+    subjectGlow:null, bgSat:0.90, bgBright:1.08,
+  },
+  {
+    id:'filter', emoji:'🎞', label:'濾鏡',
+    headlineColor:'#ffffff', headlineBorder:'rgba(255,255,255,.78)',
+    subjectGlow:null, bgSat:0.22, bgBright:0.78,
   },
 ];
 
@@ -541,6 +539,7 @@ function initPresetGrid() {
 }
 let manualOverrides = _defaultOverrides();
 let _dragState = null;
+let _resizeState = null; // {rtype, sc, startX, startW, el}
 
 // ── Image URL map ─────────────────────────────────────────────────────────────
 const Q = '?auto=format&fit=crop&w=1080&q=80';
@@ -1297,14 +1296,33 @@ function resetLayout() {
   ['hlDelta','hookDelta'].forEach(k=>{
     const el=document.getElementById('fsize-'+k); if(el) el.textContent='+0';
   });
-  ['sub','logo','bn'].forEach(k=>{
-    const el=document.getElementById(k+'-scale-val'); if(el) el.textContent='100%';
+  const scaleDefaults = {sub:'100%', logo:'200%', bn:'100%'};
+  Object.entries(scaleDefaults).forEach(([k,v])=>{
+    const el=document.getElementById(k+'-scale-val'); if(el) el.textContent=v;
   });
   rebuildSCard();
 }
 
 // ── Drag-to-reposition ─────────────────────────────────────────────────────────
 document.addEventListener('mousedown', function(e) {
+  // ── Resize handle (check first to avoid triggering drag) ──
+  const rzEl = e.target.closest('[data-resize]');
+  if (rzEl) {
+    const rtype = rzEl.dataset.resize; // 'headline' | 'hook-group'
+    const inner = rzEl.closest('.card-preview-shell > div');
+    if (!inner) return;
+    const shell = inner.parentElement;
+    const sc = (parseInt(shell?.style.width)||360) / (parseInt(inner.style.width)||1080);
+    const parent = rzEl.parentElement;
+    const startW = (rtype==='headline' ? manualOverrides.headlineW : manualOverrides.hookGroupW)
+      || Math.round(parent.getBoundingClientRect().width / sc);
+    _resizeState = { rtype, sc, startX:e.clientX, startW, handle:rzEl };
+    rzEl.classList.add('active');
+    e.preventDefault(); e.stopPropagation();
+    return;
+  }
+
+  // ── Drag ──
   const dragEl = e.target.closest('[data-drag]');
   if (!dragEl) return;
   const dtype = dragEl.dataset.drag;
@@ -1320,6 +1338,20 @@ document.addEventListener('mousedown', function(e) {
 });
 
 document.addEventListener('mousemove', function(e) {
+  // ── Resize ──
+  if (_resizeState) {
+    const delta = (e.clientX - _resizeState.startX) / _resizeState.sc;
+    const newW = Math.max(200, Math.min(980, Math.round(_resizeState.startW + delta)));
+    if (_resizeState.rtype==='headline') {
+      manualOverrides.headlineW = newW;
+      _resizeState.handle.closest('[data-drag="headline"]').style.width = newW+'px';
+    } else {
+      manualOverrides.hookGroupW = newW;
+      _resizeState.handle.closest('[data-drag="hook-group"]').style.maxWidth = newW+'px';
+    }
+    return;
+  }
+  // ── Drag ──
   if (!_dragState) return;
   const dx = Math.round(_dragState.startDx + (e.clientX-_dragState.startX) / _dragState.sc);
   const dy = Math.round(_dragState.startDy + (e.clientY-_dragState.startY) / _dragState.sc);
@@ -1328,6 +1360,7 @@ document.addEventListener('mousemove', function(e) {
 });
 
 document.addEventListener('mouseup', function() {
+  if (_resizeState) { _resizeState.handle.classList.remove('active'); _resizeState=null; return; }
   if (_dragState) { _dragState.el.style.cursor='grab'; _dragState=null; }
 });
 
@@ -1478,14 +1511,15 @@ function buildSCardHTML(d, imgUrl) {
       </div>
 
       <!-- ② Headline: white outline box, right-aligned text, auto-sized -->
-      <div data-field="headline" data-drag="headline" style="border:2px solid ${mo.headlineBorder||'rgba(255,255,255,.78)'};border-radius:6px;padding:14px 24px;font-size:${hlFontSz}px;font-weight:900;color:${mo.headlineColor||'#fff'};line-height:1.28;text-shadow:0 2px 8px rgba(0,0,0,.22);word-break:keep-all;overflow-wrap:break-word;text-align:right;margin-bottom:22px;cursor:grab;${tr('headline')}">${escH(d.headline||'')}</div>
+      <div data-field="headline" data-drag="headline" style="border:2px solid ${mo.headlineBorder||'rgba(255,255,255,.78)'};border-radius:6px;padding:14px 24px;font-size:${hlFontSz}px;font-weight:900;color:${mo.headlineColor||'#fff'};line-height:1.28;text-shadow:0 2px 8px rgba(0,0,0,.22);word-break:keep-all;overflow-wrap:break-word;text-align:right;margin-bottom:22px;cursor:grab;position:relative;${mo.headlineW?'width:'+mo.headlineW+'px':''};${tr('headline')}">${escH(d.headline||'')}<div data-no-export="1" data-resize="headline" class="rz-handle"></div></div>
 
       <!-- ③ Gold accent bar -->
       <div style="width:68px;height:4px;background:${fc};border-radius:2px;margin-bottom:20px;${barAlign}"></div>
 
       <!-- ④ Hook lines: large text, individually draggable -->
-      <div data-drag="hook-group" style="${hooksTA};margin-bottom:14px;cursor:grab;${tr('hook-group')}">
+      <div data-drag="hook-group" style="${hooksTA};margin-bottom:14px;cursor:grab;position:relative;${mo.hookGroupW?'max-width:'+mo.hookGroupW+'px':''};${tr('hook-group')}">
         ${hookLinesHtml}
+        <div data-no-export="1" data-resize="hook-group" class="rz-handle"></div>
       </div>
 
       <!-- ⑤ Hashtags -->
@@ -1671,12 +1705,14 @@ async function exportCard(el, label, w, h) {
     if (!img.src.includes('_cors=')) img.src+=(img.src.includes('?')?'&':'?')+'_cors=1';
   });
   await Promise.all(Array.from(imgs).map(img => img.complete?Promise.resolve():new Promise(r=>{img.onload=r;img.onerror=r;})));
+  const noExport=el.querySelectorAll('[data-no-export]');
+  noExport.forEach(n=>n.style.visibility='hidden');
   el.style.transform='none';
   try {
     const canvas=await html2canvas(el,{scale:1,width:w,height:h,useCORS:true,allowTaint:false,backgroundColor:null,logging:false});
     const a=document.createElement('a'); a.download=`GOSTUDY-${label.replace(/\s/g,'-')}-${Date.now()}.png`; a.href=canvas.toDataURL('image/png'); a.click();
   } catch(e) { alert('下載失敗：'+e.message); }
-  finally { el.style.transform=`scale(${parseInt(el.parentElement?.style.width||w)/w})`; }
+  finally { noExport.forEach(n=>n.style.visibility=''); el.style.transform=`scale(${parseInt(el.parentElement?.style.width||w)/w})`; }
 }
 
 async function downloadAll() {
@@ -1704,6 +1740,8 @@ async function openInCanva(el, label, w, h) {
   const imgs=el.querySelectorAll('img');
   imgs.forEach(img => { if(!img.src.startsWith('blob:')) img.setAttribute('crossorigin','anonymous'); });
   await Promise.all(Array.from(imgs).map(img=>img.complete?Promise.resolve():new Promise(r=>{img.onload=r;img.onerror=r;})));
+  const noExp=el.querySelectorAll('[data-no-export]');
+  noExp.forEach(n=>n.style.visibility='hidden');
   el.style.transform='none';
 
   try {
@@ -1730,6 +1768,7 @@ async function openInCanva(el, label, w, h) {
       : '✅ 圖片已下載！請在 Canva 中點「上傳」匯入使用');
   } catch(e) { alert('處理失敗：'+e.message); }
   finally {
+    noExp.forEach(n=>n.style.visibility='');
     el.style.transform=`scale(${parseInt(el.parentElement?.style.width||w)/w})`;
     if(btn){ btn.innerHTML=origText; btn.disabled=false; }
   }
