@@ -1343,8 +1343,9 @@ document.addEventListener('mousemove', function(e) {
   // ── Resize ──
   if (_resizeState) {
     const delta = (e.clientX - _resizeState.startX) / _resizeState.sc;
-    const newW = Math.max(120, Math.min(980, Math.round(_resizeState.startW + delta)));
     const rt = _resizeState.rtype;
+    const maxW = rt.startsWith('hookLine') ? 940 : 980; // hookLines can expand to near card edge
+    const newW = Math.max(120, Math.min(maxW, Math.round(_resizeState.startW + delta)));
     if (rt === 'headline') {
       manualOverrides.headlineW = newW;
       _resizeState.handle.closest('[data-drag="headline"]').style.width = newW+'px';
@@ -1353,7 +1354,7 @@ document.addEventListener('mousemove', function(e) {
       if (!manualOverrides.hookLineW) manualOverrides.hookLineW = {};
       manualOverrides.hookLineW[n] = newW;
       const lineEl = _resizeState.handle.closest(`[data-field="hookLine${n}"]`);
-      if (lineEl) lineEl.style.maxWidth = newW+'px';
+      if (lineEl) { lineEl.style.minWidth = newW+'px'; lineEl.style.maxWidth = 'none'; }
     } else {
       manualOverrides.hookGroupW = newW;
       _resizeState.handle.closest('[data-drag="hook-group"]').style.maxWidth = newW+'px';
@@ -1487,14 +1488,17 @@ function buildSCardHTML(d, imgUrl) {
   const hlFontSz = Math.max(22, Math.round(hookFS * 0.56 * hlScale) + (manualOverrides.hlDelta||0));
 
   // ── Hook lines HTML — each line has own resize handle + drag ──
+  // Use min-width (not max-width) so lines can BREAK OUT of parent container when expanded,
+  // allowing text to go from 2 lines → 1 line even when parent is narrow (e.g. 550px w/ subject).
   const yLine = hookYellowLine || 2;
-  // Default width → ~3.2 chars wide so 6-8 char text wraps to 2 lines
-  const defaultHookW = Math.round(hookFS * 3.2);
   const hookLinesHtml = [{txt:h1,n:1},{txt:h2,n:2},{txt:h3,n:3}]
     .filter(({txt})=>txt.trim())
     .map(({txt,n})=>{
-      const lineW = mo.hookLineW?.[n] ?? defaultHookW;
-      return `<div data-field="hookLine${n}" data-drag="hookLine${n}" style="font-size:${hookFS}px;font-weight:900;color:${n===yLine?'#FFE132':'#fff'};line-height:1.1;text-shadow:0 3px 18px rgba(0,0,0,.65);overflow-wrap:break-word;max-width:${lineW}px;position:relative;cursor:grab;${tr('hookLine'+n)}">${escH(txt)}<div data-no-export="1" data-resize="hookLine${n}" class="rz-handle"></div></div>`;
+      const charLen = txt.replace(/\s/g,'').length || 1;
+      // Default: ceil(chars/2) chars per line → exactly 2 lines
+      const defaultW = Math.ceil(charLen / 2) * hookFS + Math.round(hookFS * 0.4);
+      const lineW = mo.hookLineW?.[n] ?? defaultW;
+      return `<div data-field="hookLine${n}" data-drag="hookLine${n}" style="font-size:${hookFS}px;font-weight:900;color:${n===yLine?'#FFE132':'#fff'};line-height:1.1;text-shadow:0 3px 18px rgba(0,0,0,.65);overflow-wrap:break-word;min-width:${lineW}px;max-width:none;position:relative;cursor:grab;${tr('hookLine'+n)}">${escH(txt)}<div data-no-export="1" data-resize="hookLine${n}" class="rz-handle"></div></div>`;
     })
     .join('');
 
