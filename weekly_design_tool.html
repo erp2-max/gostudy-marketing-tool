@@ -223,6 +223,10 @@ textarea{min-height:72px;line-height:1.5}
 .topic-hint.deadline{background:rgba(251,146,60,.1);border:1px solid rgba(251,146,60,.3);color:rgba(200,100,20,.95)}
 .topic-hint.generic{background:rgba(166,138,86,.1);border:1px solid rgba(166,138,86,.3);color:var(--khaki)}
 
+/* Draggable text group hover hint */
+[data-drag="text-group"]:hover{outline:1.5px dashed rgba(255,255,255,.28);outline-offset:6px}
+[data-drag="text-group"]:active{cursor:grabbing!important}
+
 /* Card templates */
 .gs-card-s{width:1080px;height:1350px;position:relative;overflow:hidden;font-family:'Noto Sans TC','Microsoft JhengHei',sans-serif}
 .gs-card-s .bg,.gs-card-l .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
@@ -443,6 +447,10 @@ let subjectUrl     = null; // uploaded person/subject PNG
 let subjectSide    = 'right';
 let breakingNewsText = 'Breaking News！';
 let hookYellowLine   = 2; // which hook line (1/2/3) renders in yellow
+
+// ── Manual layout overrides (drag + font adjust) ──────────────────────────────
+let manualOverrides = { textDx:0, textDy:0, hlDelta:0, hookDelta:0 };
+let _dragState = null; // drag tracking: {el, scale, startX, startY, startDx, startDy}
 
 // ── Image URL map ─────────────────────────────────────────────────────────────
 const Q = '?auto=format&fit=crop&w=1080&q=80';
@@ -947,6 +955,43 @@ function buildEditPanel(d) {
       yBtns.appendChild(b);
     });
     yRow.appendChild(yLbl); yRow.appendChild(yBtns); body.appendChild(yRow);
+
+    // ── Drag tip ──
+    const dragTip = document.createElement('div');
+    dragTip.style.cssText='font-size:10px;color:rgba(166,138,86,.55);padding:4px 2px;line-height:1.6';
+    dragTip.textContent='↖ 拖曳圖卡上的文字群組可調整位置';
+    body.appendChild(dragTip);
+
+    // ── Font size fine-tune controls ──
+    const adjRow = document.createElement('div'); adjRow.className='edit-row'; adjRow.style.cssText='flex-direction:column;gap:8px;margin-top:4px';
+    const adjLbl = document.createElement('div'); adjLbl.className='edit-lbl'; adjLbl.textContent='字體大小微調';
+    adjRow.appendChild(adjLbl);
+
+    [
+      {label:'標題',key:'hlDelta'},
+      {label:'大字',key:'hookDelta'},
+    ].forEach(({label:flbl, key:fkey})=>{
+      const fRow=document.createElement('div'); fRow.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:6px';
+      const fl=document.createElement('span'); fl.style.cssText='font-size:11px;color:var(--muted);flex:1'; fl.textContent=flbl;
+      const btnM=document.createElement('button'); btnM.textContent='－'; btnM.className='side-btn';
+      btnM.style.cssText='padding:3px 10px;font-size:13px;font-weight:700;border-radius:5px;cursor:pointer;font-family:inherit;border:1px solid var(--border);background:transparent;color:var(--muted)';
+      const valEl=document.createElement('span'); valEl.style.cssText='font-size:12px;font-weight:700;color:var(--gold);min-width:36px;text-align:center';
+      valEl.id='fsize-'+fkey; valEl.textContent=(manualOverrides[fkey]>=0?'+':'')+manualOverrides[fkey];
+      const btnP=document.createElement('button'); btnP.textContent='＋'; btnP.className='side-btn';
+      btnP.style.cssText=btnM.style.cssText;
+      btnM.onclick=()=>{ manualOverrides[fkey]-=4; valEl.textContent=(manualOverrides[fkey]>=0?'+':'')+manualOverrides[fkey]; rebuildSCard(); };
+      btnP.onclick=()=>{ manualOverrides[fkey]+=4; valEl.textContent=(manualOverrides[fkey]>=0?'+':'')+manualOverrides[fkey]; rebuildSCard(); };
+      fRow.appendChild(fl); fRow.appendChild(btnM); fRow.appendChild(valEl); fRow.appendChild(btnP);
+      adjRow.appendChild(fRow);
+    });
+
+    const resetBtn=document.createElement('button'); resetBtn.textContent='↺ 重置版面';
+    resetBtn.style.cssText='margin-top:4px;padding:6px 12px;font-size:11px;font-weight:700;border-radius:6px;cursor:pointer;font-family:inherit;border:1px solid var(--border);background:transparent;color:var(--muted);width:100%;transition:all .15s';
+    resetBtn.onmouseenter=()=>{resetBtn.style.background='rgba(166,138,86,.15)';resetBtn.style.color='var(--gold)';};
+    resetBtn.onmouseleave=()=>{resetBtn.style.background='transparent';resetBtn.style.color='var(--muted)';};
+    resetBtn.onclick=()=>resetLayout();
+    adjRow.appendChild(resetBtn);
+    body.appendChild(adjRow);
   }
 
   fields.forEach(({key,label,val})=>{
@@ -976,6 +1021,61 @@ function setHookYellow(n) {
     });
   });
 }
+
+// ── Layout rebuild (font size changes) ────────────────────────────────────────
+function rebuildSCard() {
+  if (!currentData) return;
+  const shells = document.querySelectorAll('.card-preview-shell');
+  if (!shells.length) return;
+  // Only rebuild the S-card (first shell, ad platform) — inner div holds the HTML
+  const first = shells[0];
+  const inner = first.querySelector(':scope > div');
+  if (!inner) return;
+  const nW = parseInt(inner.style.width)||1080, nH = parseInt(inner.style.height)||1350;
+  const dW = parseInt(first.style.width)||360;
+  const sc = dW/nW;
+  const imgUrl = selectedImgUrl || inner.querySelector('img.bg')?.src || '';
+  if (!imgUrl) return;
+  inner.innerHTML = buildSCardHTML(currentData, imgUrl);
+  inner.style.transform = `scale(${sc})`;
+}
+
+function resetLayout() {
+  manualOverrides = { textDx:0, textDy:0, hlDelta:0, hookDelta:0 };
+  ['hlDelta','hookDelta'].forEach(k=>{
+    const el = document.getElementById('fsize-'+k);
+    if (el) el.textContent = '+0';
+  });
+  rebuildSCard();
+}
+
+// ── Drag-to-reposition ─────────────────────────────────────────────────────────
+document.addEventListener('mousedown', function(e) {
+  const dragEl = e.target.closest('[data-drag="text-group"]');
+  if (!dragEl) return;
+  const inner = dragEl.closest('[style*="transform:scale"]') || dragEl.closest('.card-preview-shell > div');
+  if (!inner) return;
+  const shell = inner.parentElement;
+  const dW = parseInt(shell?.style.width) || 360;
+  const nW = parseInt(inner.style.width) || 1080;
+  const sc = dW / nW;
+  _dragState = { el:dragEl, sc, startX:e.clientX, startY:e.clientY, startDx:manualOverrides.textDx, startDy:manualOverrides.textDy };
+  dragEl.style.cursor = 'grabbing';
+  e.preventDefault();
+});
+
+document.addEventListener('mousemove', function(e) {
+  if (!_dragState) return;
+  const sdx = e.clientX - _dragState.startX;
+  const sdy = e.clientY - _dragState.startY;
+  manualOverrides.textDx = Math.round(_dragState.startDx + sdx / _dragState.sc);
+  manualOverrides.textDy = Math.round(_dragState.startDy + sdy / _dragState.sc);
+  _dragState.el.style.transform = `translate(${manualOverrides.textDx}px,${manualOverrides.textDy}px)`;
+});
+
+document.addEventListener('mouseup', function() {
+  if (_dragState) { _dragState.el.style.cursor = 'grab'; _dragState = null; }
+});
 
 function liveUpdateCard(field, value) {
   if (!currentData) return;
@@ -1077,10 +1177,11 @@ function buildSCardHTML(d, imgUrl) {
   const h1 = d.hookLine1||'', h2 = d.hookLine2||'', h3 = d.hookLine3||'';
   const groupW   = hasSub ? 550 : 920;
   const maxHLen  = Math.max(...[h1,h2,h3].filter(Boolean).map(t=>t.replace(/\s+/g,'').length), 3);
-  const hookFS   = Math.max(56, Math.min(108, Math.floor(groupW / Math.max(Math.ceil(maxHLen/1.8), 3))));
+  const hookFSBase = Math.max(56, Math.min(108, Math.floor(groupW / Math.max(Math.ceil(maxHLen/1.8), 3))));
+  const hookFS   = Math.max(32, hookFSBase + (manualOverrides.hookDelta||0));
   const hlLen    = (d.headline||'').length;
   const hlScale  = hlLen <= 12 ? 1.0 : hlLen <= 18 ? 0.85 : hlLen <= 26 ? 0.70 : 0.58;
-  const hlFontSz = Math.max(36, Math.round(hookFS * 0.56 * hlScale));
+  const hlFontSz = Math.max(22, Math.round(hookFS * 0.56 * hlScale) + (manualOverrides.hlDelta||0));
 
   // ── Hook lines HTML ──
   const yLine = hookYellowLine || 2;
@@ -1107,7 +1208,7 @@ function buildSCardHTML(d, imgUrl) {
     <div style="flex:1"></div>
 
     <!-- ALL TEXT in one grouped block, clustered upper-center -->
-    <div style="display:flex;flex-direction:column;max-width:${groupW}px;${groupMargin}">
+    <div data-drag="text-group" style="display:flex;flex-direction:column;max-width:${groupW}px;${groupMargin};transform:translate(${manualOverrides.textDx||0}px,${manualOverrides.textDy||0}px);cursor:grab">
 
       <!-- ① Logo + BN: right-aligned header -->
       <div style="display:flex;align-items:center;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-bottom:14px">
