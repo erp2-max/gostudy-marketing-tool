@@ -921,7 +921,10 @@ function setThreadType(type) {
       hint:'🌐 AI 自動搜尋 Google Trends + Threads 熱門話題，選最佳角度 → Vivian 人設生成'}
   };
   const c = cfgs[type];
-  area.innerHTML = `${uploadZone}<label class="field-label" style="margin-bottom:6px">${escH(c.label)}</label><textarea id="inp-thread-content" rows="${c.rows}" style="font-size:12px;line-height:1.6;resize:vertical" placeholder="${escH(c.ph)}"></textarea><div class="field-hint" style="margin-top:5px">${c.hint}</div>`;
+  area.innerHTML = `${uploadZone}<label class="field-label" style="margin-bottom:6px">${escH(c.label)}</label><textarea id="inp-thread-content" rows="${c.rows}" style="font-size:12px;line-height:1.6;resize:vertical"></textarea><div class="field-hint" style="margin-top:5px">${c.hint}</div>`;
+  // Set placeholder directly to avoid escH converting \n → <br>
+  const ta = document.getElementById('inp-thread-content');
+  if (ta) ta.placeholder = c.ph;
 }
 
 function buildThreadsPrompt(contentType, inputText) {
