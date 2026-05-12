@@ -197,8 +197,14 @@ textarea{min-height:72px;line-height:1.5}
 .copy-btn:hover{background:rgba(166,138,86,.4)}
 .copy-btn.copied{background:rgba(74,222,128,.2);border-color:rgba(74,222,128,.4);color:#4ade80}
 
+/* Thread type selector */
+.ttype-btn{background:rgba(255,255,255,.04);border:1.5px solid rgba(166,138,86,.25);border-radius:9px;padding:9px 6px;cursor:pointer;font-family:inherit;color:rgba(200,176,122,.7);font-size:11px;font-weight:700;text-align:center;transition:all .18s;display:flex;flex-direction:column;align-items:center;gap:5px;line-height:1.3}
+.ttype-btn:hover{background:rgba(166,138,86,.14);border-color:rgba(166,138,86,.5);color:#e8d8b8}
+.ttype-btn.active{border-color:var(--gold);background:rgba(166,138,86,.22);color:#f0e4c4;box-shadow:0 0 10px rgba(166,138,86,.18)}
+.ttype-emoji{font-size:18px;line-height:1}
+
 /* Thread output */
-.thread-output{width:100%;max-width:560px;display:flex;flex-direction:column;gap:12px}
+.thread-output{width:100%;max-width:580px;display:flex;flex-direction:column;gap:12px}
 .thread-card{background:rgba(255,255,255,.06);border:1px solid rgba(166,138,86,.2);border-radius:14px;overflow:hidden}
 .thread-card-head{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid rgba(166,138,86,.12);background:rgba(0,0,0,.25)}
 .thread-card-title{font-size:11px;font-weight:700;color:var(--gold-l)}
@@ -387,12 +393,24 @@ textarea{min-height:72px;line-height:1.5}
           </div>
         </div>
 
-        <!-- Step 2: Topic -->
-        <div class="field">
+        <!-- Step 2: Topic (hidden when Thread platform active) -->
+        <div class="field" id="topic-field">
           <label class="field-label" for="inp-topic"><span class="step-badge">2</span>議題 / 關鍵字 *</label>
           <textarea id="inp-topic" rows="3" placeholder="例：2025 QS 排名 · 英國大學&#10;例：英國留學 5 大優勢&#10;例：申請英國頂大的準備時程"></textarea>
           <div id="topic-hint" class="topic-hint"></div>
           <div class="field-hint">AI 自動生成標題、文案、Hashtag</div>
+        </div>
+
+        <!-- Thread platform: content type selector + dynamic input -->
+        <div class="field" id="thread-input-section" style="display:none">
+          <label class="field-label"><span class="step-badge">1</span>貼文類型</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:14px">
+            <button class="ttype-btn active" data-ttype="listing" onclick="setThreadType('listing')"><span class="ttype-emoji">🎓</span>錄取榜單</button>
+            <button class="ttype-btn" data-ttype="school" onclick="setThreadType('school')"><span class="ttype-emoji">🏛️</span>校代資訊</button>
+            <button class="ttype-btn" data-ttype="news" onclick="setThreadType('news')"><span class="ttype-emoji">📰</span>時事話題</button>
+            <button class="ttype-btn" data-ttype="auto" onclick="setThreadType('auto')"><span class="ttype-emoji">🌐</span>自動搜尋熱門</button>
+          </div>
+          <div id="thread-content-area"></div>
         </div>
 
       </div>
@@ -530,9 +548,12 @@ function setPlatform(p) {
   const cfg = PLAT[p];
   document.getElementById('toolbar-title').textContent = cfg.label;
   document.getElementById('toolbar-size').textContent  = cfg.size;
-  const noImg = p==='thread';
-  document.getElementById('img-field').style.display    = noImg ? 'none' : '';
-  document.getElementById('asset-field').style.display  = (noImg||p==='blog') ? 'none' : '';
+  const isThread = p==='thread';
+  document.getElementById('img-field').style.display          = isThread ? 'none' : '';
+  document.getElementById('asset-field').style.display        = (isThread||p==='blog') ? 'none' : '';
+  document.getElementById('topic-field').style.display        = isThread ? 'none' : '';
+  document.getElementById('thread-input-section').style.display = isThread ? '' : 'none';
+  if (isThread) setThreadType(threadContentType); // init dynamic input area
   clearPreview();
 }
 
@@ -779,6 +800,92 @@ async function geminiRequest(prompt, cfg={}, onWait, useSearch=false) {
   }
 }
 
+// ── Threads content type state ─────────────────────────────────────────────────
+let threadContentType = 'listing';
+
+function setThreadType(type) {
+  threadContentType = type;
+  document.querySelectorAll('.ttype-btn').forEach(b=>b.classList.toggle('active', b.dataset.ttype===type));
+  const area = document.getElementById('thread-content-area');
+  if (!area) return;
+  const cfgs = {
+    listing:{
+      label:'錄取通知 / 學生資料',
+      rows:6,
+      ph:'貼入 Offer 重點和學生背景摘要...\n例：\n學校：LSE Management\n學生背景：韓文系，無商科學位\n申請亮點：靠10000次業務開發經歷轉換...\n獎學金：無',
+      hint:'Vivian 將以「翻轉迷思」角度分析錄取亮點，產出主文＋2則留言串＋限時動態格式'
+    },
+    school:{
+      label:'學校資訊素材',
+      rows:5,
+      ph:'貼入校代會議重點或學校資料...\n例：\n學校：University of Bath\n特色：工程學院全英 TOP8\n交通：距倫敦1.5小時...',
+      hint:'Vivian 將以「獨家內線情報」風格介紹，附台灣人懂的地理比喻'
+    },
+    news:{
+      label:'時事話題素材',
+      rows:4,
+      ph:'貼入新聞摘要或話題描述...\n例：《甄嬛傳》在英國爆紅，BBC 製作紀錄片...',
+      hint:'從娛樂/考試/新知/盛事角度切入，Vivian 風格「硬核連結」到留學'
+    },
+    auto:{
+      label:'指定方向（選填）',
+      rows:2,
+      ph:'例：英國留學 / 雅思 / 升學 / 留空讓 AI 自動決定',
+      hint:'🌐 AI 自動搜尋 Google Trends + Threads 熱門話題，選最佳角度套用 Vivian 人設生成'
+    }
+  };
+  const c = cfgs[type];
+  area.innerHTML = `<label class="field-label" style="margin-bottom:6px;margin-top:2px">${escH(c.label)}</label><textarea id="inp-thread-content" rows="${c.rows}" style="font-size:12px;line-height:1.6;resize:vertical" placeholder="${escH(c.ph)}"></textarea><div class="field-hint" style="margin-top:5px">${c.hint}</div>`;
+}
+
+function buildThreadsPrompt(contentType, inputText) {
+  const persona = `你是 GoStudy 留學代辦社群小編「脆V編」（Vivian）。
+台南出生、擁有10年英國留學經歷，現為英美澳加申請流程的專業留學顧問。
+語氣：「口語＋吐槽＋專業」混合體，溫柔有點幹話，像嘴碎但超挺你的大姊姊。
+風格：採作家劉秝緁風格。多用短句、頻繁換行、精準emoji，感嘆詞（欸？拜託～真的會氣到手抖）。像朋友聊天，不像品牌說教。
+目標族群：18–25歲台灣留學生。
+寫作規則：
+- 主貼文約300字，多換行，條列說明時用純數字就好（不用1️⃣符號）
+- 結尾一定要有開放式提問（讓讀者留言，不要寫結論）
+- 留言串1：實用/知識延伸型，100字內
+- 留言串2：共鳴/吐槽/生活化型，100字內`;
+
+  const typeGuides = {
+    listing:`【類型一：錄取榜單與翻轉迷思】
+切入點：強調「劣勢翻盤」與申請策略，用反直覺問句開場（「誰說…才能…？」）。
+具體拆解顧問如何把平凡背景「神轉譯」成高大上的學術潛力。
+文末給予正面鼓勵並附錄取學校亮點。
+【必須輸出限時動態格式（stories 欄位）】
+格式：恭喜X同學 錄取\\n[國家+學校中文]\\nSchool English Name\\n[一句學校定位]\\n[排名行]\\n✨[四個亮點，每行一個]`,
+    school:`【類型三：第一手學校資訊與校代交流】
+切入點：「獨家內線情報」「好康道相報」氛圍。
+開頭用「剛幫大家整理熱騰騰的申請重點」或「每次跟校代開會就像見老朋友」。
+用台灣人懂的比喻（「約克到倫敦2小時，就像高鐵台北到高雄」）。
+強調：學費CP值、實習機會、交通便利度。`,
+    news:`【類型五：軟性話題、流行文化與辦公室日常】
+切入點：幽默腦洞，把娛樂/時事話題硬核連結到「留學/科系/英國」。
+大量使用時下網路用語（盤子、燒蛋幾咧、TMI）。
+展現小編個人人設，可自嘲或描述辦公室日常。`,
+    auto:`請先使用搜尋工具找出今天台灣 Google Trends 熱門話題（排除政治），再從「考試/新知/娛樂/盛事」四個方向選出最適合切入的議題，判斷屬於五大類型中的哪一種，然後產出內容。在 topicUsed 欄位說明你選了什麼話題以及理由。`
+  };
+
+  const inputSection = inputText ? `\n\n【提供的素材/方向】\n${inputText}` : '';
+
+  return `${persona}
+
+${typeGuides[contentType]}${inputSection}
+
+請依照上述規範，用 Vivian 的聲音產出 Threads 貼文內容。直接回傳 JSON，不加 markdown：
+{
+  "postType": "類型名稱（一句話，例：類型一 — 錄取榜單與翻轉迷思）",
+  "topicUsed": "本次選用的主題或話題（自動搜尋模式填入，其他給空字串）",
+  "mainPost": "主貼文（約300字，多換行，結尾開放式提問）",
+  "reply1": "留言串1 — 實用/知識延伸型（100字內）",
+  "reply2": "留言串2 — 共鳴/吐槽/生活化型（100字內）",
+  "stories": "限時動態格式文字（僅類型一榜單貼文才填，其他留空字串）"
+}`;
+}
+
 function buildGeminiPrompt(topic, plat, withSearch=false) {
   const isMulti = plat==='ig'||plat==='fb';
   const desc={ad:'廣告圖卡（單張）',ig:'Instagram 社群多頁圖卡（封面+表格+3內容頁）',fb:'Facebook 社群多頁圖卡（封面+表格+3內容頁）',blog:'官網部落格封面（橫式800×600）',thread:'Threads 純文案'}[plat]||'';
@@ -878,6 +985,8 @@ function buildLocalData() {
 
 // ── Generate ──────────────────────────────────────────────────────────────────
 async function generate() {
+  if (platform==='thread') { await generateThread(); return; }
+
   const topic = document.getElementById('inp-topic').value.trim();
   if (!topic) { alert('請輸入議題 / 關鍵字'); return; }
   const genBtn=document.getElementById('gen-btn'), infoEl=document.getElementById('preview-info');
@@ -912,8 +1021,37 @@ async function generate() {
 
   const aiNote=aiData?' · ✦ Gemini AI':(getGeminiKey()?' · 模板(AI失敗)':' · 模板');
   infoEl.textContent=`✓ 完成${aiNote}`;
-  document.getElementById('dl-btn').style.display    = platform!=='thread'?'inline-flex':'none';
-  document.getElementById('canva-btn').style.display = platform!=='thread'?'inline-flex':'none';
+  document.getElementById('dl-btn').style.display    = 'inline-flex';
+  document.getElementById('canva-btn').style.display = 'inline-flex';
+  genBtn.disabled=false; genBtn.textContent='▶ 生成內容';
+}
+
+async function generateThread() {
+  const genBtn=document.getElementById('gen-btn'), infoEl=document.getElementById('preview-info');
+  if (!isGeminiEnabled()) { alert('Threads 貼文需要 Gemini API Key，請在左側設定'); return; }
+
+  const inputText = (document.getElementById('inp-thread-content')?.value||'').trim();
+  const useSearch = (threadContentType==='auto');
+
+  genBtn.disabled=true;
+  genBtn.textContent='AI 生成中…';
+  infoEl.textContent = useSearch ? '🌐 搜尋熱門話題 + Vivian AI 生成中…' : '✦ Vivian AI 生成 Threads 貼文…';
+
+  let aiData=null;
+  try {
+    aiData = await geminiRequest(buildThreadsPrompt(threadContentType, inputText), {temperature:.92}, msg=>{infoEl.textContent=msg;}, useSearch);
+  } catch(e) {
+    infoEl.textContent=`⚠ AI 失敗：${(e.message||'').slice(0,50)}`;
+    await new Promise(r=>setTimeout(r,1500));
+  }
+
+  const area=document.getElementById('preview-area');
+  area.innerHTML='';
+  renderThreadOutput(aiData||{}, area);
+
+  infoEl.textContent = aiData ? '✓ 完成 · ✦ Vivian AI' : '✓ 完成 · AI 失敗';
+  document.getElementById('dl-btn').style.display    = 'none';
+  document.getElementById('canva-btn').style.display = 'none';
   genBtn.disabled=false; genBtn.textContent='▶ 生成內容';
 }
 
@@ -1364,15 +1502,41 @@ function liveUpdateCard(field, value) {
 
 function renderThreadOutput(d, area) {
   const wrap=document.createElement('div'); wrap.className='thread-output';
+
+  // Header row: label + type badge + topic used
   const ttl=document.createElement('div');
-  ttl.style.cssText='font-size:10px;font-weight:700;color:rgba(200,176,122,.7);letter-spacing:2px;text-transform:uppercase;padding:4px 0 10px';
-  ttl.textContent='✦ Threads 文案'; wrap.appendChild(ttl);
-  [{label:'💬 Thread 主文',text:d.threadPost||''},{label:'# Hashtags',text:d.hashtags||''}]
-    .filter(p=>p.text.trim()).forEach(({label,text})=>{
-      const card=document.createElement('div'); card.className='thread-card';
-      card.innerHTML=`<div class="thread-card-head"><span class="thread-card-title">${escH(label)}</span><button class="copy-btn" onclick="copyText(${JSON.stringify(text)},this)">複製</button></div><div class="thread-card-body">${escH(text)}</div>`;
-      wrap.appendChild(card);
-    });
+  ttl.style.cssText='font-size:10px;font-weight:700;color:rgba(200,176,122,.7);letter-spacing:2px;text-transform:uppercase;padding:4px 0 8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap';
+  ttl.innerHTML=`✦ Threads 草稿${d.postType?`<span style="font-size:10px;background:rgba(166,138,86,.2);border:1px solid rgba(166,138,86,.3);border-radius:4px;padding:2px 8px;color:var(--gold-l);letter-spacing:0;font-weight:600">${escH(d.postType)}</span>`:''}`;
+  wrap.appendChild(ttl);
+  if (d.topicUsed && d.topicUsed.trim()) {
+    const tb=document.createElement('div'); tb.style.cssText='font-size:11px;color:rgba(200,176,122,.55);padding:0 0 10px'; tb.textContent='🌐 選用話題：'+d.topicUsed; wrap.appendChild(tb);
+  }
+
+  // Sections: main post + replies + optional stories
+  const sections=[
+    {label:'💬 主貼文',       text: d.mainPost||''},
+    {label:'↩¹ 留言串 1｜實用延伸', text: d.reply1||''},
+    {label:'↩² 留言串 2｜共鳴吐槽', text: d.reply2||''},
+  ];
+  if (d.stories && d.stories.trim()) sections.push({label:'📸 限時動態格式', text:d.stories});
+
+  sections.filter(s=>s.text.trim()).forEach(({label,text})=>{
+    const charCount = [...text].filter(c=>/\S/.test(c)).length;
+    const card=document.createElement('div'); card.className='thread-card';
+    card.innerHTML=`<div class="thread-card-head"><span class="thread-card-title">${escH(label)}</span><div style="display:flex;align-items:center;gap:8px"><span style="font-size:10px;color:var(--muted)">${charCount} 字</span><button class="copy-btn" onclick="copyText(${JSON.stringify(text)},this)">複製</button></div></div><div class="thread-card-body">${escH(text)}</div>`;
+    wrap.appendChild(card);
+  });
+
+  // Copy all button
+  const allText = [d.mainPost, d.reply1, d.reply2].filter(Boolean).join('\n\n──────\n\n');
+  if (allText.trim()) {
+    const copyAll=document.createElement('button');
+    copyAll.className='copy-btn'; copyAll.style.cssText='margin-top:4px;width:100%;padding:9px;font-size:12px;border-radius:10px';
+    copyAll.textContent='📋 一鍵複製全部（主文＋留言串）';
+    copyAll.onclick=()=>copyText(allText, copyAll);
+    wrap.appendChild(copyAll);
+  }
+
   area.appendChild(wrap);
 }
 
@@ -1778,6 +1942,7 @@ function copyText(text,btn){
   if (k){document.getElementById('gemini-key').value=k;showGeminiStatus(true);}
   document.getElementById('inp-topic').addEventListener('input',e=>updateTopicHint(e.target.value.trim()));
   initSceneGrid();
+  setThreadType('listing'); // init thread input area (hidden until thread tab is clicked)
   updateSceneCycleRow();
   setPlatform('ad'); // sync toolbar title with default platform
 })();
