@@ -124,6 +124,60 @@ textarea{min-height:72px;line-height:1.5}
 .gen-btn-wrap{padding:12px 18px 18px;border-top:1px solid var(--border);background:linear-gradient(180deg,transparent,rgba(22,160,133,.04))}
 .gen-main-btn{width:100%;padding:12px;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;border:none;font-family:inherit;background:linear-gradient(135deg,var(--brand),var(--green));color:#fff;letter-spacing:.5px;transition:all .15s;box-shadow:0 4px 16px rgba(14,107,89,.3)}
 .gen-main-btn:not(:disabled):hover{filter:brightness(1.12);transform:translateY(-2px);box-shadow:0 10px 32px rgba(14,107,89,.5)}
+.gen-edit-btn{width:100%;margin-top:6px;padding:8px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid rgba(166,138,86,.3);background:transparent;color:rgba(200,176,122,.65);font-family:inherit;transition:all .15s;letter-spacing:.3px}
+.gen-edit-btn:hover{border-color:rgba(166,138,86,.6);color:rgba(200,176,122,.95);background:rgba(166,138,86,.08)}
+.gen-edit-btn:disabled{opacity:.4;cursor:not-allowed}
+/* Claude API Key Row */
+.api-key-row{display:flex;align-items:center;gap:6px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid rgba(166,138,86,.1)}
+.api-key-input{flex:1;padding:5px 9px;background:rgba(0,0,0,.4);border:1px solid rgba(166,138,86,.2);border-radius:6px;color:rgba(220,200,160,.85);font-size:11px;font-family:inherit;outline:none;transition:border-color .12s;min-width:0}
+.api-key-input:focus{border-color:rgba(166,138,86,.5)}
+.api-key-input::placeholder{color:rgba(200,176,122,.25);font-size:10px}
+.api-key-dot{font-size:14px;flex-shrink:0;cursor:default;transition:color .2s}
+.gen-claude-btn{width:100%;padding:9px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid rgba(130,100,220,.4);background:rgba(130,100,220,.08);color:rgba(180,160,240,.8);font-family:inherit;transition:all .15s;letter-spacing:.3px}
+.gen-claude-btn:hover{border-color:rgba(130,100,220,.65);color:rgba(200,185,255,.95);background:rgba(130,100,220,.15)}
+.gen-claude-btn:disabled{opacity:.4;cursor:not-allowed}
+/* Desktop workflow buttons */
+.gen-section-label{font-size:9px;font-weight:700;color:rgba(200,176,122,.35);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:5px}
+.gen-desktop-row{display:flex;gap:6px}
+.gen-desktop-btn{flex:1;padding:9px 6px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid rgba(166,138,86,.35);background:rgba(166,138,86,.06);color:rgba(200,176,122,.8);font-family:inherit;transition:all .15s}
+.gen-desktop-btn:hover{border-color:rgba(166,138,86,.65);color:rgba(220,200,160,.95);background:rgba(166,138,86,.14);transform:translateY(-1px)}
+.gen-desktop-btn:active{transform:translateY(0);background:rgba(166,138,86,.2)}
+.gen-desktop-steps{display:flex;align-items:center;gap:3px;margin-top:5px;font-size:9px;color:rgba(200,176,122,.28);flex-wrap:wrap}
+.gen-step-arrow{color:rgba(200,176,122,.18)}
+/* JSON Config Editor */
+/* JSON Config Editor */
+.json-config-wrap{width:100%;max-width:620px;display:flex;flex-direction:column;gap:10px}
+.json-editor-header{font-size:11px;font-weight:700;color:rgba(200,176,122,.6);letter-spacing:.5px;display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(166,138,86,.06);border:1px solid rgba(166,138,86,.15);border-radius:8px 8px 0 0;border-bottom:none}
+.json-editor-ta{width:100%;min-height:420px;padding:14px 16px;background:rgba(0,0,0,.5);border:1px solid rgba(166,138,86,.18);border-radius:0 0 8px 8px;color:rgba(220,200,160,.92);font-size:11.5px;font-family:'Courier New',Consolas,monospace;line-height:1.65;resize:vertical;outline:none;box-sizing:border-box;transition:border-color .12s;tab-size:2}
+.json-editor-ta:focus{border-color:rgba(166,138,86,.45)}
+.json-editor-btns{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.json-dl-btn,.json-load-btn{padding:7px 13px;border-radius:7px;font-size:11px;cursor:pointer;border:1px solid rgba(166,138,86,.28);background:transparent;color:rgba(200,176,122,.6);font-family:inherit;transition:all .12s;white-space:nowrap}
+.json-dl-btn:hover,.json-load-btn:hover{border-color:rgba(166,138,86,.6);color:rgba(200,176,122,.95);background:rgba(166,138,86,.08)}
+.json-gen-btn{flex:1;min-width:140px;padding:11px;border-radius:9px;font-size:13px;font-weight:800;cursor:pointer;border:none;font-family:inherit;background:linear-gradient(135deg,var(--brand),var(--green));color:#fff;letter-spacing:.5px;transition:all .15s;box-shadow:0 4px 16px rgba(14,107,89,.3)}
+.json-gen-btn:hover{filter:brightness(1.12);transform:translateY(-2px)}
+.json-err{font-size:10px;color:rgba(255,120,120,.9);padding:7px 11px;background:rgba(255,0,0,.07);border-radius:6px;border:1px solid rgba(255,100,100,.2);white-space:pre-wrap}
+/* Config Editor */
+.config-editor{display:flex;flex-direction:column;gap:10px;width:100%;max-width:540px}
+.config-section{border:1px solid rgba(166,138,86,.18);border-radius:9px;overflow:hidden;background:rgba(0,0,0,.18)}
+.config-section-hd{display:flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(166,138,86,.08);border-bottom:1px solid rgba(166,138,86,.12);font-size:11px;font-weight:700;color:rgba(200,176,122,.75);letter-spacing:.5px}
+.config-section-body{padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.config-field{display:flex;flex-direction:column;gap:3px}
+.config-label{font-size:9px;font-weight:700;color:rgba(200,176,122,.4);letter-spacing:1px;text-transform:uppercase}
+.config-input{width:100%;padding:6px 10px;background:rgba(0,0,0,.35);border:1px solid rgba(166,138,86,.22);border-radius:6px;color:rgba(220,200,160,.9);font-size:12px;font-family:inherit;resize:vertical;outline:none;box-sizing:border-box;transition:border-color .12s;line-height:1.5}
+.config-input:focus{border-color:rgba(166,138,86,.55)}
+.config-select{padding:4px 8px;background:rgba(0,0,0,.5);border:1px solid rgba(166,138,86,.25);border-radius:6px;color:rgba(200,176,122,.8);font-size:11px;font-family:inherit;outline:none;cursor:pointer;margin-left:auto}
+.config-row-item{display:flex;gap:5px;align-items:center}
+.config-row-num{width:26px;font-size:10px;font-weight:800;color:rgba(166,138,86,.55);flex-shrink:0;text-align:center}
+.config-row-del{width:22px;height:22px;flex-shrink:0;border:1px solid rgba(220,80,80,.28);border-radius:4px;background:transparent;color:rgba(220,80,80,.55);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit;transition:all .12s;line-height:1;padding:0}
+.config-row-del:hover{background:rgba(220,80,80,.12);color:rgba(220,80,80,.9)}
+.config-add-btn{padding:5px;border:1px dashed rgba(166,138,86,.28);border-radius:6px;background:transparent;color:rgba(200,176,122,.45);font-size:11px;cursor:pointer;font-family:inherit;transition:all .12s}
+.config-add-btn:hover{border-color:rgba(166,138,86,.55);color:rgba(200,176,122,.85);background:rgba(166,138,86,.05)}
+.config-page-del{padding:2px 8px;border:1px solid rgba(220,80,80,.28);border-radius:5px;background:transparent;color:rgba(220,80,80,.55);font-size:10px;cursor:pointer;font-family:inherit;margin-left:auto;transition:all .12s}
+.config-page-del:hover{background:rgba(220,80,80,.1);color:rgba(220,80,80,.9)}
+.config-confirm-btn{padding:12px;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;border:none;font-family:inherit;background:linear-gradient(135deg,var(--brand),var(--green));color:#fff;letter-spacing:.5px;transition:all .15s;box-shadow:0 4px 16px rgba(14,107,89,.3)}
+.config-confirm-btn:hover{filter:brightness(1.12);transform:translateY(-2px)}
+.config-add-page-btn{padding:8px;border:1px dashed rgba(100,200,150,.2);border-radius:8px;background:transparent;color:rgba(100,200,150,.5);font-size:11px;cursor:pointer;font-family:inherit;transition:all .12s}
+.config-add-page-btn:hover{border-color:rgba(100,200,150,.5);color:rgba(100,200,150,.85)}
 .gen-main-btn:not(:disabled):active{transform:translateY(0)}
 .gen-main-btn:disabled{opacity:.4;cursor:default}
 
@@ -140,6 +194,18 @@ textarea{min-height:72px;line-height:1.5}
 .card-dl{background:rgba(166,138,86,.2);border:1px solid rgba(166,138,86,.38);border-radius:8px;padding:7px 20px;font-size:11px;font-weight:700;color:var(--gold-l);cursor:pointer;font-family:inherit;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
 .card-dl:hover{background:rgba(166,138,86,.42);transform:translateY(-1px)}
 .card-canva{background:rgba(100,180,255,.12);border:1px solid rgba(100,180,255,.35);border-radius:8px;padding:7px 20px;font-size:11px;font-weight:700;color:#8ecfff;cursor:pointer;font-family:inherit;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+/* Per-page background mini picker */
+.mini-bg-picker{padding:6px 0 0;display:flex;flex-direction:column;gap:4px;max-width:220px}
+.mini-bg-picker-label{font-size:9px;font-weight:700;color:rgba(200,176,122,.4);letter-spacing:1.5px;text-transform:uppercase}
+.mini-bg-picker-row{display:flex;flex-wrap:wrap;gap:3px}
+.mini-bg-btn{padding:3px 7px;font-size:9px;border-radius:4px;cursor:pointer;border:1px solid rgba(166,138,86,.28);background:rgba(0,0,0,.3);color:rgba(200,176,122,.6);font-family:inherit;transition:all .12s;line-height:1.5}
+.mini-bg-btn:hover{border-color:rgba(166,138,86,.6);color:rgba(200,176,122,.95);background:rgba(166,138,86,.12)}
+.mini-bg-btn.on{border-color:rgba(166,138,86,.75);background:rgba(166,138,86,.22);color:var(--gold-l)}
+.mini-bg-next{margin-top:2px;padding:3px 10px;font-size:9px;border-radius:4px;cursor:pointer;border:1px solid rgba(166,138,86,.22);background:transparent;color:rgba(200,176,122,.45);font-family:inherit;transition:all .12s;width:100%}
+.mini-bg-next:hover{border-color:rgba(166,138,86,.5);color:rgba(200,176,122,.85)}
+.mini-bg-upload{margin-top:4px;padding:4px 10px;font-size:9px;border-radius:4px;cursor:pointer;border:1px dashed rgba(166,138,86,.35);background:transparent;color:rgba(200,176,122,.55);font-family:inherit;transition:all .12s;width:100%;text-align:left;box-sizing:border-box}
+.mini-bg-upload:hover{border-color:rgba(166,138,86,.6);color:rgba(200,176,122,.9);background:rgba(166,138,86,.08)}
+.mini-bg-upload.on{border-color:rgba(166,138,86,.75);background:rgba(166,138,86,.18);color:var(--gold-l);border-style:solid}
 .card-canva:hover{background:rgba(100,180,255,.28);transform:translateY(-1px)}
 /* Toast */
 #gs-toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(16px);background:#1a2a3a;border:1px solid rgba(100,180,255,.4);color:#8ecfff;border-radius:10px;padding:10px 22px;font-size:12px;font-weight:600;pointer-events:none;opacity:0;transition:opacity .25s,transform .25s;z-index:9999;white-space:nowrap}
@@ -370,8 +436,38 @@ textarea{min-height:72px;line-height:1.5}
 
       </div>
       <div class="gen-btn-wrap">
-        <button class="gen-main-btn" id="gen-btn" onclick="generate()">▶ 生成內容</button>
-        <div style="text-align:center;margin-top:8px;font-size:10px;color:var(--muted)"><span id="gen-hint">貼入文章即可一鍵生成 · 無需 API Key</span></div>
+
+        <!-- ① 桌面版 Claude / 無 API Key 工作流 -->
+        <div class="gen-section-label">不需 API Key · 用桌面版 Claude</div>
+        <div class="gen-desktop-row">
+          <button class="gen-desktop-btn" id="copy-prompt-btn" onclick="copyToClaudeDesktop()" type="button">
+            📋 複製提示詞
+          </button>
+          <button class="gen-desktop-btn" id="paste-json-btn" onclick="openJsonPasteEditor()" type="button">
+            📥 貼入 JSON 回應
+          </button>
+        </div>
+        <div class="gen-desktop-steps">
+          <span>① 複製提示詞</span><span class="gen-step-arrow">→</span>
+          <span>② 貼到 Claude</span><span class="gen-step-arrow">→</span>
+          <span>③ 貼入 JSON</span><span class="gen-step-arrow">→</span>
+          <span>④ 生成圖卡</span>
+        </div>
+
+        <!-- ② API Key 自動流程 -->
+        <div class="gen-section-label" style="margin-top:10px">有 API Key · 全自動</div>
+        <div class="api-key-row">
+          <span id="api-key-dot" class="api-key-dot" title="未設定 API Key">○</span>
+          <input type="password" id="claude-api-key" class="api-key-input"
+            placeholder="Anthropic API Key (sk-ant-…)"
+            autocomplete="off" oninput="saveClaudeApiKey(this.value)" />
+        </div>
+        <button class="gen-claude-btn" id="claude-btn" onclick="analyzeWithClaude()" type="button">🤖 Claude 分析 → 直接生成圖卡</button>
+
+        <!-- ③ 本地快速 -->
+        <div class="gen-section-label" style="margin-top:10px">本地快速（不需 Claude）</div>
+        <button class="gen-main-btn" id="gen-btn" onclick="generate()">▶ 快速生成（本地解析）</button>
+
       </div>
     </div>
 
@@ -759,7 +855,8 @@ function parseArticle(rawText) {
     const stripped = stripSymbols(clean);
     if (!stripped || stripped.length < 2) continue;
 
-    const isBulletLine = /^[-•*·▶►→✅📌💡✓☑]/.test(clean) || /^\d+[\.、)]\s/.test(clean);
+    const isBulletLine = /^[-•*·▶►→✅📌💡✓☑]/.test(clean) || /^\d+[\.、)]\s/.test(clean)
+                       || /^\p{Emoji}/u.test(clean); // 支援 🎯🔑⭐ 等 emoji 開頭條列
     const isHeading = /^#{1,4}\s/.test(line) ||
       /^[■●▶]\s/.test(line) ||
       /^[一二三四五六七八九十百]+[、\.：]\s*\S/.test(line) ||
@@ -772,7 +869,8 @@ function parseArticle(rawText) {
       const h = stripped.replace(/[：:]$/,'').replace(/^[\d一二三四五六七八九十]+[\.、)]\s*/,'').slice(0,16);
       cur = { type:'bullets', heading: h, bullets:[] };
     } else if (cur) {
-      const b = stripped.replace(/^[-•*·▶►→✅📌💡✓☑]\s*/,'').replace(/^\d+[\.、)]\s*/,'').trim();
+      const b = stripped.replace(/^[-•*·▶►→✅📌💡✓☑]\s*/,'').replace(/^\d+[\.、)]\s*/,'')
+                        .replace(/^\p{Emoji}\s*/u,'').trim(); // 去掉 🎯 等 emoji 前綴
       if (b && b.length >= 3 && b.length <= 120) cur.bullets.push(b);
     } else {
       if (!cur) cur = { type:'bullets', heading:'重點整理', bullets:[] };
@@ -996,6 +1094,627 @@ function clearArticle() {
   document.getElementById('article-clear-btn').style.display = 'none';
 }
 
+// ── Claude API Integration ────────────────────────────────────────────────────
+
+const CLAUDE_SYSTEM_PROMPT = `你是 GoStudy 社群圖卡設計助理。請分析下方行銷文章，輸出一份 post-config.json，用於生成 Instagram 多頁社群圖卡（封面＋總覽＋內容頁）。
+
+輸出格式（只輸出純 JSON，不加任何說明或 markdown）：
+{
+  "cover": {
+    "headline": "白框標題：事實性簡短描述，最多 18 字",
+    "subheadline": "副標：吸引點或核心問題，最多 20 字",
+    "hookLine1": "封面最具衝擊力的關鍵詞，3-8 字",
+    "hookLine2": "補充說明，3-8 字",
+    "hookLine3": ""
+  },
+  "overview": {
+    "title": "P2 總覽頁標題，最多 16 字",
+    "rows": [
+      { "num": "01", "title": "核心要點，最多 10 字", "brief": "一句補充，最多 12 字" }
+    ]
+  },
+  "pages": [
+    {
+      "title": "頁面標題，最多 22 字",
+      "layout": "bullets",
+      "bullets": [
+        "策略名稱｜詳細說明（標題 4-8 字，說明 15-35 字，必須用全形｜分隔）"
+      ]
+    }
+  ],
+  "cta": "行動呼籲文字，最多 20 字",
+  "hashtags": "#標籤1 #標籤2 #標籤3"
+}
+
+規範：
+1. overview.rows 放 3-5 個核心策略/要點/步驟
+2. pages 最多 3 頁，每頁 bullets 最多 4 項
+3. bullets 全部使用全形「｜」分隔標題與說明，標題控制在 4-8 字
+4. 繁體中文，貼近台灣留學行銷語境
+5. 只輸出純 JSON，絕對不要 markdown 格式（不要 \`\`\`json 包裹）也不要任何說明文字`;
+
+// ── API Key 管理 ──────────────────────────────────────────────────────────────
+function getClaudeApiKey() {
+  return localStorage.getItem('gs_claude_key') || '';
+}
+
+function saveClaudeApiKey(val) {
+  const key = val.trim();
+  if (key) localStorage.setItem('gs_claude_key', key);
+  else localStorage.removeItem('gs_claude_key');
+  _updateApiKeyDot();
+}
+
+function _updateApiKeyDot() {
+  const dot = document.getElementById('api-key-dot');
+  if (!dot) return;
+  const hasKey = !!getClaudeApiKey();
+  dot.textContent = hasKey ? '●' : '○';
+  dot.style.color = hasKey ? 'rgba(100,210,150,.85)' : 'rgba(200,176,122,.28)';
+  dot.title = hasKey ? 'API Key 已設定' : '未設定 API Key';
+}
+
+// 頁面載入時恢復 API Key
+document.addEventListener('DOMContentLoaded', () => {
+  const saved = getClaudeApiKey();
+  const inp = document.getElementById('claude-api-key');
+  if (inp && saved) inp.value = saved;
+  _updateApiKeyDot();
+});
+
+// ── 桌面版 Claude 工作流 ───────────────────────────────────────────────────────
+
+// ① 複製給 Claude Desktop 的提示詞
+async function copyToClaudeDesktop() {
+  const raw = document.getElementById('inp-article').value.trim();
+  if (!raw) { alert('請先貼入文章內容'); return; }
+
+  const prompt =
+`你是 GoStudy 社群圖卡設計助理。請分析以下行銷文章，輸出一份 post-config.json，用於生成 Instagram 多頁社群圖卡（封面＋總覽＋內容頁）。
+
+輸出格式（只輸出純 JSON，不加任何說明或 markdown 符號）：
+{
+  "cover": {
+    "headline": "白框標題：事實性簡短描述，最多 18 字",
+    "subheadline": "副標：吸引點或核心問題，最多 20 字",
+    "hookLine1": "封面最具衝擊力的關鍵詞，3-8 字",
+    "hookLine2": "補充說明，3-8 字",
+    "hookLine3": ""
+  },
+  "overview": {
+    "title": "P2 總覽頁標題，最多 16 字",
+    "rows": [
+      { "num": "01", "title": "核心要點，最多 10 字", "brief": "一句補充，最多 12 字" }
+    ]
+  },
+  "pages": [
+    {
+      "title": "頁面標題，最多 22 字",
+      "layout": "bullets",
+      "bullets": [
+        "策略名稱｜詳細說明（標題 4-8 字，說明 15-35 字，必須用全形｜分隔）"
+      ]
+    }
+  ],
+  "cta": "行動呼籲文字，最多 20 字",
+  "hashtags": "#標籤1 #標籤2 #標籤3"
+}
+
+規範：
+1. overview.rows 放 3-5 個核心策略/要點/步驟
+2. pages 最多 3 頁，每頁 bullets 最多 4 項
+3. bullets 全部使用全形「｜」分隔標題與說明，標題控制在 4-8 字
+4. 繁體中文，貼近台灣留學行銷語境
+5. 只輸出純 JSON，絕對不要 markdown 格式（不要 \`\`\`json 包裹）也不要任何說明文字
+
+文章內容如下：
+${'─'.repeat(40)}
+${raw}
+${'─'.repeat(40)}`;
+
+  try {
+    await navigator.clipboard.writeText(prompt);
+    // 更新按鈕狀態
+    const btn = document.getElementById('copy-prompt-btn');
+    const orig = btn.textContent;
+    btn.textContent = '✓ 已複製！貼到 Claude Desktop';
+    btn.style.borderColor = 'rgba(100,210,150,.6)';
+    btn.style.color = 'rgba(100,210,150,.9)';
+    setTimeout(() => {
+      btn.textContent = orig;
+      btn.style.borderColor = '';
+      btn.style.color = '';
+    }, 3000);
+    // 自動開啟 JSON 貼入編輯器
+    openJsonPasteEditor();
+    document.getElementById('preview-info').textContent = '✦ 提示詞已複製 · 請貼到 Claude Desktop · 複製 JSON 後貼入右側';
+  } catch(e) {
+    // 瀏覽器不支援 clipboard API 時 fallback
+    const ta = document.createElement('textarea');
+    ta.value = prompt;
+    ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0.01;';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('✦ 提示詞已複製');
+    openJsonPasteEditor();
+  }
+}
+
+// ② 開啟空白 JSON 貼入編輯器
+function openJsonPasteEditor() {
+  const emptyTemplate = JSON.stringify({
+    "cover": {
+      "headline": "",
+      "subheadline": "",
+      "hookLine1": "",
+      "hookLine2": "",
+      "hookLine3": ""
+    },
+    "overview": {
+      "title": "",
+      "rows": [
+        { "num": "01", "title": "", "brief": "" },
+        { "num": "02", "title": "", "brief": "" }
+      ]
+    },
+    "pages": [
+      {
+        "title": "",
+        "layout": "bullets",
+        "bullets": ["標題｜說明文字"]
+      }
+    ],
+    "cta": "",
+    "hashtags": ""
+  }, null, 2);
+
+  showJsonConfigEditor(emptyTemplate);
+
+  // 替換 header 文字，加引導說明
+  const area = document.getElementById('preview-area');
+  const hdr = area.querySelector('.json-editor-header');
+  if (hdr) hdr.innerHTML = '📥 貼入 Claude 的 JSON 回應 &nbsp;<span style="font-weight:400;font-size:9px;opacity:.55">（Ctrl+A 全選 → Ctrl+V 貼上）</span>';
+
+  // 讓 textarea 自動全選並 focus，方便直接貼上
+  setTimeout(() => {
+    const ta = document.getElementById('json-config-ta');
+    if (!ta) return;
+    ta.focus();
+    ta.select();
+  }, 50);
+}
+
+// ── 主入口：Claude 分析 ────────────────────────────────────────────────────────
+async function analyzeWithClaude() {
+  const raw = document.getElementById('inp-article').value.trim();
+  if (!raw) { alert('請先貼入文章內容'); return; }
+
+  const apiKey = getClaudeApiKey();
+  if (!apiKey) {
+    alert('請先在上方輸入 Anthropic API Key（sk-ant-…）');
+    document.getElementById('claude-api-key').focus();
+    return;
+  }
+
+  const btn = document.getElementById('claude-btn');
+  const infoEl = document.getElementById('preview-info');
+  btn.disabled = true; btn.textContent = '🤖 Claude 分析中…';
+  infoEl.textContent = '✦ 呼叫 Claude 分析文章…';
+
+  try {
+    const jsonStr = await _callClaudeAPI(apiKey, raw);
+    showJsonConfigEditor(jsonStr);
+    infoEl.textContent = '✓ Claude 分析完成 · 請確認設定後生成圖卡';
+  } catch (e) {
+    infoEl.textContent = `⚠ ${e.message}`;
+    showJsonConfigEditor('{}'); // 讓使用者看到空白 JSON 可手動填
+    const errEl = document.getElementById('json-config-err');
+    if (errEl) { errEl.textContent = '⚠ Claude 分析失敗：' + e.message + '\n\n你可以手動填入 JSON 後直接生成圖卡。'; errEl.style.display = ''; }
+  } finally {
+    btn.disabled = false; btn.textContent = '🤖 Claude 分析 → 編輯設定 → 生成';
+  }
+}
+
+// ── 呼叫 Claude API ────────────────────────────────────────────────────────────
+async function _callClaudeAPI(apiKey, articleText) {
+  let response;
+  try {
+    response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-opus-4-5',
+        max_tokens: 2048,
+        system: CLAUDE_SYSTEM_PROMPT,
+        messages: [{ role: 'user', content: '請分析以下文章，輸出 post-config.json：\n\n' + articleText }]
+      })
+    });
+  } catch (e) {
+    throw new Error('網路錯誤，請確認連線：' + e.message);
+  }
+
+  if (!response.ok) {
+    let msg = `HTTP ${response.status}`;
+    try { const j = await response.json(); msg = j?.error?.message || msg; } catch(_) {}
+    if (response.status === 401) msg = 'API Key 無效，請確認後重試';
+    if (response.status === 429) msg = '請求過於頻繁，稍後再試';
+    throw new Error(msg);
+  }
+
+  const data = await response.json();
+  let content = data.content?.[0]?.text || '';
+
+  // 如果 Claude 還是包了 ```json，自動剝掉
+  const m = content.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (m) content = m[1].trim();
+  else content = content.trim();
+
+  // 驗證是合法 JSON
+  JSON.parse(content); // 若格式不對會拋出錯誤
+  return content;
+}
+
+// ── JSON 設定編輯器 ───────────────────────────────────────────────────────────
+function showJsonConfigEditor(jsonStr) {
+  const area = document.getElementById('preview-area');
+  area.innerHTML = '';
+  document.getElementById('dl-btn').style.display    = 'none';
+  document.getElementById('canva-btn').style.display = 'none';
+
+  // 嘗試美化 JSON
+  let pretty = jsonStr;
+  try { pretty = JSON.stringify(JSON.parse(jsonStr), null, 2); } catch(_) {}
+
+  const wrap = document.createElement('div');
+  wrap.className = 'json-config-wrap';
+
+  // Header
+  const hdr = document.createElement('div');
+  hdr.className = 'json-editor-header';
+  hdr.innerHTML = '📄 post-config.json &nbsp;<span style="font-weight:400;font-size:9px;opacity:.55">（直接編輯後點「確認生成圖卡」）</span>';
+  wrap.appendChild(hdr);
+
+  // JSON Textarea
+  const ta = document.createElement('textarea');
+  ta.className = 'json-editor-ta';
+  ta.id = 'json-config-ta';
+  ta.value = pretty;
+  ta.spellcheck = false;
+  ta.autocomplete = 'off';
+  // Tab 鍵插入 2 spaces
+  ta.addEventListener('keydown', e => {
+    if (e.key !== 'Tab') return;
+    e.preventDefault();
+    const s = ta.selectionStart, end = ta.selectionEnd;
+    ta.value = ta.value.substring(0, s) + '  ' + ta.value.substring(end);
+    ta.selectionStart = ta.selectionEnd = s + 2;
+  });
+  wrap.appendChild(ta);
+
+  // Error display
+  const errEl = document.createElement('div');
+  errEl.id = 'json-config-err';
+  errEl.className = 'json-err';
+  errEl.style.display = 'none';
+  wrap.appendChild(errEl);
+
+  // Button row
+  const btnRow = document.createElement('div');
+  btnRow.className = 'json-editor-btns';
+
+  // ⬇ 下載 JSON
+  const dlBtn = document.createElement('button');
+  dlBtn.className = 'json-dl-btn';
+  dlBtn.type = 'button';
+  dlBtn.textContent = '⬇ 下載 JSON';
+  dlBtn.onclick = () => {
+    try { JSON.parse(ta.value); } catch(e) { alert('JSON 格式有誤，請先修正：' + e.message); return; }
+    const blob = new Blob([ta.value], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.download = 'post-config.json';
+    a.href = URL.createObjectURL(blob);
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+  };
+  btnRow.appendChild(dlBtn);
+
+  // 📂 載入 JSON 檔
+  const fileIn = document.createElement('input');
+  fileIn.type = 'file'; fileIn.accept = '.json,application/json'; fileIn.style.display = 'none';
+  fileIn.onchange = () => {
+    const f = fileIn.files[0]; if (!f) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        ta.value = JSON.stringify(JSON.parse(ev.target.result), null, 2);
+        errEl.style.display = 'none';
+      } catch(e) { errEl.textContent = '❌ 檔案 JSON 格式錯誤：' + e.message; errEl.style.display = ''; }
+    };
+    reader.readAsText(f);
+    fileIn.value = '';
+  };
+  wrap.appendChild(fileIn);
+
+  const loadBtn = document.createElement('button');
+  loadBtn.className = 'json-load-btn';
+  loadBtn.type = 'button';
+  loadBtn.textContent = '📂 載入 JSON 檔';
+  loadBtn.onclick = () => fileIn.click();
+  btnRow.appendChild(loadBtn);
+
+  // ▶ 確認生成圖卡
+  const genBtn = document.createElement('button');
+  genBtn.className = 'json-gen-btn';
+  genBtn.type = 'button';
+  genBtn.textContent = '▶ 確認生成圖卡';
+  genBtn.onclick = () => generateFromJsonConfig(ta.value);
+  btnRow.appendChild(genBtn);
+
+  wrap.appendChild(btnRow);
+  area.appendChild(wrap);
+}
+
+// ── JSON → 圖卡 ───────────────────────────────────────────────────────────────
+function generateFromJsonConfig(jsonStr) {
+  const errEl = document.getElementById('json-config-err');
+  let cfg;
+  try {
+    cfg = JSON.parse(jsonStr);
+  } catch(e) {
+    if (errEl) { errEl.textContent = '❌ JSON 格式錯誤，請修正後再試：\n' + e.message; errEl.style.display = ''; }
+    return;
+  }
+  if (errEl) errEl.style.display = 'none';
+
+  const data = _jsonConfigToCardData(cfg);
+  const infoEl = document.getElementById('preview-info');
+  infoEl.textContent = '✦ 生成圖卡中…';
+  generated = data;
+  renderOutput(data);
+  if (typeof updateSceneCycleRow === 'function') updateSceneCycleRow();
+  document.getElementById('dl-btn').style.display    = 'inline-flex';
+  document.getElementById('canva-btn').style.display = 'inline-flex';
+  infoEl.textContent = '✓ 圖卡生成完成';
+}
+
+// JSON schema → 內部 data 結構
+function _jsonConfigToCardData(cfg) {
+  const cover = cfg.cover   || {};
+  const ov    = cfg.overview || {};
+  const pages = cfg.pages   || [];
+
+  return {
+    title:        cover.headline    || '',
+    headline:     cover.headline    || '',
+    subheadline:  cover.subheadline || '',
+    hookLine1:    cover.hookLine1   || '',
+    hookLine2:    cover.hookLine2   || '',
+    hookLine3:    cover.hookLine3   || '',
+    tableRows: (ov.rows || []).map((r, i) => ({
+      num:   r.num   || String(i + 1).padStart(2, '0'),
+      title: r.title || '',
+      brief: r.brief || ''
+    })),
+    rankingSection: null,
+    contentPages: pages.map(p => ({
+      title:        p.title  || '',
+      layout:       p.layout || 'bullets',
+      bullets:      p.bullets || [],
+      body:         (p.bullets || []).join('\n'),
+      items:        [],
+      statsForPage: []
+    })),
+    cta:       cfg.cta       || '立即預約免費諮詢',
+    hashtags:  cfg.hashtags  || '',
+    keyPoints: (ov.rows || []).slice(0, 4).map(r => r.title),
+    tagline:   'GoStudy — 海外名校申請顧問'
+  };
+}
+
+// ── Config Editor (分析 → 設定 → 生成 三步流程) ──────────────────────────────
+
+async function analyzeToConfig() {
+  const raw = document.getElementById('inp-article').value.trim();
+  if (!raw) { alert('請先貼入文章內容'); return; }
+  const editBtn = document.getElementById('edit-config-btn');
+  const infoEl  = document.getElementById('preview-info');
+  editBtn.disabled = true; editBtn.textContent = '分析中…';
+  infoEl.textContent = '✦ 分析文章結構…';
+  await new Promise(r => setTimeout(r, 30));
+  const parsed = parseArticle(raw);
+  if (!parsed) {
+    infoEl.textContent = '⚠ 無法解析，請確認文章格式';
+    editBtn.disabled = false; editBtn.textContent = '📋 先編輯設定再生成'; return;
+  }
+  const data = buildDataFromArticle(parsed);
+  showConfigEditor(data);
+  infoEl.textContent = '✦ 設定已載入，確認後生成圖卡';
+  editBtn.disabled = false; editBtn.textContent = '📋 先編輯設定再生成';
+}
+
+function showConfigEditor(data) {
+  const area = document.getElementById('preview-area');
+  area.innerHTML = '';
+  document.getElementById('dl-btn').style.display = 'none';
+  document.getElementById('canva-btn').style.display = 'none';
+
+  // 深複製，讓使用者編輯不影響原始資料
+  const d = JSON.parse(JSON.stringify(data));
+
+  const editor = document.createElement('div');
+  editor.className = 'config-editor';
+
+  // ── P1 封面 ────────────────────────────────────────────────────────────────
+  editor.appendChild(_cfgSection('P1 封面', [
+    { label: '白框標題', key: 'headline',    val: d.headline    || d.title || '' },
+    { label: '副標文字', key: 'subheadline', val: d.subheadline || ''            },
+    { label: '大字第 1 行', key: 'hookLine1', val: d.hookLine1 || '' },
+    { label: '大字第 2 行', key: 'hookLine2', val: d.hookLine2 || '' },
+    { label: '大字第 3 行（選填）', key: 'hookLine3', val: d.hookLine3 || '' },
+  ], d));
+
+  // ── P2 總覽 ────────────────────────────────────────────────────────────────
+  const ovSec = document.createElement('div'); ovSec.className = 'config-section';
+  const ovHd  = document.createElement('div'); ovHd.className = 'config-section-hd';
+  ovHd.textContent = 'P2 總覽';
+  ovSec.appendChild(ovHd);
+  const ovBody = document.createElement('div'); ovBody.className = 'config-section-body';
+
+  // 總覽標題欄
+  const ovTF = document.createElement('div'); ovTF.className = 'config-field';
+  const ovTL = document.createElement('div'); ovTL.className = 'config-label'; ovTL.textContent = '總覽標題';
+  const ovTI = document.createElement('input'); ovTI.className = 'config-input';
+  ovTI.value = d.subheadline || d.headline || '';
+  ovTI.oninput = () => { d._overviewTitle = ovTI.value; };
+  ovTF.appendChild(ovTL); ovTF.appendChild(ovTI); ovBody.appendChild(ovTF);
+
+  // 條目清單
+  const rowsEl = document.createElement('div');
+  // 初始條目：有排名資料用排名，否則用 tableRows
+  const initRows = d.rankingSection
+    ? d.rankingSection.rows.slice(0, 6).map(r => ({ num: '#'+r.rank, title: r.name || r.nameZh || '', brief: r.nameZh && r.name ? r.nameZh : '' }))
+    : (d.tableRows || []).map(r => ({ num: r.num, title: r.title, brief: r.brief || '' }));
+  d._ovRows = initRows.map(r => ({ ...r }));
+
+  function redrawRows() {
+    rowsEl.innerHTML = '';
+    d._ovRows.forEach((row, i) => {
+      const ri = document.createElement('div'); ri.className = 'config-row-item';
+      const numEl = document.createElement('div'); numEl.className = 'config-row-num'; numEl.textContent = row.num || String(i+1).padStart(2,'0');
+      const tI = document.createElement('input'); tI.className = 'config-input'; tI.style.flex = '2'; tI.placeholder = '標題'; tI.value = row.title || '';
+      tI.oninput = () => { d._ovRows[i].title = tI.value; };
+      const bI = document.createElement('input'); bI.className = 'config-input'; bI.style.flex = '1'; bI.placeholder = '摘要'; bI.value = row.brief || '';
+      bI.oninput = () => { d._ovRows[i].brief = bI.value; };
+      const del = document.createElement('button'); del.className = 'config-row-del'; del.textContent = '×'; del.type = 'button';
+      del.onclick = () => { d._ovRows.splice(i, 1); redrawRows(); };
+      ri.appendChild(numEl); ri.appendChild(tI); ri.appendChild(bI); ri.appendChild(del);
+      rowsEl.appendChild(ri);
+    });
+  }
+  redrawRows();
+  ovBody.appendChild(rowsEl);
+
+  const addRowBtn = document.createElement('button'); addRowBtn.className = 'config-add-btn'; addRowBtn.type = 'button'; addRowBtn.textContent = '＋ 新增條目';
+  addRowBtn.onclick = () => { d._ovRows.push({ num: String(d._ovRows.length+1).padStart(2,'0'), title: '', brief: '' }); redrawRows(); };
+  ovBody.appendChild(addRowBtn);
+  ovSec.appendChild(ovBody);
+  editor.appendChild(ovSec);
+
+  // ── 內容頁 P3+ ──────────────────────────────────────────────────────────────
+  const cpEl = document.createElement('div');
+  d._cps = (d.contentPages || []).map(cp => ({ ...cp, bullets: [...(cp.bullets||[])] }));
+
+  const layoutOpts = [
+    { v:'bullets',   l:'📌 條列重點' },
+    { v:'keypoints', l:'✦ 圖示重點' },
+    { v:'steps',     l:'📋 流程步驟' },
+    { v:'body',      l:'📄 段落內文' },
+  ];
+
+  function redrawCPs() {
+    cpEl.innerHTML = '';
+    d._cps.forEach((cp, i) => {
+      const sec = document.createElement('div'); sec.className = 'config-section';
+      const hd  = document.createElement('div'); hd.className = 'config-section-hd';
+      const lbl = document.createElement('span'); lbl.textContent = `P${i+3} 內容`;
+      const sel = document.createElement('select'); sel.className = 'config-select';
+      layoutOpts.forEach(({v, l}) => {
+        const o = document.createElement('option'); o.value = v; o.textContent = l; o.selected = cp.layout === v; sel.appendChild(o);
+      });
+      sel.onchange = () => { d._cps[i].layout = sel.value; };
+      const delPg = document.createElement('button'); delPg.className = 'config-page-del'; delPg.type = 'button'; delPg.textContent = '× 刪除此頁';
+      delPg.onclick = () => { d._cps.splice(i, 1); redrawCPs(); };
+      hd.appendChild(lbl); hd.appendChild(sel); hd.appendChild(delPg); sec.appendChild(hd);
+
+      const body = document.createElement('div'); body.className = 'config-section-body';
+      // 標題
+      const tF = document.createElement('div'); tF.className = 'config-field';
+      const tL = document.createElement('div'); tL.className = 'config-label'; tL.textContent = '標題';
+      const tI = document.createElement('input'); tI.className = 'config-input'; tI.value = cp.title || '';
+      tI.oninput = () => { d._cps[i].title = tI.value; };
+      tF.appendChild(tL); tF.appendChild(tI); body.appendChild(tF);
+      // 內文 / 條列
+      const bF = document.createElement('div'); bF.className = 'config-field';
+      const bL = document.createElement('div'); bL.className = 'config-label'; bL.textContent = '內文（每行一個要點，可用「標題｜說明」格式）';
+      const bT = document.createElement('textarea'); bT.className = 'config-input'; bT.rows = 5;
+      bT.value = (cp.bullets && cp.bullets.length) ? cp.bullets.join('\n') : (cp.body || '');
+      bT.oninput = () => {
+        const lines = bT.value.split('\n').filter(l => l.trim());
+        d._cps[i].bullets = lines; d._cps[i].body = bT.value;
+      };
+      bF.appendChild(bL); bF.appendChild(bT); body.appendChild(bF);
+      sec.appendChild(body);
+      cpEl.appendChild(sec);
+    });
+  }
+  redrawCPs();
+  editor.appendChild(cpEl);
+
+  const addPgBtn = document.createElement('button'); addPgBtn.className = 'config-add-page-btn'; addPgBtn.type = 'button'; addPgBtn.textContent = '＋ 新增內容頁';
+  addPgBtn.onclick = () => { d._cps.push({ title: '新增段落', layout: 'bullets', bullets: ['', '', ''], body: '' }); redrawCPs(); };
+  editor.appendChild(addPgBtn);
+
+  // ── Hashtags ────────────────────────────────────────────────────────────────
+  editor.appendChild(_cfgSection('Hashtags', [
+    { label: 'Hashtags', key: 'hashtags', val: d.hashtags || '' },
+  ], d));
+
+  // ── 確認生成 ─────────────────────────────────────────────────────────────────
+  const confirmBtn = document.createElement('button'); confirmBtn.className = 'config-confirm-btn'; confirmBtn.type = 'button'; confirmBtn.textContent = '▶ 確認生成圖卡';
+  confirmBtn.onclick = () => _generateFromConfig(d);
+  editor.appendChild(confirmBtn);
+
+  area.appendChild(editor);
+}
+
+// 建立一個通用設定區塊（多個 input 欄位）
+function _cfgSection(title, fields, dataObj) {
+  const sec  = document.createElement('div'); sec.className = 'config-section';
+  const hd   = document.createElement('div'); hd.className  = 'config-section-hd'; hd.textContent = title; sec.appendChild(hd);
+  const body = document.createElement('div'); body.className = 'config-section-body';
+  fields.forEach(({label, key, val}) => {
+    const f = document.createElement('div'); f.className = 'config-field';
+    const l = document.createElement('div'); l.className  = 'config-label'; l.textContent = label;
+    const i = document.createElement('input'); i.className = 'config-input'; i.value = val || '';
+    i.oninput = () => { dataObj[key] = i.value; };
+    f.appendChild(l); f.appendChild(i); body.appendChild(f);
+  });
+  sec.appendChild(body); return sec;
+}
+
+// 從設定物件生成圖卡
+function _generateFromConfig(d) {
+  // 把設定面板的編輯值合併回 data 結構
+  const final = Object.assign({}, d);
+  // 總覽條目
+  if (d._ovRows) {
+    final.tableRows = d._ovRows.map((r, i) => ({ num: r.num || String(i+1).padStart(2,'0'), title: r.title || '', brief: r.brief || '' }));
+    if (d.rankingSection) final.rankingSection = { ...d.rankingSection, rows: d._ovRows.map(r => ({ rank: r.num?.replace('#',''), name: r.title, nameZh: r.brief })) };
+  }
+  // 內容頁
+  if (d._cps) {
+    final.contentPages = d._cps.map(cp => {
+      const lines = (cp.bullets && cp.bullets.length) ? cp.bullets : (cp.body||'').split('\n').filter(Boolean);
+      return { ...cp, bullets: lines, body: lines.join('\n') };
+    });
+  }
+  const infoEl = document.getElementById('preview-info');
+  infoEl.textContent = '✦ 生成圖卡中…';
+  generated = final;
+  renderOutput(final);
+  if (typeof updateSceneCycleRow === 'function') updateSceneCycleRow();
+  document.getElementById('dl-btn').style.display    = 'inline-flex';
+  document.getElementById('canva-btn').style.display = 'inline-flex';
+  infoEl.textContent = '✓ 圖卡生成完成';
+}
+
 // ── Generate ──────────────────────────────────────────────────────────────────
 async function generate() {
   const raw = document.getElementById('inp-article').value.trim();
@@ -1049,9 +1768,10 @@ function renderMultiPageOutput(d, area) {
   const cfg=PLAT[platform], bg=getBgImg();
   const cp=d.contentPages||[]; const total=2+cp.length;
   const strip=document.createElement('div'); strip.className='page-strip';
-  strip.appendChild(makeWrap(buildSCardHTML(d,bg),       `封面 1/${total}`,cfg.cardW,cfg.cardH,cfg.dispW,cfg.dispH));
-  strip.appendChild(makeWrap(buildTableCardHTML(d,bg),   `總覽 2/${total}`,cfg.cardW,cfg.cardH,cfg.dispW,cfg.dispH));
-  cp.forEach((page,i)=>strip.appendChild(makeWrap(buildContentCardHTML(d,page,bg,i+3,total),`內容 ${i+3}/${total}`,cfg.cardW,cfg.cardH,cfg.dispW,cfg.dispH)));
+  const bgOpts = {showBgPicker:true};
+  strip.appendChild(makeWrap(buildSCardHTML(d,bg),       `封面 1/${total}`,cfg.cardW,cfg.cardH,cfg.dispW,cfg.dispH,bgOpts));
+  strip.appendChild(makeWrap(buildTableCardHTML(d,bg),   `總覽 2/${total}`,cfg.cardW,cfg.cardH,cfg.dispW,cfg.dispH,bgOpts));
+  cp.forEach((page,i)=>strip.appendChild(makeWrap(buildContentCardHTML(d,page,bg,i+3,total),`內容 ${i+3}/${total}`,cfg.cardW,cfg.cardH,cfg.dispW,cfg.dispH,bgOpts)));
   area.appendChild(strip);
   const ep=buildEditPanel(currentData); if(ep) area.appendChild(ep);
   const panel=buildCaptionPanel(d); if(panel) area.appendChild(panel);
@@ -1644,8 +2364,9 @@ function buildTableCardHTML(d, imgUrl) {
 
     const tableH = rows.length * 60 + 60; // rough height
     return `<div class="gs-card-s">
-  <img class="bg" src="${imgUrl}" alt="" style="filter:saturate(0.72) brightness(0.75)">
+  <img class="bg" src="${imgUrl}" alt="" style="filter:saturate(0.12) brightness(0.40)">
   <div style="position:absolute;inset:0;background:linear-gradient(175deg,rgba(0,0,0,.55) 0%,rgba(0,0,0,.75) 40%,rgba(0,0,0,.95) 100%);z-index:2"></div>
+  <div style="position:absolute;inset:0;border:20px solid #B09060;pointer-events:none;z-index:10"></div>
   <div class="content" style="z-index:6;padding:60px 70px 50px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
       ${buildLogoEl(44)}
@@ -1674,8 +2395,9 @@ function buildTableCardHTML(d, imgUrl) {
     </div>
   </div>`).join('');
   return `<div class="gs-card-s">
-  <img class="bg" src="${imgUrl}" alt="" style="filter:saturate(0.75) brightness(0.82)">
-  <div style="position:absolute;inset:0;background:linear-gradient(175deg,rgba(0,0,0,.6) 0%,rgba(0,0,0,.82) 50%,rgba(0,0,0,.97) 100%);z-index:2"></div>
+  <img class="bg" src="${imgUrl}" alt="" style="filter:saturate(0.12) brightness(0.40)">
+  <div style="position:absolute;inset:0;background:linear-gradient(175deg,rgba(0,0,0,.55) 0%,rgba(0,0,0,.78) 50%,rgba(0,0,0,.96) 100%);z-index:2"></div>
+  <div style="position:absolute;inset:0;border:20px solid #B09060;pointer-events:none;z-index:10"></div>
   <div class="content" style="z-index:6">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
       ${buildLogoEl(44)}
@@ -1701,13 +2423,13 @@ function buildContentCardHTML(d, cp, imgUrl, pageNum, total) {
   const layout = cp.layout || 'body'; // 'bullets' | 'steps' | 'stats' | 'comparison' | 'body'
 
   // ── Shared fragments ──────────────────────────────────────────────────────────
-  const bgFilters = ['saturate(0.75) brightness(0.82)', 'saturate(0.72) brightness(0.78)', 'saturate(0.68) brightness(0.76)', 'saturate(0.70) brightness(0.80)'];
+  const bgFilters = ['saturate(0.12) brightness(0.40)', 'saturate(0.10) brightness(0.38)', 'saturate(0.14) brightness(0.42)', 'saturate(0.11) brightness(0.39)'];
   const bgF = bgFilters[cpIdx % bgFilters.length];
   const overlays = [
-    'linear-gradient(100deg,rgba(0,0,0,.97) 0%,rgba(0,0,0,.82) 48%,rgba(0,0,0,.42) 100%)',
-    'linear-gradient(180deg,rgba(0,0,0,.48) 0%,rgba(0,0,0,.78) 40%,rgba(0,0,0,.97) 100%)',
-    'linear-gradient(145deg,rgba(0,0,0,.96) 0%,rgba(0,0,0,.7) 50%,rgba(0,0,0,.9) 100%)',
-    'linear-gradient(160deg,rgba(0,0,0,.92) 0%,rgba(0,0,0,.65) 60%,rgba(0,0,0,.95) 100%)',
+    'linear-gradient(180deg,rgba(0,0,0,.60) 0%,rgba(0,0,0,.72) 50%,rgba(0,0,0,.92) 100%)',
+    'linear-gradient(180deg,rgba(0,0,0,.58) 0%,rgba(0,0,0,.70) 45%,rgba(0,0,0,.92) 100%)',
+    'linear-gradient(180deg,rgba(0,0,0,.62) 0%,rgba(0,0,0,.74) 50%,rgba(0,0,0,.93) 100%)',
+    'linear-gradient(180deg,rgba(0,0,0,.60) 0%,rgba(0,0,0,.72) 48%,rgba(0,0,0,.92) 100%)',
   ];
   const bgOverlay = overlays[cpIdx % overlays.length];
 
@@ -1727,23 +2449,38 @@ function buildContentCardHTML(d, cp, imgUrl, pageNum, total) {
 
   const bgBase = `<div class="gs-card-s">
   <img class="bg" src="${imgUrl}" alt="" style="filter:${bgF}">
-  <div style="position:absolute;inset:0;background:${bgOverlay};z-index:2"></div>`;
+  <div style="position:absolute;inset:0;background:${bgOverlay};z-index:2"></div>
+  <div style="position:absolute;inset:0;border:20px solid #B09060;pointer-events:none;z-index:10"></div>`;
 
-  // ── BULLETS: 條列式重點 ────────────────────────────────────────────────────────
+  // ── BULLETS: icon 圓框 + 金色標題 + 說明文 ───────────────────────────────────
   if (layout === 'bullets') {
-    const bullets = (cp.bullets || (cp.body||'').split('\n').filter(Boolean)).slice(0, 5);
-    const icons = ['▶', '▶', '▶', '▶', '▶'];
-    const bulletsHtml = bullets.map((b, i) => `
-      <div style="display:flex;align-items:flex-start;gap:18px;padding:18px 0;${i<bullets.length-1?'border-bottom:1px solid rgba(166,138,86,.18)':''}">
-        <div style="min-width:10px;height:10px;border-radius:2px;background:${fc};flex-shrink:0;margin-top:12px"></div>
-        <div data-field="cp${cpIdx}-body" style="font-size:30px;color:#ddd0b0;line-height:1.55;flex:1">${escH(b)}</div>
-      </div>`).join('');
+    const bullets = (cp.bullets || (cp.body||'').split('\n').filter(Boolean)).slice(0, 4);
+    const fallbackIcons = ['📌','📊','🎓','✅','🌍','💡','⚡','🏆'];
+    const bulletsHtml = bullets.map((b, i) => {
+      const icon = kpIcon(b) || fallbackIcons[i % fallbackIcons.length];
+      // 自動分割標題 + 說明：以「：」「，」或前 10 字為標題
+      const sep = b.indexOf('：') > 0 && b.indexOf('：') <= 16 ? '：'
+                : b.indexOf(':')  > 0 && b.indexOf(':')  <= 16 ? ':'
+                : b.indexOf('｜') > 0 && b.indexOf('｜') <= 20 ? '｜'  // 支援 研究放大｜說明文字
+                : b.indexOf('|')  > 0 && b.indexOf('|')  <= 20 ? '|'
+                : null;
+      const ptitle = sep ? b.slice(0, b.indexOf(sep)) : b.slice(0, Math.min(10, b.length));
+      const pdesc  = sep ? b.slice(b.indexOf(sep) + 1).trim() : b.slice(Math.min(10, b.length)).trim();
+      return `
+      <div style="display:flex;gap:22px;align-items:flex-start;padding:18px 0;${i < bullets.length - 1 ? 'border-bottom:1px solid rgba(176,144,96,.18)' : ''}">
+        <div style="width:68px;height:68px;border-radius:16px;background:rgba(176,144,96,.16);border:1.5px solid rgba(176,144,96,.42);display:flex;align-items:center;justify-content:center;font-size:36px;flex-shrink:0;line-height:1">${icon}</div>
+        <div style="flex:1;min-width:0;padding-top:3px">
+          <div style="font-size:27px;font-weight:800;color:#C9B07A;margin-bottom:6px;line-height:1.25">《${escH(ptitle)}》</div>
+          ${pdesc ? `<div style="font-size:24px;color:rgba(220,200,160,.85);line-height:1.6;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${escH(pdesc)}</div>` : ''}
+        </div>
+      </div>`;
+    }).join('');
     return `${bgBase}
   <div class="content" style="z-index:6">${headerHtml}
     <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:8px 0">
       ${sectionTitle}
-      <div style="width:60px;height:4px;background:${fc};border-radius:2px;margin-bottom:18px"></div>
-      ${bulletsHtml}
+      <div style="width:60px;height:4px;background:${fc};border-radius:2px;margin-bottom:14px"></div>
+      <div data-field="cp${cpIdx}-body">${bulletsHtml}</div>
     </div>
     ${footerHtml}
   </div></div>`;
@@ -1899,7 +2636,7 @@ function buildContentCardHTML(d, cp, imgUrl, pageNum, total) {
 }
 
 // ── Wrap + Export ─────────────────────────────────────────────────────────────
-function makeWrap(html, label, nW, nH, dW, dH) {
+function makeWrap(html, label, nW, nH, dW, dH, opts={}) {
   const wrap=document.createElement('div'); wrap.className='card-wrap';
   const lbl=document.createElement('div'); lbl.className='card-label'; lbl.textContent=label; wrap.appendChild(lbl);
   const shell=document.createElement('div'); shell.className='card-preview-shell'; shell.style.cssText=`width:${dW}px;height:${dH}px`;
@@ -1911,6 +2648,99 @@ function makeWrap(html, label, nW, nH, dW, dH) {
   const cv=document.createElement('button'); cv.className='card-canva'; cv.innerHTML='✏️ 在 Canva 編輯';
   cv.onclick=()=>openInCanva(inner,label,nW,nH);
   btns.appendChild(dl); btns.appendChild(cv); wrap.appendChild(btns);
+  // 每頁獨立換背景選擇器（僅多頁輪播使用）
+  if (opts.showBgPicker) wrap.appendChild(buildMiniScenePicker(inner));
+  return wrap;
+}
+
+// ── 每頁獨立背景選擇器 ────────────────────────────────────────────────────────
+function buildMiniScenePicker(cardInner) {
+  // 記錄此頁目前選用的場景、照片索引，以及自訂上傳的圖片 blob URL
+  let _scene     = currentScene;
+  let _idx       = scenePhotoIdx;
+  let _customUrl = null;
+
+  function applyBg() {
+    const img = cardInner.querySelector('img.bg');
+    if (!img) return;
+    if (_customUrl) {
+      img.src = _customUrl;
+    } else {
+      const arr = SCENE_IMGS[_scene] || SCENE_IMGS.oxford;
+      img.src = arr[_idx % arr.length];
+    }
+    // 場景按鈕：使用自訂圖時全部取消 on
+    row.querySelectorAll('.mini-bg-btn[data-scene]').forEach(b =>
+      b.classList.toggle('on', !_customUrl && b.dataset.scene === _scene)
+    );
+    // 上傳按鈕：使用中時顯示 on 狀態
+    uploadBtn.classList.toggle('on', !!_customUrl);
+    // 換下一張：使用自訂圖時顯示為禁用
+    nextBtn.style.opacity = _customUrl ? '0.3' : '';
+    nextBtn.style.pointerEvents = _customUrl ? 'none' : '';
+  }
+
+  const wrap = document.createElement('div');
+  wrap.className = 'mini-bg-picker';
+
+  const lbl = document.createElement('div');
+  lbl.className = 'mini-bg-picker-label';
+  lbl.textContent = '🖼 此頁背景';
+  wrap.appendChild(lbl);
+
+  const row = document.createElement('div');
+  row.className = 'mini-bg-picker-row';
+  FLAT_SCENES.forEach(({key, label}) => {
+    const btn = document.createElement('button');
+    btn.className = 'mini-bg-btn' + (key === _scene ? ' on' : '');
+    btn.dataset.scene = key;
+    btn.textContent = label;
+    btn.type = 'button';
+    btn.onclick = () => {
+      // 切換場景時釋放自訂圖 URL，回到場景圖庫
+      if (_customUrl) { URL.revokeObjectURL(_customUrl); _customUrl = null; }
+      _scene = key; _idx = 0; applyBg();
+    };
+    row.appendChild(btn);
+  });
+  wrap.appendChild(row);
+
+  const nextBtn = document.createElement('button');
+  nextBtn.className = 'mini-bg-next';
+  nextBtn.type = 'button';
+  nextBtn.textContent = '↻ 換下一張';
+  nextBtn.onclick = () => {
+    if (_customUrl) return; // 使用自訂圖時不作用
+    const total = (SCENE_IMGS[_scene] || SCENE_IMGS.oxford).length;
+    _idx = (_idx + 1) % total;
+    applyBg();
+  };
+  wrap.appendChild(nextBtn);
+
+  // ── 自訂上傳區 ──────────────────────────────────────────────────────────
+  const fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.accept = 'image/*';
+  fileInput.style.display = 'none';
+  fileInput.onchange = () => {
+    const file = fileInput.files[0];
+    if (!file) return;
+    // 釋放舊的 blob URL 避免記憶體洩漏
+    if (_customUrl) URL.revokeObjectURL(_customUrl);
+    _customUrl = URL.createObjectURL(file);
+    applyBg();
+    // 重置 input，讓同一個檔案可重複選取
+    fileInput.value = '';
+  };
+  wrap.appendChild(fileInput);
+
+  const uploadBtn = document.createElement('button');
+  uploadBtn.className = 'mini-bg-upload';
+  uploadBtn.type = 'button';
+  uploadBtn.textContent = '📁 上傳自訂圖片';
+  uploadBtn.onclick = () => fileInput.click();
+  wrap.appendChild(uploadBtn);
+
   return wrap;
 }
 
