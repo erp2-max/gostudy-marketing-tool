@@ -495,7 +495,7 @@ let hookYellowLine   = 2; // which hook line (1/2/3) renders in yellow
 function _defaultOverrides() {
   return {
     hlDelta:0, hookDelta:0,
-    subScale:1.0, logoScale:2.0, bnScale:1.0,   // logo defaults to 200%
+    subScale:1.0, logoScale:2.5, bnScale:1.0,   // logo defaults to 250%
     headlineW:null, hookGroupW:null,
     blogTitleW:null, subheadlineW:null, ctaW:null,
     textStroke:4,                                  // headline box border width (px)
@@ -2155,13 +2155,14 @@ function rebuildSCard() {
   document.querySelectorAll('.card-preview-shell').forEach(shell => {
     const inner = shell.querySelector(':scope > div');
     if (!inner) return;
-    if ((parseInt(inner.style.height)||0) !== 1350) return; // only S-cards (not blog 600px)
+    const h = parseInt(inner.style.height)||0;
+    if (h !== 1350 && h !== 600) return;
     const nW = parseInt(inner.style.width)||1080;
     const dW = parseInt(shell.style.width)||360;
     const sc = dW/nW;
     const imgUrl = selectedImgUrl || inner.querySelector('img.bg')?.src || '';
     if (!imgUrl) return;
-    inner.innerHTML = buildSCardHTML(currentData, imgUrl);
+    inner.innerHTML = h === 600 ? buildLCardHTML(currentData, imgUrl) : buildSCardHTML(currentData, imgUrl);
     inner.style.transform = `scale(${sc})`;
   });
 }
@@ -2171,7 +2172,7 @@ function resetLayout() {
   ['hlDelta','hookDelta'].forEach(k=>{
     const el=document.getElementById('fsize-'+k); if(el) el.textContent='+0';
   });
-  const scaleDefaults = {sub:'100%', logo:'200%', bn:'100%'};
+  const scaleDefaults = {sub:'100%', logo:'250%', bn:'100%'};
   Object.entries(scaleDefaults).forEach(([k,v])=>{
     const el=document.getElementById(k+'-scale-val'); if(el) el.textContent=v;
   });
@@ -2443,20 +2444,56 @@ function buildSCardHTML(d, imgUrl) {
 }
 
 function buildLCardHTML(d, imgUrl) {
-  const fc=colorAccent;
-  return `<div class="gs-card-l"><img class="bg" src="${imgUrl}" alt="">
-  <div style="position:absolute;inset:0;background:linear-gradient(108deg,rgba(5,16,11,.9) 0%,rgba(6,18,12,.74) 42%,rgba(5,14,10,.32) 100%)"></div>
-  <div style="position:absolute;inset:0;border:12px solid ${fc};pointer-events:none;z-index:10"></div>
-  <div style="position:absolute;inset:24px;border:1.5px solid rgba(166,138,86,.32);border-radius:2px;pointer-events:none;z-index:10"></div>
-  <div class="content" style="justify-content:center;max-width:490px">
-    <div style="display:inline-flex;align-items:center;gap:8px;background:${colorMid};border-radius:6px;padding:6px 16px;font-size:13px;font-weight:800;color:#fff;width:fit-content;margin-bottom:18px">GOSTUDY <span style="opacity:.55">·</span> 留學新知</div>
-    <div data-field="blogTitle" data-drag="blogTitle" contenteditable="true" spellcheck="false" style="font-size:46px;font-weight:900;color:#fff;line-height:1.18;text-shadow:0 3px 20px rgba(0,0,0,.75);margin-bottom:14px;word-break:keep-all;overflow-wrap:break-word;position:relative;cursor:grab;${manualOverrides.blogTitleW?'min-width:'+manualOverrides.blogTitleW+'px;max-width:none':''}">${escH(d.blogTitle||d.headline||'')}<div data-no-export="1" data-resize="blogTitle" contenteditable="false" class="rz-handle"></div></div>
-    <div style="width:48px;height:3px;background:${fc};border-radius:2px;margin-bottom:14px"></div>
-    <div data-field="subheadline" data-drag="subheadline" contenteditable="true" spellcheck="false" style="font-size:19px;color:#C9B07A;line-height:1.65;margin-bottom:22px;overflow-wrap:break-word;position:relative;cursor:grab;${manualOverrides.subheadlineW?'min-width:'+manualOverrides.subheadlineW+'px;max-width:none':''}">${escH(d.subheadline||'')}<div data-no-export="1" data-resize="subheadline" contenteditable="false" class="rz-handle"></div></div>
-    <div style="display:flex;align-items:center;gap:14px">
-      <div data-field="cta" data-drag="cta" data-resize-parent contenteditable="true" spellcheck="false" style="background:linear-gradient(135deg,${colorDark},${colorMid});border-radius:8px;padding:9px 24px;font-size:15px;font-weight:800;color:#fff;cursor:grab;position:relative;overflow-wrap:break-word;${manualOverrides.ctaW?'min-width:'+manualOverrides.ctaW+'px;max-width:none':''}">${escH(d.cta||'')}<div data-no-export="1" data-resize="cta" contenteditable="false" class="rz-handle"></div></div>
-      <div style="font-size:13px;color:rgba(200,176,122,.55)">go-study.com.tw</div>
+  const fc = colorAccent;
+  const mo = manualOverrides;
+  const hasSub = !!subjectUrl;
+
+  // ── Hook font size (scaled for 800px landscape) ──
+  const h1 = d.hookLine1||'', h2 = d.hookLine2||'', h3 = d.hookLine3||'';
+  const groupW = hasSub ? 400 : 560;
+  const maxHLen = Math.max(...[h1,h2,h3].filter(Boolean).map(t=>t.replace(/\s+/g,'').length), 3);
+  const hookFSBase = Math.max(30, Math.min(72, Math.floor(groupW / Math.max(Math.ceil(maxHLen/1.8), 3))));
+  const hookFS = Math.max(20, hookFSBase + (mo.hookDelta||0));
+
+  const yLine = hookYellowLine || 2;
+  const hookLinesHtml = [{txt:h1,n:1},{txt:h2,n:2},{txt:h3,n:3}]
+    .filter(({txt})=>txt.trim())
+    .map(({txt,n})=>{
+      const charLen = txt.replace(/\s/g,'').length || 1;
+      const defaultW = Math.ceil(charLen/2) * hookFS + Math.round(hookFS * 0.4);
+      const lineW = mo.hookLineW?.[n] ?? defaultW;
+      return `<div data-field="hookLine${n}" data-drag="hookLine${n}" contenteditable="true" spellcheck="false" style="font-size:${hookFS}px;font-weight:900;color:${n===yLine?'#FFE132':'#fff'};line-height:1.12;text-shadow:0 2px 12px rgba(0,0,0,.65);overflow-wrap:break-word;min-width:${lineW}px;max-width:none;position:relative;cursor:grab">${escH(txt)}<div data-no-export="1" data-resize="hookLine${n}" contenteditable="false" class="rz-handle"></div></div>`;
+    }).join('');
+
+  // ── Category tag (reuses breakingNewsText field) ──
+  const tag = (breakingNewsText||'').trim();
+
+  // ── Subject image (right-anchored) ──
+  const subEl = hasSub ? `<img src="${subjectUrl}" alt="" style="position:absolute;right:30px;bottom:0;height:88%;object-fit:contain;z-index:4">` : '';
+
+  return `<div class="gs-card-l">
+  <img class="bg" src="${imgUrl}" alt="" style="filter:saturate(0.50) brightness(0.70)">
+  <div style="position:absolute;inset:0;background:linear-gradient(108deg,rgba(0,0,0,.74) 0%,rgba(0,0,0,.50) 50%,rgba(0,0,0,.08) 100%);z-index:2"></div>
+  <div style="position:absolute;inset:0;border:10px solid ${fc};pointer-events:none;z-index:10"></div>
+  ${subEl}
+  <div style="position:absolute;inset:0;padding:32px 44px;display:flex;flex-direction:column;z-index:6">
+
+    <!-- Top: category tag + logo -->
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px">
+      ${tag ? `<div style="font-size:15px;font-weight:700;color:#fff;border-bottom:2px solid ${fc};padding-bottom:3px;letter-spacing:.04em"># ${escH(tag)}</div>` : '<div></div>'}
+      ${buildLogoEl(28, mo.logoScale||1)}
     </div>
+
+    <!-- Hook lines -->
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;max-width:${groupW}px">
+      <div data-drag="hook-group" style="cursor:grab">
+        ${hookLinesHtml || `<div style="font-size:32px;font-weight:900;color:rgba(255,255,255,.25)">請輸入大字文案</div>`}
+      </div>
+    </div>
+
+    <!-- Subheadline -->
+    ${d.subheadline ? `<div data-field="subheadline" data-drag="subheadline" contenteditable="true" spellcheck="false" style="font-size:16px;color:rgba(255,255,255,.82);line-height:1.65;cursor:grab;position:relative;max-width:${groupW}px;${mo.subheadlineW?'min-width:'+mo.subheadlineW+'px;max-width:none':''}">${escH(d.subheadline)}<div data-no-export="1" data-resize="subheadline" contenteditable="false" class="rz-handle"></div></div>` : ''}
+
   </div></div>`;
 }
 
