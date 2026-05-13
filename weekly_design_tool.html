@@ -746,7 +746,7 @@ function cycleScenePhoto() {
 // ── Icon Library（Phosphor Icons via Iconify CDN · MIT License）─────────────
 // Source: https://phosphoricons.com  CDN: https://api.iconify.design
 const _ICON_BASE  = 'https://api.iconify.design/ph';
-const _ICON_COLOR = '%23FFFFFF'; // white — high contrast on dark container
+const _ICON_COLOR = '%231A1410'; // dark brown — high contrast on bright gold container
 
 // keyword regex → Phosphor icon name
 const ICON_MAP = [
@@ -805,7 +805,7 @@ const ICON_MAP = [
 // ── Icon 三段降級：fill → regular → emoji ─────────────────────────────────────
 // 當 fill 版不存在時自動退回線條版，再退回 emoji
 function _iconFallback(img) {
-  const _emojiSpan = (e) => `<span style="font-size:42px;line-height:1;display:block;text-align:center">${e}</span>`;
+  const _emojiSpan = (e) => `<span style="font-size:40px;line-height:1;display:block;text-align:center;filter:drop-shadow(0 1px 2px rgba(0,0,0,.3))">${e}</span>`;
   const regularSrc = img.dataset.reg;
   if (regularSrc && img.src !== regularSrc) {
     // 嘗試線條版
@@ -2565,8 +2565,8 @@ function buildContentCardHTML(d, cp, imgUrl, pageNum, total) {
       const pdesc  = sep ? b.slice(b.indexOf(sep) + 1).trim() : b.slice(Math.min(10, b.length)).trim();
       // icon 容器：isImg → 深色底（白色圖示高對比）；emoji → 同樣深色底
       const iconBox = isImg
-        ? `style="width:76px;height:76px;border-radius:18px;background:linear-gradient(145deg,rgba(12,8,4,.75),rgba(28,18,8,.65));border:1.5px solid rgba(201,176,122,.45);box-shadow:0 6px 20px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden"`
-        : `style="width:76px;height:76px;border-radius:18px;background:linear-gradient(145deg,rgba(12,8,4,.75),rgba(28,18,8,.65));border:1.5px solid rgba(201,176,122,.45);box-shadow:0 6px 20px rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;font-size:40px;flex-shrink:0;line-height:1"`;
+        ? `style="width:76px;height:76px;border-radius:18px;background:linear-gradient(135deg,#C9B07A,#A27B3E);box-shadow:0 6px 20px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden"`
+        : `style="width:76px;height:76px;border-radius:18px;background:linear-gradient(135deg,#C9B07A,#A27B3E);box-shadow:0 6px 20px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:40px;flex-shrink:0;line-height:1"`;
       return `
       <div style="display:flex;gap:22px;align-items:flex-start;padding:18px 0;${i < bullets.length - 1 ? 'border-bottom:1px solid rgba(176,144,96,.15)' : ''}">
         <div ${iconBox}>${iconHtml}</div>
@@ -2677,8 +2677,8 @@ function buildContentCardHTML(d, cp, imgUrl, pageNum, total) {
       const _iconHtml = kpIconHtml(itTitle, icon || '✦');
       const _isImg    = _iconHtml.startsWith('<img');
       const _iconBox  = _isImg
-        ? `style="width:80px;height:80px;border-radius:18px;background:linear-gradient(145deg,rgba(12,8,4,.75),rgba(28,18,8,.65));border:1.5px solid rgba(201,176,122,.45);box-shadow:0 6px 20px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden"`
-        : `style="width:80px;height:80px;border-radius:18px;background:linear-gradient(145deg,rgba(12,8,4,.75),rgba(28,18,8,.65));border:1.5px solid rgba(201,176,122,.45);box-shadow:0 6px 20px rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;font-size:44px;flex-shrink:0;line-height:1"`;
+        ? `style="width:80px;height:80px;border-radius:18px;background:linear-gradient(135deg,#C9B07A,#A27B3E);box-shadow:0 6px 20px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden"`
+        : `style="width:80px;height:80px;border-radius:18px;background:linear-gradient(135deg,#C9B07A,#A27B3E);box-shadow:0 6px 20px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:44px;flex-shrink:0;line-height:1"`;
       return `
       <div style="display:flex;gap:24px;align-items:flex-start;padding:22px 0;border-bottom:1px solid rgba(166,138,86,.15)">
         <div ${_iconBox}>${_iconHtml}</div>
