@@ -746,7 +746,7 @@ function cycleScenePhoto() {
 // ── Icon Library（Phosphor Icons via Iconify CDN · MIT License）─────────────
 // Source: https://phosphoricons.com  CDN: https://api.iconify.design
 const _ICON_BASE  = 'https://api.iconify.design/ph';
-const _ICON_COLOR = '%23C9B07A'; // #C9B07A gold
+const _ICON_COLOR = '%23FFFFFF'; // white — high contrast on dark container
 
 // keyword regex → Phosphor icon name
 const ICON_MAP = [
@@ -802,18 +802,39 @@ const ICON_MAP = [
   [/最愛|喜愛|人氣/,                 'heart'],
 ];
 
+// ── Icon 三段降級：fill → regular → emoji ─────────────────────────────────────
+// 當 fill 版不存在時自動退回線條版，再退回 emoji
+function _iconFallback(img) {
+  const _emojiSpan = (e) => `<span style="font-size:42px;line-height:1;display:block;text-align:center">${e}</span>`;
+  const regularSrc = img.dataset.reg;
+  if (regularSrc && img.src !== regularSrc) {
+    // 嘗試線條版
+    img.onerror = () => {
+      img.parentNode.innerHTML = _emojiSpan(img.dataset.fb || '📌');
+    };
+    img.src = regularSrc;
+  } else {
+    img.parentNode.innerHTML = _emojiSpan(img.dataset.fb || '📌');
+  }
+}
+
 // 傳回 inline <img> SVG icon 或 emoji fallback
 function kpIconHtml(text, fallback) {
+  const fb = fallback || kpIcon(text) || '📌';
   for (const [re, name] of ICON_MAP) {
     if (re.test(text)) {
-      const src = `${_ICON_BASE}/${name}.svg?color=${_ICON_COLOR}&width=44&height=44`;
-      const esc = JSON.stringify(fallback || kpIcon(text) || '📌');
-      return `<img src="${src}" width="44" height="44" crossorigin="anonymous" alt="" `
-           + `loading="eager" onerror="this.parentNode.innerHTML=${esc}" `
-           + `style="display:block;filter:drop-shadow(0 0 8px rgba(201,176,122,.28))">`;
+      // 優先使用 fill（實心）版本，白色圖示在深色容器上清晰可見
+      const fillSrc    = `${_ICON_BASE}/${name}-fill.svg?color=${_ICON_COLOR}&width=54&height=54`;
+      const regularSrc = `${_ICON_BASE}/${name}.svg?color=${_ICON_COLOR}&width=54&height=54`;
+      // fb 只含 emoji，不含 HTML，可以安全放入 data-*
+      return `<img src="${fillSrc}" `
+           + `data-reg="${regularSrc}" data-fb="${escH(fb)}" `
+           + `width="54" height="54" crossorigin="anonymous" alt="" `
+           + `loading="eager" onerror="_iconFallback(this)" `
+           + `style="display:block">`;
     }
   }
-  return fallback || kpIcon(text) || '📌';
+  return fb;
 }
 
 // 原本的 emoji-only 版本（保留給 parseArticle 的 keypointItems 使用）
@@ -2542,10 +2563,14 @@ function buildContentCardHTML(d, cp, imgUrl, pageNum, total) {
                 : null;
       const ptitle = sep ? b.slice(0, b.indexOf(sep)) : b.slice(0, Math.min(10, b.length));
       const pdesc  = sep ? b.slice(b.indexOf(sep) + 1).trim() : b.slice(Math.min(10, b.length)).trim();
+      // icon 容器：isImg → 深色底（白色圖示高對比）；emoji → 同樣深色底
+      const iconBox = isImg
+        ? `style="width:76px;height:76px;border-radius:18px;background:linear-gradient(145deg,rgba(12,8,4,.75),rgba(28,18,8,.65));border:1.5px solid rgba(201,176,122,.45);box-shadow:0 6px 20px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden"`
+        : `style="width:76px;height:76px;border-radius:18px;background:linear-gradient(145deg,rgba(12,8,4,.75),rgba(28,18,8,.65));border:1.5px solid rgba(201,176,122,.45);box-shadow:0 6px 20px rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;font-size:40px;flex-shrink:0;line-height:1"`;
       return `
-      <div style="display:flex;gap:22px;align-items:flex-start;padding:18px 0;${i < bullets.length - 1 ? 'border-bottom:1px solid rgba(176,144,96,.18)' : ''}">
-        <div style="width:68px;height:68px;border-radius:16px;background:rgba(176,144,96,.16);border:1.5px solid rgba(176,144,96,.42);display:flex;align-items:center;justify-content:center;${isImg ? '' : 'font-size:36px;'}flex-shrink:0;line-height:1">${iconHtml}</div>
-        <div style="flex:1;min-width:0;padding-top:3px">
+      <div style="display:flex;gap:22px;align-items:flex-start;padding:18px 0;${i < bullets.length - 1 ? 'border-bottom:1px solid rgba(176,144,96,.15)' : ''}">
+        <div ${iconBox}>${iconHtml}</div>
+        <div style="flex:1;min-width:0;padding-top:4px">
           <div style="font-size:27px;font-weight:800;color:#C9B07A;margin-bottom:6px;line-height:1.25">《${escH(ptitle)}》</div>
           ${pdesc ? `<div style="font-size:24px;color:rgba(220,200,160,.85);line-height:1.6;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${escH(pdesc)}</div>` : ''}
         </div>
@@ -2651,9 +2676,12 @@ function buildContentCardHTML(d, cp, imgUrl, pageNum, total) {
     const itemsHtml = items.map(({icon, title: itTitle, desc}) => {
       const _iconHtml = kpIconHtml(itTitle, icon || '✦');
       const _isImg    = _iconHtml.startsWith('<img');
+      const _iconBox  = _isImg
+        ? `style="width:80px;height:80px;border-radius:18px;background:linear-gradient(145deg,rgba(12,8,4,.75),rgba(28,18,8,.65));border:1.5px solid rgba(201,176,122,.45);box-shadow:0 6px 20px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden"`
+        : `style="width:80px;height:80px;border-radius:18px;background:linear-gradient(145deg,rgba(12,8,4,.75),rgba(28,18,8,.65));border:1.5px solid rgba(201,176,122,.45);box-shadow:0 6px 20px rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;font-size:44px;flex-shrink:0;line-height:1"`;
       return `
       <div style="display:flex;gap:24px;align-items:flex-start;padding:22px 0;border-bottom:1px solid rgba(166,138,86,.15)">
-        <div style="width:74px;height:74px;border-radius:16px;background:rgba(166,138,86,.18);border:1.5px solid rgba(166,138,86,.4);display:flex;align-items:center;justify-content:center;${_isImg ? '' : 'font-size:40px;'}flex-shrink:0;line-height:1">${_iconHtml}</div>
+        <div ${_iconBox}>${_iconHtml}</div>
         <div style="flex:1;min-width:0;padding-top:4px">
           <div style="font-size:30px;font-weight:800;color:#C9B07A;margin-bottom:8px;line-height:1.2">《${escH(itTitle)}》</div>
           <div style="font-size:24px;color:rgba(220,200,160,.85);line-height:1.6;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${escH(desc)}</div>
