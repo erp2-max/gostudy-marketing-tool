@@ -48,6 +48,23 @@ html,body{height:100%;font-family:'Noto Sans TC','Microsoft JhengHei',sans-serif
 .plat-btn.active{background:rgba(166,138,86,.18);border-left-color:var(--gold);color:#f0e4c4;box-shadow:inset 0 0 24px rgba(166,138,86,.06)}
 .plat-icon{width:36px;height:36px;border-radius:8px;background:rgba(166,138,86,.15);border:1px solid rgba(166,138,86,.3);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
 .plat-btn.active .plat-icon{background:var(--gold);color:#1a1410}
+
+/* Format checkboxes */
+.fmt-group-lbl{font-size:9px;font-weight:700;color:rgba(166,138,86,.5);letter-spacing:2px;text-transform:uppercase;padding:12px 22px 5px}
+.fmt-chk-row{display:flex;align-items:center;gap:10px;padding:7px 22px;cursor:pointer;transition:background .15s;user-select:none}
+.fmt-chk-row:hover{background:rgba(166,138,86,.1)}
+.fmt-chk-row input[type=checkbox]{width:14px;height:14px;accent-color:var(--gold);cursor:pointer;flex-shrink:0}
+.fmt-chk-icon{width:30px;height:30px;border-radius:7px;background:rgba(166,138,86,.15);border:1px solid rgba(166,138,86,.3);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;transition:all .15s}
+.fmt-chk-row:has(input:checked) .fmt-chk-icon{background:var(--gold);color:#1a1410;border-color:var(--gold)}
+.fmt-chk-info{display:flex;flex-direction:column}
+.fmt-chk-name{font-size:12px;font-weight:600;color:rgba(220,200,160,.7);transition:color .15s}
+.fmt-chk-row:has(input:checked) .fmt-chk-name{color:#f0e4c4}
+.fmt-chk-size{font-size:10px;color:rgba(200,176,122,.4);margin-top:1px}
+/* Format section header in preview */
+.fmt-section{margin-bottom:20px}
+.fmt-section-hdr{display:flex;align-items:center;gap:8px;padding:7px 14px;background:rgba(166,138,86,.1);border-left:3px solid var(--gold);margin-bottom:12px;border-radius:0 6px 6px 0}
+.fmt-section-name{font-size:11px;font-weight:700;color:var(--gold-l);letter-spacing:.3px}
+.fmt-section-sz{font-size:10px;color:rgba(200,176,122,.4);margin-left:auto}
 .plat-info{display:flex;flex-direction:column}
 .plat-label{font-size:13px;font-weight:600}
 .plat-size{font-size:10px;opacity:.85;margin-top:1px}
@@ -193,7 +210,7 @@ textarea{min-height:72px;line-height:1.5}
 .card-btns{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center}
 .card-dl{background:rgba(166,138,86,.2);border:1px solid rgba(166,138,86,.38);border-radius:8px;padding:7px 20px;font-size:11px;font-weight:700;color:var(--gold-l);cursor:pointer;font-family:inherit;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
 .card-dl:hover{background:rgba(166,138,86,.42);transform:translateY(-1px)}
-.card-canva{background:rgba(100,180,255,.12);border:1px solid rgba(100,180,255,.35);border-radius:8px;padding:7px 20px;font-size:11px;font-weight:700;color:#8ecfff;cursor:pointer;font-family:inherit;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.card-canva{background:rgba(80,200,140,.12);border:1px solid rgba(80,200,140,.35);border-radius:8px;padding:7px 20px;font-size:11px;font-weight:700;color:#6de0a8;cursor:pointer;font-family:inherit;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
 /* Per-page background mini picker */
 .mini-bg-picker{padding:6px 0 0;display:flex;flex-direction:column;gap:4px;max-width:220px}
 .mini-bg-picker-label{font-size:9px;font-weight:700;color:rgba(200,176,122,.4);letter-spacing:1.5px;text-transform:uppercase}
@@ -206,7 +223,7 @@ textarea{min-height:72px;line-height:1.5}
 .mini-bg-upload{margin-top:4px;padding:4px 10px;font-size:9px;border-radius:4px;cursor:pointer;border:1px dashed rgba(166,138,86,.35);background:transparent;color:rgba(200,176,122,.55);font-family:inherit;transition:all .12s;width:100%;text-align:left;box-sizing:border-box}
 .mini-bg-upload:hover{border-color:rgba(166,138,86,.6);color:rgba(200,176,122,.9);background:rgba(166,138,86,.08)}
 .mini-bg-upload.on{border-color:rgba(166,138,86,.75);background:rgba(166,138,86,.18);color:var(--gold-l);border-style:solid}
-.card-canva:hover{background:rgba(100,180,255,.28);transform:translateY(-1px)}
+.card-canva:hover{background:rgba(80,200,140,.28);transform:translateY(-1px)}
 /* Toast */
 #gs-toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(16px);background:#1a2a3a;border:1px solid rgba(100,180,255,.4);color:#8ecfff;border-radius:10px;padding:10px 22px;font-size:12px;font-weight:600;pointer-events:none;opacity:0;transition:opacity .25s,transform .25s;z-index:9999;white-space:nowrap}
 #gs-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -319,20 +336,31 @@ textarea{min-height:72px;line-height:1.5}
     <div class="sidebar-subtitle">文章解析 → 圖卡生成 v3.1</div>
   </div>
 
-  <div class="sidebar-section-label">選擇平台</div>
+  <div class="sidebar-section-label">輸出格式</div>
 
-  <button class="plat-btn active" id="btn-ad" onclick="setPlatform('ad')">
-    <div class="plat-icon">📢</div>
-    <div class="plat-info"><span class="plat-label">廣告圖卡</span><span class="plat-size">1080×1350 · 單張</span></div>
-  </button>
-  <button class="plat-btn" id="btn-ig" onclick="setPlatform('ig')">
-    <div class="plat-icon">📱</div>
-    <div class="plat-info"><span class="plat-label">IG / FB 社群</span><span class="plat-size">1080×1350 · 多頁</span></div>
-  </button>
-  <button class="plat-btn" id="btn-blog" onclick="setPlatform('blog')">
-    <div class="plat-icon">📰</div>
-    <div class="plat-info"><span class="plat-label">部落格</span><span class="plat-size">800×600 · 圖＋文</span></div>
-  </button>
+  <div class="fmt-group-lbl">封面</div>
+  <label class="fmt-chk-row">
+    <input type="checkbox" id="chk-ad" checked onchange="onFmtChange()">
+    <div class="fmt-chk-icon">📢</div>
+    <div class="fmt-chk-info"><span class="fmt-chk-name">廣告圖卡</span><span class="fmt-chk-size">1080×1350 · 單張</span></div>
+  </label>
+  <label class="fmt-chk-row">
+    <input type="checkbox" id="chk-igcover" onchange="onFmtChange()">
+    <div class="fmt-chk-icon">📱</div>
+    <div class="fmt-chk-info"><span class="fmt-chk-name">IG / FB 封面</span><span class="fmt-chk-size">1080×1350 · 封面頁</span></div>
+  </label>
+  <label class="fmt-chk-row">
+    <input type="checkbox" id="chk-blog" onchange="onFmtChange()">
+    <div class="fmt-chk-icon">📰</div>
+    <div class="fmt-chk-info"><span class="fmt-chk-name">部落格封面</span><span class="fmt-chk-size">800×600 · 橫式</span></div>
+  </label>
+
+  <div class="fmt-group-lbl">內頁</div>
+  <label class="fmt-chk-row">
+    <input type="checkbox" id="chk-iginner" checked onchange="onFmtChange()">
+    <div class="fmt-chk-icon">📄</div>
+    <div class="fmt-chk-info"><span class="fmt-chk-name">IG / FB 內頁</span><span class="fmt-chk-size">1080×1350 · 輪播</span></div>
+  </label>
 
   <div class="sidebar-divider"></div>
 
@@ -343,8 +371,7 @@ textarea{min-height:72px;line-height:1.5}
 <!-- MAIN -->
 <div class="main" role="main">
   <div class="toolbar">
-    <span class="toolbar-title" id="toolbar-title">Instagram · 廣告圖卡</span>
-    <span class="toolbar-badge" id="toolbar-size">1080 × 1350px</span>
+    <span class="toolbar-title">GOSTUDY · 行銷圖卡生成工具</span>
     <button class="btn btn-outline" onclick="resetAll()">重置</button>
     <button class="btn btn-gold" id="dl-btn" onclick="downloadAll()" style="display:none">↓ 下載</button>
   </div>
@@ -471,7 +498,6 @@ textarea{min-height:72px;line-height:1.5}
     <div class="preview-col">
       <div class="preview-header">
         <div class="preview-info" id="preview-info" aria-live="polite">選擇平台，填寫資訊後點擊生成</div>
-        <button id="canva-btn" onclick="copyCanvaPrompt()" style="display:none;align-items:center;gap:5px;padding:5px 11px;background:rgba(100,210,255,.1);border:1px solid rgba(100,210,255,.25);border-radius:8px;color:rgba(100,210,255,.85);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">📋 複製 Canva Prompt</button>
       </div>
       <div class="preview-area" id="preview-area">
         <div class="empty-preview">
@@ -497,7 +523,7 @@ textarea{min-height:72px;line-height:1.5}
 
 <script>
 // ── State ─────────────────────────────────────────────────────────────────────
-let platform     = 'ad';
+// platform removed — format selection now via checkboxes (chk-ad/igcover/iginner/blog)
 const colorDark = '#0e6b59', colorMid = '#16a085', colorAccent = '#c8b89a';
 let generated    = null;
 let currentScene = 'oxford';
@@ -573,14 +599,18 @@ const PLAT = {
   blog:   {label:'部落格 · 封面圖',    size:'800 × 600px',          cardW:800, cardH:600, dispW:480,dispH:360},
 };
 
-function setPlatform(p) {
-  platform = p;
-  ['ad','ig','blog'].forEach(x => document.getElementById('btn-'+x)?.classList.toggle('active', x===p));
-  const cfg = PLAT[p];
-  document.getElementById('toolbar-title').textContent = cfg.label;
-  document.getElementById('toolbar-size').textContent  = cfg.size;
-  document.getElementById('asset-field').style.display = (p==='blog') ? 'none' : '';
-  clearPreview();
+// ── Format checkbox helpers ───────────────────────────────────────────────────
+function getActiveFormats() {
+  return ['ad','igcover','iginner','blog'].filter(f => document.getElementById('chk-'+f)?.checked);
+}
+
+function onFmtChange() {
+  const fmts = getActiveFormats();
+  // Hide brand-asset panel only when blog-only (blog uses different card builder)
+  const blogOnly = fmts.length > 0 && fmts.every(f => f === 'blog');
+  document.getElementById('asset-field').style.display = blogOnly ? 'none' : '';
+  // Re-render with current data if already generated
+  if (currentData) renderOutput(currentData);
 }
 
 // ── Logo / Subject upload ─────────────────────────────────────────────────────
@@ -1457,7 +1487,6 @@ function showJsonConfigEditor(jsonStr) {
   const area = document.getElementById('preview-area');
   area.innerHTML = '';
   document.getElementById('dl-btn').style.display    = 'none';
-  document.getElementById('canva-btn').style.display = 'none';
 
   // 嘗試美化 JSON
   let pretty = jsonStr;
@@ -1571,7 +1600,6 @@ function generateFromJsonConfig(jsonStr) {
   renderOutput(data);
   if (typeof updateSceneCycleRow === 'function') updateSceneCycleRow();
   document.getElementById('dl-btn').style.display    = 'inline-flex';
-  document.getElementById('canva-btn').style.display = 'inline-flex';
   infoEl.textContent = '✓ 圖卡生成完成';
 }
 
@@ -1634,7 +1662,6 @@ function showConfigEditor(data) {
   const area = document.getElementById('preview-area');
   area.innerHTML = '';
   document.getElementById('dl-btn').style.display = 'none';
-  document.getElementById('canva-btn').style.display = 'none';
 
   // 深複製，讓使用者編輯不影響原始資料
   const d = JSON.parse(JSON.stringify(data));
@@ -1802,7 +1829,6 @@ function _generateFromConfig(d) {
   renderOutput(final);
   if (typeof updateSceneCycleRow === 'function') updateSceneCycleRow();
   document.getElementById('dl-btn').style.display    = 'inline-flex';
-  document.getElementById('canva-btn').style.display = 'inline-flex';
   infoEl.textContent = '✓ 圖卡生成完成';
 }
 
@@ -1835,7 +1861,6 @@ async function generate() {
   const typeLabel = { steps:'流程', comparison:'比較', stats:'數據', general:'條列' }[parsed._contentType || parsed.contentType] || '';
   infoEl.textContent = `✓ 完成 · ${parsed.sections.length} 段落 · ${typeLabel ? typeLabel+'版型' : '自動版型'}`;
   document.getElementById('dl-btn').style.display    = 'inline-flex';
-  document.getElementById('canva-btn').style.display = 'inline-flex';
   genBtn.disabled = false; genBtn.textContent = '▶ 生成內容';
 }
 
@@ -1844,34 +1869,74 @@ let currentData = null;
 
 function renderOutput(d) {
   currentData = Object.assign({}, d, {keyPoints:[...(d.keyPoints||[])], contentPages:[...(d.contentPages||[])], tableRows:[...(d.tableRows||[])]});
-  const area=document.getElementById('preview-area');
-  area.innerHTML='';
-  if (platform==='ig') { renderMultiPageOutput(d,area); return; }
-  const cfg=PLAT[platform], bg=getBgImg();
-  const html=platform==='blog'?buildLCardHTML(d,bg):buildSCardHTML(d,bg);
-  const lbl=platform==='blog'?'部落格封面':'廣告圖卡';
-  area.appendChild(makeWrap(html,lbl,cfg.cardW,cfg.cardH,cfg.dispW,cfg.dispH));
-  const ep=buildEditPanel(currentData); if(ep) area.appendChild(ep);
-  const panel=buildCaptionPanel(d); if(panel) area.appendChild(panel);
+  const area = document.getElementById('preview-area');
+  area.innerHTML = '';
+
+  const fmts = getActiveFormats();
+  if (!fmts.length) {
+    area.innerHTML = '<div class="empty-preview"><div class="empty-icon">☑</div><div style="font-size:13px;font-weight:600;color:rgba(200,176,122,.6);margin-top:6px">請在左側勾選至少一種輸出格式</div></div>';
+    return;
+  }
+
+  const bg = getBgImg();
+
+  // ── 廣告圖卡封面（單張） ──
+  if (fmts.includes('ad')) {
+    const sec = _makeFmtSection('📢 廣告圖卡', '1080 × 1350px · 單張');
+    sec.appendChild(makeWrap(buildSCardHTML(d, bg), '廣告圖卡', 1080, 1350, 270, 337.5));
+    area.appendChild(sec);
+  }
+
+  // ── IG / FB 社群（封面 + 內頁，可各自勾選） ──
+  if (fmts.includes('igcover') || fmts.includes('iginner')) {
+    const cp = d.contentPages || [];
+    const coverCount = fmts.includes('igcover') ? 1 : 0;
+    const innerCount = fmts.includes('iginner') ? 1 + cp.length : 0;
+    const total = coverCount + innerCount;
+    let idx = 1;
+    const sec = _makeFmtSection('📱 IG / FB 社群', `1080 × 1350px · ${total} 頁`);
+    const strip = document.createElement('div'); strip.className = 'page-strip';
+    if (fmts.includes('igcover')) {
+      strip.appendChild(makeWrap(buildSCardHTML(d, bg), `封面 ${idx}/${total}`, 1080, 1350, 200, 250, {showBgPicker:true}));
+      idx++;
+    }
+    if (fmts.includes('iginner')) {
+      strip.appendChild(makeWrap(buildTableCardHTML(d, bg), `總覽 ${idx}/${total}`, 1080, 1350, 200, 250, {showBgPicker:true}));
+      idx++;
+      cp.forEach((page, i) => {
+        strip.appendChild(makeWrap(buildContentCardHTML(d, page, bg, idx, total), `內容 ${idx}/${total}`, 1080, 1350, 200, 250, {showBgPicker:true}));
+        idx++;
+      });
+    }
+    sec.appendChild(strip);
+    area.appendChild(sec);
+  }
+
+  // ── 部落格封面 ──
+  if (fmts.includes('blog')) {
+    const sec = _makeFmtSection('📰 部落格封面', '800 × 600px');
+    sec.appendChild(makeWrap(buildLCardHTML(d, bg), '部落格封面', 800, 600, 480, 360));
+    area.appendChild(sec);
+  }
+
+  const ep = buildEditPanel(currentData); if(ep) area.appendChild(ep);
+  const panel = buildCaptionPanel(d); if(panel) area.appendChild(panel);
+  document.getElementById('dl-btn').style.display = '';
 }
 
-function renderMultiPageOutput(d, area) {
-  const cfg=PLAT[platform], bg=getBgImg();
-  const cp=d.contentPages||[]; const total=2+cp.length;
-  const strip=document.createElement('div'); strip.className='page-strip';
-  const bgOpts = {showBgPicker:true};
-  strip.appendChild(makeWrap(buildSCardHTML(d,bg),       `封面 1/${total}`,cfg.cardW,cfg.cardH,cfg.dispW,cfg.dispH,bgOpts));
-  strip.appendChild(makeWrap(buildTableCardHTML(d,bg),   `總覽 2/${total}`,cfg.cardW,cfg.cardH,cfg.dispW,cfg.dispH,bgOpts));
-  cp.forEach((page,i)=>strip.appendChild(makeWrap(buildContentCardHTML(d,page,bg,i+3,total),`內容 ${i+3}/${total}`,cfg.cardW,cfg.cardH,cfg.dispW,cfg.dispH,bgOpts)));
-  area.appendChild(strip);
-  const ep=buildEditPanel(currentData); if(ep) area.appendChild(ep);
-  const panel=buildCaptionPanel(d); if(panel) area.appendChild(panel);
+function _makeFmtSection(name, size) {
+  const sec = document.createElement('div'); sec.className = 'fmt-section';
+  sec.innerHTML = `<div class="fmt-section-hdr"><span class="fmt-section-name">${name}</span><span class="fmt-section-sz">${size}</span></div>`;
+  return sec;
 }
 
 // ── Edit Panel ────────────────────────────────────────────────────────────────
 function buildEditPanel(d) {
-  const isBlog = platform==='blog';
-  const isMulti = platform==='ig';
+  const fmts   = getActiveFormats();
+  const hasCover = fmts.includes('ad') || fmts.includes('igcover');
+  const isMulti  = fmts.includes('iginner');
+  const hasBlog  = fmts.includes('blog');
+  const isBlog   = hasBlog && !hasCover && !isMulti; // blog-only mode
   const coverFields = isBlog
     ? [{key:'blogTitle',   label:'文章標題', val:d.blogTitle||d.headline||''},
        {key:'subheadline', label:'副標題',   val:d.subheadline||''},
@@ -2286,11 +2351,18 @@ function liveUpdateCard(field, value) {
 
 
 function buildCaptionPanel(d) {
-  const map={
-    ig:  [{plat:'📷 Instagram',bg:'linear-gradient(135deg,#f09433,#dc2743)',text:d.igPost||''},{plat:'# Hashtags',bg:'rgba(166,138,86,.5)',text:d.hashtags||''}],
-    fb:  [{plat:'f  Facebook',bg:'#1877f2',text:d.fbPost||''},{plat:'# Hashtags',bg:'rgba(166,138,86,.5)',text:d.hashtags||''}],
-    blog:[{plat:'📰 文章標題',bg:'var(--green)',text:d.blogTitle||''},{plat:'✍️ 導語',bg:'var(--brand)',text:d.blogIntro||''},{plat:'# Hashtags',bg:'rgba(166,138,86,.5)',text:d.hashtags||''}]};
-  const sections=(map[platform]||[]).filter(s=>s.text.trim());
+  const fmts = getActiveFormats();
+  const allSections = [
+    ...(fmts.some(f=>f!=='blog') ? [
+      {plat:'📷 IG / FB 貼文文案', bg:'linear-gradient(135deg,#f09433,#dc2743)', text:d.igPost||''},
+      {plat:'# Hashtags',          bg:'rgba(166,138,86,.5)',                       text:d.hashtags||''},
+    ] : []),
+    ...(fmts.includes('blog') ? [
+      {plat:'📰 部落格文章標題', bg:'var(--green)',  text:d.blogTitle||''},
+      {plat:'✍️ 部落格導語',    bg:'var(--brand)',   text:d.blogIntro||''},
+    ] : []),
+  ];
+  const sections = allSections.filter(s=>s.text.trim());
   if (!sections.length) return null;
   const wrap=document.createElement('div'); wrap.className='gen-captions';
   const ttl=document.createElement('div'); ttl.className='gen-captions-title'; ttl.textContent='✦ 貼文文案'; wrap.appendChild(ttl);
@@ -2748,8 +2820,8 @@ function makeWrap(html, label, nW, nH, dW, dH, opts={}) {
   const btns=document.createElement('div'); btns.className='card-btns';
   const dl=document.createElement('button'); dl.className='card-dl'; dl.innerHTML='⬇ 下載 PNG';
   dl.onclick=()=>exportCard(inner,label,nW,nH);
-  const cv=document.createElement('button'); cv.className='card-canva'; cv.innerHTML='✏️ 在 Canva 編輯';
-  cv.onclick=()=>openInCanva(inner,label,nW,nH);
+  const cv=document.createElement('button'); cv.className='card-canva'; cv.innerHTML='🖊 在 Photopea 開啟';
+  cv.onclick=()=>openInPhotopea(inner,label,nW,nH);
   btns.appendChild(dl); btns.appendChild(cv); wrap.appendChild(btns);
   // 每頁獨立換背景選擇器（僅多頁輪播使用）
   if (opts.showBgPicker) wrap.appendChild(buildMiniScenePicker(inner));
@@ -2879,69 +2951,46 @@ function showToast(msg, duration=3500) {
   _toastTimer=setTimeout(()=>t.classList.remove('show'), duration);
 }
 
-// ── Open in Canva ──────────────────────────────────────────────────────────────
-const CANVA_URLS={ig:'https://www.canva.com/create/instagram-posts/',fb:'https://www.canva.com/create/facebook-posts/',blog:'https://www.canva.com/create/blog-banners/'};
-
-async function openInCanva(el, label, w, h) {
+// ── Open in Photopea（直接帶圖開啟，無需上傳）─────────────────────────────────
+// Photopea 官方 URL hash API：https://blog.photopea.com/photopea-api.html
+// 格式：https://www.photopea.com/#{"files":["<dataURL>"]}
+async function openInPhotopea(el, label, w, h) {
   if (typeof html2canvas==='undefined') { alert('匯出套件尚未載入，請稍後再試'); return; }
-  const btn=document.querySelector('.card-canva');
-  const origText=btn?.innerHTML||'';
-  if(btn){ btn.innerHTML='⏳ 處理中…'; btn.disabled=true; }
+  const btn = el.closest('.card-wrap')?.querySelector('.card-canva');
+  const origText = btn?.innerHTML || '';
+  if (btn) { btn.innerHTML='⏳ 處理中…'; btn.disabled=true; }
 
-  const imgs=el.querySelectorAll('img');
-  imgs.forEach(img => { if(!img.src.startsWith('blob:')) img.setAttribute('crossorigin','anonymous'); });
-  await Promise.all(Array.from(imgs).map(img=>img.complete?Promise.resolve():new Promise(r=>{img.onload=r;img.onerror=r;})));
-  const noExp=el.querySelectorAll('[data-no-export]');
-  noExp.forEach(n=>n.style.visibility='hidden');
-  el.style.transform='none';
+  const imgs = el.querySelectorAll('img');
+  imgs.forEach(img => { if (!img.src.startsWith('blob:')) img.setAttribute('crossorigin','anonymous'); });
+  await Promise.all(Array.from(imgs).map(img => img.complete ? Promise.resolve() : new Promise(r=>{img.onload=r;img.onerror=r;})));
+  const noExp = el.querySelectorAll('[data-no-export]');
+  noExp.forEach(n => n.style.visibility='hidden');
+  el.style.transform = 'none';
 
   try {
-    const canvas=await html2canvas(el,{scale:1,width:w,height:h,useCORS:true,allowTaint:false,backgroundColor:null,logging:false});
-    const blob=await new Promise(r=>canvas.toBlob(r,'image/png'));
-
-    // 1. 先下載圖片
-    const a=document.createElement('a'); a.download=`GOSTUDY-${label.replace(/\s/g,'-')}-${Date.now()}.png`; a.href=URL.createObjectURL(blob); a.click();
-    setTimeout(()=>URL.revokeObjectURL(a.href),5000);
-
-    // 2. 嘗試複製到剪貼簿
-    let copied=false;
-    try {
-      await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);
-      copied=true;
-    } catch(_){}
-
-    // 3. 開啟 Canva
-    const canvaUrl=CANVA_URLS[platform]||'https://www.canva.com/';
-    window.open(canvaUrl,'_blank');
-
-    showToast(copied
-      ? '✅ 圖片已下載＆複製到剪貼簿！在 Canva 中按 Ctrl+V 貼上即可'
-      : '✅ 圖片已下載！請在 Canva 中點「上傳」匯入使用');
-  } catch(e) { alert('處理失敗：'+e.message); }
+    const canvas = await html2canvas(el,{scale:1,width:w,height:h,useCORS:true,allowTaint:false,backgroundColor:null,logging:false});
+    // 使用 JPEG 壓縮降低 URL 長度（大約 100-250KB → base64 130-330KB）
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.90);
+    const config  = JSON.stringify({ files: [dataUrl] });
+    const url     = 'https://www.photopea.com/#' + encodeURIComponent(config);
+    window.open(url, '_blank');
+    showToast('✅ 已在 Photopea 開啟！可直接編輯，完成後 File → Save As 下載');
+  } catch(e) { alert('開啟失敗：' + e.message); }
   finally {
-    noExp.forEach(n=>n.style.visibility='');
-    el.style.transform=`scale(${parseInt(el.parentElement?.style.width||w)/w})`;
-    if(btn){ btn.innerHTML=origText; btn.disabled=false; }
+    noExp.forEach(n => n.style.visibility='');
+    el.style.transform = `scale(${parseInt(el.parentElement?.style.width||w)/w})`;
+    if (btn) { btn.innerHTML=origText; btn.disabled=false; }
   }
 }
 
-
-// ── Reset / Canva / Utils ─────────────────────────────────────────────────────
+// ── Reset / Utils ─────────────────────────────────────────────────────────────
 function clearPreview() {
   document.getElementById('preview-area').innerHTML='<div class="empty-preview"><div class="empty-icon">✦</div><div style="font-size:14px;font-weight:600;color:rgba(200,176,122,.55)">準備好開始了嗎？</div></div>';
   document.getElementById('dl-btn').style.display='none';
-  document.getElementById('canva-btn').style.display='none';
   generated=null;
 }
 
 function resetAll() { clearArticle(); clearPreview(); }
-
-function copyCanvaPrompt() {
-  if (!generated) return;
-  const pMap={ig:'Instagram 貼文（1080×1350px）',fb:'Facebook 貼文（1080×1350px）',blog:'部落格封面（800×600px）'};
-  const text=`請用 Canva 幫我生成 GoStudy 的${pMap[platform]||''}\n【標題】${generated.headline}\n【副標題】${generated.subheadline}\n【重點】\n${(generated.keyPoints||[]).map((p,i)=>`${i+1}. ${p}`).join('\n')}\n【CTA】${generated.cta}\n【品牌】GoStudy 英國留學顧問（台灣）\n【視覺】品牌色：深綠 #0e6b59 + 卡其金 #c8b89a；專業雜誌感\n【語言】繁體中文`;
-  navigator.clipboard.writeText(text).then(()=>showToast('✓ 已複製！可貼入 Canva 或其他工具')).catch(()=>{const ta=document.createElement('textarea');ta.value=text;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);showToast('✓ 已複製！');});
-}
 
 function showToast(msg) {
   let t=document.getElementById('gs-toast');
@@ -2959,7 +3008,7 @@ function copyText(text,btn){
 (function init() {
   initSceneGrid();
   updateSceneCycleRow();
-  setPlatform('ad');
+  onFmtChange(); // set initial asset-field visibility based on default checkboxes
 })();
 </script>
 </body>
