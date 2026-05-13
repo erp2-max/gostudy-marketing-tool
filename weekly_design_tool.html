@@ -497,7 +497,7 @@ function _defaultOverrides() {
     hlDelta:0, hookDelta:0,
     subScale:1.0, logoScale:2.0, bnScale:1.0,   // logo defaults to 200%
     headlineW:null, hookGroupW:null,
-    blogTitleW:null, subheadlineW:null,
+    blogTitleW:null, subheadlineW:null, ctaW:null,
     textStroke:4,                                  // headline box border width (px)
     headlineColor:'#ffffff',
     headlineBorder:'rgba(255,255,255,.78)',
@@ -2232,8 +2232,9 @@ document.addEventListener('mousemove', function(e) {
       manualOverrides.hookLineW[n] = newW;
       const lineEl = _resizeState.handle.closest(`[data-field="hookLine${n}"]`);
       if (lineEl) { lineEl.style.minWidth = newW+'px'; lineEl.style.maxWidth = 'none'; }
-    } else if (rt === 'blogTitle' || rt === 'subheadline') {
-      manualOverrides[rt === 'blogTitle' ? 'blogTitleW' : 'subheadlineW'] = newW;
+    } else if (rt === 'blogTitle' || rt === 'subheadline' || rt === 'cta') {
+      const key = rt === 'blogTitle' ? 'blogTitleW' : rt === 'subheadline' ? 'subheadlineW' : 'ctaW';
+      manualOverrides[key] = newW;
       const el = _resizeState.handle.closest(`[data-drag="${rt}"]`);
       if (el) { el.style.minWidth = newW+'px'; el.style.maxWidth = 'none'; }
     } else {
@@ -2453,7 +2454,7 @@ function buildLCardHTML(d, imgUrl) {
     <div style="width:48px;height:3px;background:${fc};border-radius:2px;margin-bottom:14px"></div>
     <div data-field="subheadline" data-drag="subheadline" contenteditable="true" spellcheck="false" style="font-size:19px;color:#C9B07A;line-height:1.65;margin-bottom:22px;overflow-wrap:break-word;position:relative;cursor:grab;${manualOverrides.subheadlineW?'min-width:'+manualOverrides.subheadlineW+'px;max-width:none':''}">${escH(d.subheadline||'')}<div data-no-export="1" data-resize="subheadline" contenteditable="false" class="rz-handle"></div></div>
     <div style="display:flex;align-items:center;gap:14px">
-      <div data-field="cta" contenteditable="true" spellcheck="false" style="background:linear-gradient(135deg,${colorDark},${colorMid});border-radius:8px;padding:9px 24px;font-size:15px;font-weight:800;color:#fff;cursor:text">${escH(d.cta||'')}</div>
+      <div data-field="cta" data-drag="cta" data-resize-parent contenteditable="true" spellcheck="false" style="background:linear-gradient(135deg,${colorDark},${colorMid});border-radius:8px;padding:9px 24px;font-size:15px;font-weight:800;color:#fff;cursor:grab;position:relative;overflow-wrap:break-word;${manualOverrides.ctaW?'min-width:'+manualOverrides.ctaW+'px;max-width:none':''}">${escH(d.cta||'')}<div data-no-export="1" data-resize="cta" contenteditable="false" class="rz-handle"></div></div>
       <div style="font-size:13px;color:rgba(200,176,122,.55)">go-study.com.tw</div>
     </div>
   </div></div>`;
