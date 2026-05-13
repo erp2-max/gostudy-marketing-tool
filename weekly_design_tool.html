@@ -742,6 +742,81 @@ function cycleScenePhoto() {
 
 
 // ── Article parser ─────────────────────────────────────────────────────────────
+
+// ── Icon Library（Phosphor Icons via Iconify CDN · MIT License）─────────────
+// Source: https://phosphoricons.com  CDN: https://api.iconify.design
+const _ICON_BASE  = 'https://api.iconify.design/ph';
+const _ICON_COLOR = '%23C9B07A'; // #C9B07A gold
+
+// keyword regex → Phosphor icon name
+const ICON_MAP = [
+  // 學術 / 研究
+  [/研究|實驗|科研|實驗室/,          'flask'],
+  [/數據|分析|統計|圖表/,            'chart-bar'],
+  [/排名|名次|榜單|百大/,            'list-numbers'],
+  [/畢業|學位|碩士|博士|研究所/,      'graduation-cap'],
+  [/閱讀|書|教材|圖書館/,            'books'],
+  [/腦|思考|智慧|知識|學習/,         'brain'],
+  [/語言|英語|英文|翻譯/,            'translate'],
+  [/論文|報告|文件|文書|備審/,        'file-text'],
+  [/筆記|記錄|筆/,                   'notebook'],
+  [/證書|認證|資格|文憑/,            'certificate'],
+
+  // 策略 / 申請
+  [/策略|布局|規劃|計畫|目標/,        'target'],
+  [/申請|錄取|入學|審查/,            'check-circle'],
+  [/步驟|流程|程序|順序/,            'arrow-circle-right'],
+  [/地圖|路線|方向|規劃/,            'map-trifold'],
+
+  // 能力 / 技能
+  [/能力|技能|技術|建模/,            'lightning'],
+  [/領導|管理|組織|系學會/,          'users-three'],
+  [/溝通|表達|簡報|演講/,            'chalkboard-teacher'],
+  [/實習|工作|職場|職涯|專案/,        'briefcase'],
+  [/競賽|比賽|挑戰/,                 'trophy'],
+  [/獎項|獎勵|勳章|殊榮/,            'medal'],
+
+  // 成果 / 趨勢
+  [/成功|達成|完成|通過/,            'shooting-star'],
+  [/進步|提升|成長|改善/,            'trend-up'],
+  [/費用|學費|成本|獎學金/,          'currency-dollar'],
+  [/加速|快速|效率|高效/,            'rocket'],
+  [/時間|期限|日期|行程/,            'calendar'],
+
+  // 留學 / 地理
+  [/留學|海外|出國|出境/,            'airplane'],
+  [/全球|世界|國際|城市/,            'globe'],
+  [/英國|倫敦|牛津|劍橋|帝國/,       'buildings'],
+  [/美國|加州|波士頓|柏克萊/,        'buildings'],
+  [/地點|地區|城市|位置/,            'map-pin'],
+
+  // 諮詢 / 服務
+  [/諮詢|顧問|輔導|建議/,            'headset'],
+  [/服務|協助|支援|幫助/,            'handshake'],
+  [/聯絡|聯繫|預約|報名/,            'paper-plane-tilt'],
+
+  // 特殊
+  [/最愛|人氣|熱門|喜愛/,            'heart'],
+  [/制霸|榜首|冠軍|第一/,            'crown'],
+  [/密技|秘訣|技巧|竅門/,            'lightbulb'],
+  [/最愛|喜愛|人氣/,                 'heart'],
+];
+
+// 傳回 inline <img> SVG icon 或 emoji fallback
+function kpIconHtml(text, fallback) {
+  for (const [re, name] of ICON_MAP) {
+    if (re.test(text)) {
+      const src = `${_ICON_BASE}/${name}.svg?color=${_ICON_COLOR}&width=44&height=44`;
+      const esc = JSON.stringify(fallback || kpIcon(text) || '📌');
+      return `<img src="${src}" width="44" height="44" crossorigin="anonymous" alt="" `
+           + `loading="eager" onerror="this.parentNode.innerHTML=${esc}" `
+           + `style="display:block;filter:drop-shadow(0 0 8px rgba(201,176,122,.28))">`;
+    }
+  }
+  return fallback || kpIcon(text) || '📌';
+}
+
+// 原本的 emoji-only 版本（保留給 parseArticle 的 keypointItems 使用）
 function kpIcon(title) {
   if (/最愛|喜愛|人氣/.test(title)) return '❤️';
   if (/全球|世界|城市/.test(title)) return '🌍';
@@ -752,7 +827,7 @@ function kpIcon(title) {
   if (/數據|統計|比例|排名/.test(title)) return '📊';
   if (/簽證|工作|visa/i.test(title)) return '✈️';
   if (/密技|秘訣|技巧|竅門/.test(title)) return '💡';
-  return '✦';
+  return null; // 讓 kpIconHtml 接管
 }
 
 function stripSymbols(s) {
@@ -2455,9 +2530,10 @@ function buildContentCardHTML(d, cp, imgUrl, pageNum, total) {
   // ── BULLETS: icon 圓框 + 金色標題 + 說明文 ───────────────────────────────────
   if (layout === 'bullets') {
     const bullets = (cp.bullets || (cp.body||'').split('\n').filter(Boolean)).slice(0, 4);
-    const fallbackIcons = ['📌','📊','🎓','✅','🌍','💡','⚡','🏆'];
+    const _fbEmoji = ['📌','📊','🎓','✅','🌍','💡','⚡','🏆'];
     const bulletsHtml = bullets.map((b, i) => {
-      const icon = kpIcon(b) || fallbackIcons[i % fallbackIcons.length];
+      const iconHtml = kpIconHtml(b, _fbEmoji[i % _fbEmoji.length]);
+      const isImg    = iconHtml.startsWith('<img');
       // 自動分割標題 + 說明：以「：」「，」或前 10 字為標題
       const sep = b.indexOf('：') > 0 && b.indexOf('：') <= 16 ? '：'
                 : b.indexOf(':')  > 0 && b.indexOf(':')  <= 16 ? ':'
@@ -2468,7 +2544,7 @@ function buildContentCardHTML(d, cp, imgUrl, pageNum, total) {
       const pdesc  = sep ? b.slice(b.indexOf(sep) + 1).trim() : b.slice(Math.min(10, b.length)).trim();
       return `
       <div style="display:flex;gap:22px;align-items:flex-start;padding:18px 0;${i < bullets.length - 1 ? 'border-bottom:1px solid rgba(176,144,96,.18)' : ''}">
-        <div style="width:68px;height:68px;border-radius:16px;background:rgba(176,144,96,.16);border:1.5px solid rgba(176,144,96,.42);display:flex;align-items:center;justify-content:center;font-size:36px;flex-shrink:0;line-height:1">${icon}</div>
+        <div style="width:68px;height:68px;border-radius:16px;background:rgba(176,144,96,.16);border:1.5px solid rgba(176,144,96,.42);display:flex;align-items:center;justify-content:center;${isImg ? '' : 'font-size:36px;'}flex-shrink:0;line-height:1">${iconHtml}</div>
         <div style="flex:1;min-width:0;padding-top:3px">
           <div style="font-size:27px;font-weight:800;color:#C9B07A;margin-bottom:6px;line-height:1.25">《${escH(ptitle)}》</div>
           ${pdesc ? `<div style="font-size:24px;color:rgba(220,200,160,.85);line-height:1.6;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${escH(pdesc)}</div>` : ''}
@@ -2572,14 +2648,18 @@ function buildContentCardHTML(d, cp, imgUrl, pageNum, total) {
       : [cardTitle];
     const titleHtml = titleLines.map(t => `<div>${escH(t)}</div>`).join('');
 
-    const itemsHtml = items.map(({icon, title: itTitle, desc}) => `
+    const itemsHtml = items.map(({icon, title: itTitle, desc}) => {
+      const _iconHtml = kpIconHtml(itTitle, icon || '✦');
+      const _isImg    = _iconHtml.startsWith('<img');
+      return `
       <div style="display:flex;gap:24px;align-items:flex-start;padding:22px 0;border-bottom:1px solid rgba(166,138,86,.15)">
-        <div style="width:74px;height:74px;border-radius:16px;background:rgba(166,138,86,.18);border:1.5px solid rgba(166,138,86,.4);display:flex;align-items:center;justify-content:center;font-size:40px;flex-shrink:0;line-height:1">${icon||'✦'}</div>
+        <div style="width:74px;height:74px;border-radius:16px;background:rgba(166,138,86,.18);border:1.5px solid rgba(166,138,86,.4);display:flex;align-items:center;justify-content:center;${_isImg ? '' : 'font-size:40px;'}flex-shrink:0;line-height:1">${_iconHtml}</div>
         <div style="flex:1;min-width:0;padding-top:4px">
           <div style="font-size:30px;font-weight:800;color:#C9B07A;margin-bottom:8px;line-height:1.2">《${escH(itTitle)}》</div>
           <div style="font-size:24px;color:rgba(220,200,160,.85);line-height:1.6;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${escH(desc)}</div>
         </div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
 
     return `${bgBase}
   <div class="content" style="z-index:6">${headerHtml}
