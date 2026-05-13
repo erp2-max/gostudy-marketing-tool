@@ -646,83 +646,191 @@ function cycleScenePhoto() {
 
 
 // ── Article parser ─────────────────────────────────────────────────────────────
+function kpIcon(title) {
+  if (/最愛|喜愛|人氣/.test(title)) return '❤️';
+  if (/全球|世界|城市/.test(title)) return '🌍';
+  if (/制霸|榜首|冠軍|第一/.test(title)) return '🏆';
+  if (/高效|短期|快速|效率|學制/.test(title)) return '⚡';
+  if (/錄取|審|文件|申請/.test(title)) return '📋';
+  if (/費用|成本|學費|省錢/.test(title)) return '💰';
+  if (/數據|統計|比例|排名/.test(title)) return '📊';
+  if (/簽證|工作|visa/i.test(title)) return '✈️';
+  if (/密技|秘訣|技巧|竅門/.test(title)) return '💡';
+  return '✦';
+}
+
+function stripSymbols(s) {
+  return s.replace(/#(\S+)/g,'$1')   // #hashtag → keep word, drop #
+          .replace(/@\S+/g,'')        // @mention → drop entirely
+          .replace(/[\u{1F000}-\u{1FFFF}☀-➿]/gu,'')
+          .replace(/[‼️⁉️❗️❓🔥👉🏻㊙■●▶►→✅📌💡✓☑]/g,'')
+          .replace(/\s+/g,' ').trim();
+}
+
 function parseArticle(rawText) {
-  const lines = rawText.split('\n').map(l => l.trim()).filter(Boolean);
+  const allLines = rawText.split('\n').map(l => l.trim());
+  const lines = allLines.filter(Boolean);
   if (!lines.length) return null;
 
-  // Title: first non-empty line, strip Markdown # and bold markers
-  const title = lines[0].replace(/^#+\s*/, '').replace(/\*+/g, '').trim();
+  // Title: first meaningful line
+  const title = stripSymbols(lines[0]).slice(0, 40) || lines[0].slice(0, 40);
 
-  // Parse sections
-  const sections = [];
-  let cur = null;
-
-  for (let i = 1; i < lines.length; i++) {
-    const line = lines[i];
-    const clean = line.replace(/^#+\s*/, '').replace(/\*+/g, '').trim();
-
-    // Detect heading: Markdown h1-h4, CJK numbered (一、二、), digit-dot, or ≤20 char label ending with ：
-    const isBulletLine = /^[-•*·▶►→✅📌💡✓☑]/.test(clean) || /^\d+[\.、)]\s/.test(clean);
-    const isHeading = /^#{1,4}\s/.test(line) ||
-      /^[一二三四五六七八九十百]+[、\.：]\s*\S/.test(line) ||
-      /^\d+[\.、)]\s*[^\s]/.test(line) ||
-      (clean.length <= 22 && /[：:]$/.test(clean) && i > 1) ||
-      // 短行啟發式：≤12字、不是子彈、不以標點結尾、前面有段落分隔
-      (!isBulletLine && clean.length >= 2 && clean.length <= 12 &&
-       !/[，。！？、…]$/.test(clean) && i > 1 && cur && cur.bullets.length >= 1);
-
-    if (isHeading) {
-      if (cur && cur.bullets.length) sections.push(cur);
-      cur = { heading: clean.replace(/[：:]$/, '').replace(/^[\d一二三四五六七八九十]+[\.、)]\s*/, ''), bullets: [] };
-    } else if (cur) {
-      const b = clean.replace(/^[-•*·▶►→✅📌💡✓☑]\s*/, '').replace(/^\d+[\.、)]\s*/, '').trim();
-      if (b && b.length >= 3 && b.length <= 120) cur.bullets.push(b);
-    } else {
-      // Before first heading: collect intro bullets
-      if (!cur) cur = { heading: '重點整理', bullets: [] };
-      const b = clean.replace(/^[-•*·]\s*/, '').trim();
-      if (b && b.length >= 3 && b.length <= 120) cur.bullets.push(b);
-    }
-  }
-  if (cur && cur.bullets.length) sections.push(cur);
-
-  // Fallback: no headings found → treat all non-title lines as one bullet section
-  if (!sections.length) {
-    const bullets = lines.slice(1)
-      .map(l => l.replace(/^[-•*·▶]\s*/,'').replace(/^#+\s*/,'').trim())
-      .filter(l => l.length >= 4 && l.length <= 100)
-      .slice(0, 7);
-    if (bullets.length) sections.push({ heading: '重點整理', bullets });
-  }
-
-  // Extract stats/numbers (e.g. 98%, 3萬, £12,000, 2年)
-  const statsRe = /(?:[\d,，]+(?:\.\d+)?\s*(?:%|％|萬|億|千|百|倍|名|所|個|年|月|天|人|鎊|元|USD|GBP|排名))/g;
-  const stats = [...new Set(rawText.match(statsRe) || [])].slice(0, 4);
-
-  // Key points: prefer short (≤30 char) bullets from each section
-  const keyPoints = [];
-  for (const s of sections) {
-    for (const b of s.bullets) {
-      if (b.length <= 30 && keyPoints.length < 4) keyPoints.push(b);
-    }
-  }
-  if (keyPoints.length < 3) {
-    for (const s of sections) {
-      for (const b of s.bullets) {
-        if (!keyPoints.includes(b) && keyPoints.length < 4) keyPoints.push(b.slice(0,32));
+  // ── Pass 1: Collect ranking rows (#N ...) ────────────────────────────────────
+  const rankingRows = [];
+  let rankingHeading = '';
+  for (let i = 0; i < allLines.length; i++) {
+    const line = allLines[i];
+    const rankM = line.match(/^#(\d+)\s+(.*)/);
+    if (!rankM) continue;
+    const rest = rankM[2];
+    // Extract English university name
+    const enM = rest.match(/([A-Z][A-Za-z\s'&,\-]+(?:University|College|Institute|School|LSE|UCL)[A-Za-z\s]*)/);
+    // Extract Chinese name
+    const zhM = rest.match(/([一-鿿][^\s#@]*)/);
+    const name = enM?.[0]?.trim() || stripSymbols(rest).replace(/[一-鿿]+/g,'').trim();
+    const nameZh = zhM?.[0]?.trim() || '';
+    if (name || nameZh) rankingRows.push({ rank: rankM[1], name, nameZh });
+    // Find heading (look back up to 5 non-rank lines)
+    if (!rankingHeading) {
+      for (let k = i-1; k >= Math.max(0,i-6); k--) {
+        const prev = stripSymbols(allLines[k]||'');
+        if (prev && prev.length >= 3 && prev.length <= 35 && !(/^#\d+/.test(allLines[k]))) {
+          rankingHeading = prev; break;
+        }
       }
     }
   }
 
-  // Content type detection
-  const ft = rawText;
-  const hasSteps = /步驟|流程|第[一二三四五六七八九十\d]+步|如何|how\s?to|依序|程序|方法/.test(ft);
-  const hasComparison = /比較|vs\.?|versus|優缺|差異|相較|對比/.test(ft);
-  const hasManyStats = stats.length >= 3;
-  // stats > steps > comparison > general（數據最強信號優先）
-  const contentType = hasManyStats ? 'stats' : hasSteps ? 'steps' : hasComparison ? 'comparison' : 'general';
+  // ── Pass 2: Collect ㊙️ keypoint items ───────────────────────────────────────
+  const keypointItems = [];
+  let keypointHeading = '';
+  for (let i = 0; i < allLines.length; i++) {
+    const line = allLines[i];
+    if (!/^[㊙]/.test(line) && !/^《.+》/.test(line.replace(/\s/g,''))) continue;
+    // Skip if this is actually a ranking row
+    if (/^#\d+/.test(line)) continue;
+    // Extract title from 《》 or from text after ㊙️
+    const titleM = line.match(/《([^》]+)》/);
+    let kpTitle = titleM?.[1]?.trim() || stripSymbols(line).replace(/[《》]/g,'').trim();
+    // Description: inline after 》 or on next line
+    let desc = '';
+    if (titleM) {
+      const afterBracket = line.slice(line.indexOf('》')+1).trim();
+      if (afterBracket) desc = stripSymbols(afterBracket);
+    }
+    if (!desc && i+1 < allLines.length && allLines[i+1].trim() && !/^[㊙]/.test(allLines[i+1])) {
+      desc = stripSymbols(allLines[i+1]).slice(0, 80);
+      i++; // consume description line
+    }
+    // Find heading if not yet found
+    if (!keypointHeading) {
+      for (let k = i-2; k >= Math.max(0,i-8); k--) {
+        const prev = stripSymbols(allLines[k]||'');
+        if (prev && prev.length >= 3 && !(/^[㊙]/.test(allLines[k])) && !(/^#\d+/.test(allLines[k]))) {
+          keypointHeading = prev.slice(0, 28); break;
+        }
+      }
+    }
+    keypointItems.push({ icon: kpIcon(kpTitle), title: kpTitle.slice(0,16), desc: desc.slice(0,80) });
+  }
 
-  return { title, sections, stats, keyPoints, contentType };
+  // ── Pass 3: Old-style heading/bullet parsing for non-structured text ─────────
+  const textSections = [];
+  let cur = null;
+  // Mark lines already consumed by ranking/keypoint passes as used
+  // so Pass 3 does not re-parse them as bullets
+  const usedLineSet = new Set();
+  allLines.forEach((line, idx) => {
+    if (/^#\d+\s/.test(line)) usedLineSet.add(idx);
+    if (/^[㊙]/.test(line)) {
+      usedLineSet.add(idx);
+      // Also mark the description line that follows (consumed by keypoints pass)
+      if (idx+1 < allLines.length && allLines[idx+1].trim() &&
+          !/^[㊙]/.test(allLines[idx+1]) && !/^#\d+/.test(allLines[idx+1])) {
+        usedLineSet.add(idx+1);
+      }
+    }
+  });
+
+  for (let i = 1; i < allLines.length; i++) {
+    const line = allLines[i];
+    if (!line || usedLineSet.has(i)) continue;
+    const clean = line.replace(/^#+\s*/,'').replace(/\*+/g,'').trim();
+    const stripped = stripSymbols(clean);
+    if (!stripped || stripped.length < 2) continue;
+
+    const isBulletLine = /^[-•*·▶►→✅📌💡✓☑]/.test(clean) || /^\d+[\.、)]\s/.test(clean);
+    const isHeading = /^#{1,4}\s/.test(line) ||
+      /^[■●▶]\s/.test(line) ||
+      /^[一二三四五六七八九十百]+[、\.：]\s*\S/.test(line) ||
+      (clean.length <= 22 && /[：:]$/.test(clean) && i > 1) ||
+      (!isBulletLine && stripped.length >= 2 && stripped.length <= 12 &&
+       !/[，。！？、…]$/.test(stripped) && cur && cur.bullets.length >= 1);
+
+    if (isHeading) {
+      if (cur && cur.bullets.length) textSections.push(cur);
+      const h = stripped.replace(/[：:]$/,'').replace(/^[\d一二三四五六七八九十]+[\.、)]\s*/,'').slice(0,16);
+      cur = { type:'bullets', heading: h, bullets:[] };
+    } else if (cur) {
+      const b = stripped.replace(/^[-•*·▶►→✅📌💡✓☑]\s*/,'').replace(/^\d+[\.、)]\s*/,'').trim();
+      if (b && b.length >= 3 && b.length <= 120) cur.bullets.push(b);
+    } else {
+      if (!cur) cur = { type:'bullets', heading:'重點整理', bullets:[] };
+      const b = stripped.replace(/^[-•*·]\s*/,'').trim();
+      if (b && b.length >= 3 && b.length <= 120) cur.bullets.push(b);
+    }
+  }
+  if (cur && cur.bullets.length) textSections.push(cur);
+
+  // ── Build unified sections ──────────────────────────────────────────────────
+  const sections = [];
+  if (rankingRows.length >= 2) {
+    sections.push({ type:'ranking', heading: rankingHeading||'排名一覽',
+      rows: rankingRows.slice(0,20),
+      bullets: rankingRows.map(r=>`#${r.rank} ${r.name}${r.nameZh?' '+r.nameZh:''}`) });
+  }
+  const KPPC = 3; // keypoints per card
+  for (let i = 0; i < keypointItems.length; i += KPPC) {
+    const chunk = keypointItems.slice(i, i+KPPC);
+    sections.push({ type:'keypoints',
+      heading: i===0 ? (keypointHeading||'重點整理') : keypointHeading||'重點整理',
+      items: chunk,
+      bullets: chunk.map(it=>it.title) });
+  }
+  for (const s of textSections) sections.push(s);
+
+  // Fallback
+  if (!sections.length) {
+    const bullets = lines.slice(1).map(l=>stripSymbols(l).replace(/^[-•*·▶]\s*/,'').trim())
+      .filter(l=>l.length>=4&&l.length<=100).slice(0,7);
+    if (bullets.length) sections.push({ type:'bullets', heading:'重點整理', bullets });
+  }
+
+  // ── Stats / key points / content type ────────────────────────────────────────
+  const statsRe = /(?:[\d,，]+(?:\.\d+)?\s*(?:%|％|萬|億|千|百|倍|名|所|個|年|月|天|人|鎊|元|USD|GBP|排名))/g;
+  const stats = [...new Set(rawText.match(statsRe)||[])].slice(0,4);
+
+  const keyPoints = [];
+  for (const s of sections) {
+    const srcs = s.type==='keypoints' ? s.items.map(it=>it.title) : (s.bullets||[]);
+    for (const b of srcs) if (b.length<=30&&keyPoints.length<4) keyPoints.push(b);
+  }
+  if (keyPoints.length<3) {
+    for (const s of sections) {
+      const srcs = s.type==='keypoints' ? s.items.map(it=>it.title) : (s.bullets||[]);
+      for (const b of srcs) if (!keyPoints.includes(b)&&keyPoints.length<4) keyPoints.push(b.slice(0,32));
+    }
+  }
+
+  const hasRanking   = rankingRows.length >= 2;
+  const hasKeypoints = keypointItems.length >= 2;
+  const hasSteps     = /步驟|流程|第[一二三四五六七八九十\d]+步|如何|how\s?to|依序|程序/.test(rawText);
+  const hasComparison= /比較|vs\.?|versus|優缺|差異|相較|對比/.test(rawText);
+  const hasManyStats = stats.length >= 3;
+  const contentType  = hasRanking ? 'ranking' : hasKeypoints ? 'keypoints'
+    : hasManyStats ? 'stats' : hasSteps ? 'steps' : hasComparison ? 'comparison' : 'general';
+
+  return { title, sections, stats, keyPoints, contentType, rankingRows, keypointItems };
 }
 
 // Detect best layout for one section
@@ -745,79 +853,105 @@ function buildDataFromArticle(parsed) {
   if (!parsed) return null;
   const { title, sections, stats, keyPoints, contentType } = parsed;
 
-  // Headline: trim title to 18 chars
+  // Headline (白框): article title — factual, concise
   const headline = title.slice(0, 18) + (title.length > 18 ? '…' : '');
-  const subheadline = (sections[0]?.heading && sections[0].heading !== '重點整理')
-    ? sections[0].heading.slice(0, 22)
-    : (keyPoints[0]?.slice(0, 22) || '重點解析');
 
-  // Hook lines: split headline into readable chunks
-  const words = headline.replace(/[，。！？：:,\.!?]/g, ' ').trim().split(/\s+/);
+  // Subheadline / hook source: use ranking heading or first compelling section heading
+  // so the large hook text differs from the white-box headline
+  const rankSec = sections.find(s => s.type === 'ranking');
+  const firstOther = sections.find(s => s.type !== 'ranking');
+  const hookSource = (rankSec?.heading && rankSec.heading !== '排名一覽')
+    ? rankSec.heading.slice(0, 20)
+    : (firstOther?.heading && firstOther.heading !== '重點整理')
+    ? firstOther.heading.slice(0, 20)
+    : (keyPoints[0]?.slice(0, 20) || title.slice(0, 20));
+
+  // Subheadline (小副標): shown under hook lines on table card etc.
+  const subheadline = hookSource;
+
+  // Hook lines (大字): split hookSource into 2-3 display lines
   let hookLine1, hookLine2, hookLine3 = '';
-  if (words.length === 1 || headline.length <= 8) {
-    hookLine1 = headline; hookLine2 = subheadline.slice(0, 8);
-  } else if (headline.length <= 12) {
-    const mid = Math.ceil(headline.length / 2);
-    hookLine1 = headline.slice(0, mid); hookLine2 = headline.slice(mid);
+  if (hookSource.length <= 6) {
+    hookLine1 = hookSource; hookLine2 = '';
+  } else if (hookSource.length <= 10) {
+    const mid = Math.ceil(hookSource.length / 2);
+    hookLine1 = hookSource.slice(0, mid); hookLine2 = hookSource.slice(mid);
   } else {
-    const mid = Math.ceil(headline.length * 0.45);
-    hookLine1 = headline.slice(0, mid);
-    hookLine2 = headline.slice(mid, mid + 9);
-    hookLine3 = headline.slice(mid + 9, mid + 17) || '';
+    const mid = Math.ceil(hookSource.length * 0.45);
+    hookLine1 = hookSource.slice(0, mid);
+    hookLine2 = hookSource.slice(mid, mid + 8);
+    hookLine3 = hookSource.slice(mid + 8, mid + 16) || '';
   }
 
-  // Key points for table (P2)
-  const kpForTable = keyPoints.length >= 3 ? keyPoints : sections.slice(0, 4).map(s => s.heading);
+  // ── Ranking section → goes to P2 table card ───────────────────────────────
+  const rankingSection = sections.find(s => s.type === 'ranking') || null;
+
+  // Key points for fallback table (P2) when no ranking
+  const kpForTable = keyPoints.length >= 3 ? keyPoints : sections.filter(s=>s.type!=='ranking').slice(0,4).map(s=>s.heading);
   const tableRows = kpForTable.slice(0, 4).map((kp, i) => ({
-    num: String(i + 1).padStart(2, '0'),
-    title: kp.slice(0, 16),
-    brief: sections[i]?.bullets?.[0]?.slice(0, 12) || ''
+    num: String(i+1).padStart(2,'0'),
+    title: kp.slice(0,16),
+    brief: sections.filter(s=>s.type!=='ranking')[i]?.bullets?.[0]?.slice(0,12) || ''
   }));
 
-  // Content pages: each section becomes a page (max 4 pages = P3–P6)
-  const contentPages = sections.slice(0, 4).map((s, i) => {
+  // ── Content pages: non-ranking sections → P3+
+  // Filter out low-quality text sections (< 2 bullets) — these are usually CTA/promo noise
+  const contentSections = sections.filter(s => {
+    if (s.type === 'ranking') return false;
+    if (s.type === 'keypoints') return true;
+    return (s.bullets||[]).length >= 3;
+  });
+  const contentPages = contentSections.slice(0, 4).map((s, i) => {
+    // Keypoints section: PPT重點卡
+    if (s.type === 'keypoints') {
+      return {
+        title: s.heading.slice(0, 24),
+        layout: 'keypoints',
+        items: s.items || [],
+        bullets: s.bullets || [],
+        body: (s.bullets||[]).join('\n'),
+        statsForPage: []
+      };
+    }
+    // Text sections: auto-detect layout
     const layout = detectSectionLayout(s, contentType, i);
-    // For stats layout: try to extract stat/label pairs from bullets
     let statsForPage = [];
     if (layout === 'stats') {
       const sre = /([\d,，]+(?:\.\d+)?(?:%|％|萬|億|千|百|倍|名|所|個|年|月|天|人|鎊|元|USD|GBP|排名))/g;
-      s.bullets.forEach(b => {
+      (s.bullets||[]).forEach(b => {
         const m = b.match(sre);
-        if (m) statsForPage.push({ value: m[0], label: b.replace(sre,'').replace(/^[：:\s]+|[：:\s]+$/g,'').slice(0,14) });
+        if (m) statsForPage.push({ value:m[0], label:b.replace(sre,'').replace(/^[：:\s]+|[：:\s]+$/g,'').slice(0,14) });
       });
       if (statsForPage.length < 2) statsForPage = stats.slice(0,4).map(v=>({value:v,label:''}));
     }
     return {
       title: s.heading.slice(0, 16),
-      body: s.bullets.slice(0, 3).join('\n'),
-      layout,
-      bullets: s.bullets.slice(0, 5),
-      statsForPage
+      body: (s.bullets||[]).slice(0, 3).join('\n'),
+      layout, bullets: (s.bullets||[]).slice(0, 5), statsForPage
     };
   });
 
-  // Ensure at least 3 content pages for multi-page platforms
-  while (contentPages.length < 3) {
+  // Ensure at least 2 content pages for multi-page platforms
+  while (contentPages.length < 2) {
     const fallbacks = [
-      { title: '申請策略', bullets: ['專業顧問一對一分析', '量身規劃申請路線', '文書全程陪伴'], layout: 'bullets' },
-      { title: '立即行動', bullets: ['免費諮詢零門檻', '10 年深耕英國留學', '已協助 3,000+ 名學生'], layout: 'bullets' },
+      { title: '申請策略', items:[{icon:'💡',title:'專業顧問',desc:'一對一量身規劃申請路線，文書全程陪伴'},{icon:'🏆',title:'業界領先',desc:'10 年深耕英國留學，羅素盟校錄取領先'},{icon:'✅',title:'免費諮詢',desc:'零門檻免費諮詢，已協助 3,000+ 名學生'}], layout:'keypoints', bullets:['專業顧問','業界領先','免費諮詢'] },
     ];
     const fb = fallbacks[contentPages.length % fallbacks.length];
     contentPages.push({ ...fb, body: fb.bullets.join('\n'), statsForPage: [] });
   }
 
   // Social posts
-  const kpLines = keyPoints.slice(0, 3).map((p, i) => ['✅', '📌', '💡'][i] + ' ' + p).join('\n');
+  const kpLines = keyPoints.slice(0,3).map((p,i)=>['✅','📌','💡'][i]+' '+p).join('\n');
   const igPost  = `${headline}\n\n${subheadline}\n\n${kpLines}\n\nGoStudy 免費一對一諮詢，幫你規劃最適合的英國申請路線！\n\n📩 點 bio 連結立即預約\n\n#英國留學 #GoStudy #海外升學 #留學申請`;
   const fbPost  = `【${headline}】\n\n${subheadline}\n\n${kpLines}\n\nGoStudy 提供完全免費的留學諮詢！\n\n#英國留學 #GoStudy #海外升學\n\n你有什麼問題？歡迎留言！`;
-  const blogTitle = `${title.slice(0, 25)}：留學生必知重點整理`;
-  const blogIntro = `想了解${title.slice(0, 14)}的最新資訊？本文整理關鍵重點，幫助你申請英國大學前做好準備。GoStudy 提供從選校到申請的一站式服務，已協助數百位台灣學生成功錄取英國頂尖大學。`;
+  const blogTitle  = `${title.slice(0,25)}：留學生必知重點整理`;
+  const blogIntro  = `想了解${title.slice(0,14)}的最新資訊？本文整理關鍵重點，幫助你申請英國大學前做好準備。GoStudy 提供從選校到申請的一站式服務，已協助數百位台灣學生成功錄取英國頂尖大學。`;
 
   return {
     headline, subheadline, hookLine1, hookLine2, hookLine3,
     tagline: 'GoStudy — 海外名校申請顧問',
-    keyPoints: keyPoints.slice(0, 4),
-    tableRows, contentPages,
+    keyPoints: keyPoints.slice(0,4),
+    tableRows, rankingSection, contentPages,
     cta: '立即預約免費諮詢',
     hashtags: '#英國留學 #GoStudy #海外升學 #留學申請',
     igPost, fbPost, blogTitle, blogIntro,
@@ -847,7 +981,7 @@ function updateArticleHint(raw) {
   if (!hint || !raw) { if (hint) hint.className = 'article-hint'; return; }
   const parsed = parseArticle(raw);
   if (!parsed) { hint.className = 'article-hint'; return; }
-  const typeLabel = { steps:'📋 流程步驟', comparison:'⚖️ 比較分析', stats:'📊 數據統計', general:'✦ 條列重點' }[parsed.contentType] || '✦ 通用';
+  const typeLabel = { ranking:'📊 排名表格', keypoints:'✦ 重點圖卡', steps:'📋 流程步驟', comparison:'⚖️ 比較分析', stats:'📊 數據統計', general:'✦ 條列重點' }[parsed.contentType] || '✦ 通用';
   const pageCount = Math.min(parsed.sections.length, 4);
   hint.className = 'article-hint show';
   hint.innerHTML = `<span class="a-title">「${escH(parsed.title.slice(0,20))}」</span><span class="a-type">${typeLabel}</span><br>${parsed.sections.length} 個段落 · 將生成封面＋總覽＋${pageCount} 頁內容`;
@@ -1458,7 +1592,7 @@ function buildSCardHTML(d, imgUrl) {
     </div>
 
     <!-- ⑤ Hashtags — margin-top:auto pins to bottom of card -->
-    <div data-field="hashtags" data-drag="hashtags" style="margin-top:auto;max-width:${groupW}px;${groupMargin};font-size:20px;color:rgba(255,255,255,.46);letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:grab;${tr('hashtags')}">${escH(htags)}</div>
+    <div data-field="hashtags" data-drag="hashtags" style="margin-top:auto;${hasSub ? `max-width:${groupW}px` : 'width:100%;text-align:center'};font-size:20px;color:rgba(255,255,255,.46);letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:grab;${tr('hashtags')}">${escH(htags)}</div>
 
   </div></div>`;
 }
@@ -1483,7 +1617,53 @@ function buildLCardHTML(d, imgUrl) {
 
 // ── Multi-page: Table card (P2) ───────────────────────────────────────────────
 function buildTableCardHTML(d, imgUrl) {
-  const fc=colorAccent;
+  const fc = colorAccent;
+
+  // ── If article has ranking data → render proper ranking table ────────────────
+  if (d.rankingSection && d.rankingSection.rows && d.rankingSection.rows.length >= 2) {
+    const rs = d.rankingSection;
+    const rows = rs.rows.slice(0, 16);
+    // Two-column header
+    const colLeft  = rs.heading.includes('QS') ? 'QS World Ranking' : rs.heading;
+    const colRight = 'UK University';
+    const headerRow = `
+      <div style="display:grid;grid-template-columns:160px 1fr;gap:0;background:rgba(166,138,86,.22);border-bottom:2px solid ${fc}">
+        <div style="padding:16px 20px;font-size:22px;font-weight:800;color:${fc};border-right:1px solid rgba(166,138,86,.3)">${escH(colLeft)}</div>
+        <div style="padding:16px 20px;font-size:22px;font-weight:800;color:${fc}">${escH(colRight)}</div>
+      </div>`;
+    const dataRows = rows.map((r,i) => `
+      <div style="display:grid;grid-template-columns:160px 1fr;gap:0;background:${i%2===0?'rgba(0,0,0,.42)':'rgba(0,0,0,.28)'};border-bottom:1px solid rgba(166,138,86,.12)">
+        <div style="padding:14px 20px;font-size:26px;font-weight:900;color:${fc};border-right:1px solid rgba(166,138,86,.18);display:flex;align-items:center;gap:8px">
+          <span>${escH(r.rank)}</span>
+        </div>
+        <div style="padding:14px 20px;display:flex;flex-direction:column;justify-content:center">
+          <div style="font-size:${r.name.length>28?22:26}px;font-weight:700;color:#f0e8d0;line-height:1.3;overflow:hidden;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical">${escH(r.name)}</div>
+          ${r.nameZh?`<div style="font-size:19px;color:#c9b07a;margin-top:3px">${escH(r.nameZh)}</div>`:''}
+        </div>
+      </div>`).join('');
+
+    const tableH = rows.length * 60 + 60; // rough height
+    return `<div class="gs-card-s">
+  <img class="bg" src="${imgUrl}" alt="" style="filter:saturate(0.72) brightness(0.75)">
+  <div style="position:absolute;inset:0;background:linear-gradient(175deg,rgba(0,0,0,.55) 0%,rgba(0,0,0,.75) 40%,rgba(0,0,0,.95) 100%);z-index:2"></div>
+  <div class="content" style="z-index:6;padding:60px 70px 50px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      ${buildLogoEl(44)}
+      <div style="font-size:20px;font-weight:700;color:${fc};background:rgba(166,138,86,.14);border:1.5px solid rgba(166,138,86,.4);border-radius:40px;padding:6px 24px">排名一覽</div>
+    </div>
+    <div style="font-size:48px;font-weight:900;color:#fff;line-height:1.12;margin-bottom:10px;text-shadow:0 3px 20px rgba(0,0,0,.8);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${escH(d.headline||'')}</div>
+    <div style="width:72px;height:4px;background:${fc};border-radius:2px;margin-bottom:22px"></div>
+    <div style="border:1.5px solid rgba(166,138,86,.38);border-radius:12px;overflow:hidden;flex:1;overflow-y:hidden">
+      ${headerRow}${dataRows}
+    </div>
+    <div style="border-top:1px solid rgba(166,138,86,.22);padding-top:14px;margin-top:14px;display:flex;align-items:center;justify-content:space-between">
+      <div style="font-size:20px;color:rgba(166,138,86,.55)">滑動查看更多 →</div>
+      <div style="font-size:15px;color:rgba(166,138,86,.4)">go-study.com.tw</div>
+    </div>
+  </div></div>`;
+  }
+
+  // ── Fallback: bullet-point overview ──────────────────────────────────────────
   const rows=(d.tableRows||d.keyPoints.slice(0,3).map((t,i)=>({num:String(i+1).padStart(2,'0'),title:t,brief:''}))).slice(0,4);
   const rowsHtml=rows.map(({num,title,brief})=>`
   <div style="display:flex;align-items:center;gap:24px;padding:22px 28px;background:rgba(0,0,0,.52);border-left:6px solid ${fc};border-radius:0 14px 14px 0;overflow:hidden">
@@ -1497,18 +1677,15 @@ function buildTableCardHTML(d, imgUrl) {
   <img class="bg" src="${imgUrl}" alt="" style="filter:saturate(0.75) brightness(0.82)">
   <div style="position:absolute;inset:0;background:linear-gradient(175deg,rgba(0,0,0,.6) 0%,rgba(0,0,0,.82) 50%,rgba(0,0,0,.97) 100%);z-index:2"></div>
   <div class="content" style="z-index:6">
-    <!-- Header: Logo + badge -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
       ${buildLogoEl(44)}
       <div style="font-size:20px;font-weight:700;color:${fc};background:rgba(166,138,86,.14);border:1.5px solid rgba(166,138,86,.4);border-radius:40px;padding:6px 24px">重點總覽</div>
     </div>
-    <!-- Headline -->
     <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:16px 0">
       <div style="font-size:54px;font-weight:900;color:#fff;line-height:1.12;margin-bottom:14px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;text-shadow:0 3px 20px rgba(0,0,0,.8)">${escH(d.headline||'')}</div>
       <div style="width:72px;height:4px;background:${fc};border-radius:2px;margin-bottom:24px"></div>
       <div style="display:flex;flex-direction:column;gap:16px">${rowsHtml}</div>
     </div>
-    <!-- Footer -->
     <div style="border-top:1px solid rgba(166,138,86,.22);padding-top:16px;display:flex;align-items:center;justify-content:space-between">
       <div style="font-size:22px;color:rgba(166,138,86,.55)">滑動查看詳細內容 →</div>
       <div style="font-size:16px;color:rgba(166,138,86,.4)">go-study.com.tw</div>
@@ -1643,6 +1820,36 @@ function buildContentCardHTML(d, cp, imgUrl, pageNum, total) {
         ${colHtml(leftItems,'優點','rgba(74,222,128,.8)')}
         ${colHtml(rightItems,'注意','rgba(251,191,36,.8)')}
       </div>
+    </div>
+    ${footerHtml}
+  </div></div>`;
+  }
+
+  // ── KEYPOINTS: PPT 重點卡（㊙️ icon + 《title》+ desc）────────────────────────
+  if (layout === 'keypoints') {
+    const items = cp.items || [];
+    const cardTitle = cp.title || '重點整理';
+    // Split title at natural break point for two-line display
+    const titleLines = cardTitle.length > 10
+      ? [cardTitle.slice(0, Math.ceil(cardTitle.length / 2)), cardTitle.slice(Math.ceil(cardTitle.length / 2))]
+      : [cardTitle];
+    const titleHtml = titleLines.map(t => `<div>${escH(t)}</div>`).join('');
+
+    const itemsHtml = items.map(({icon, title: itTitle, desc}) => `
+      <div style="display:flex;gap:24px;align-items:flex-start;padding:22px 0;border-bottom:1px solid rgba(166,138,86,.15)">
+        <div style="width:74px;height:74px;border-radius:16px;background:rgba(166,138,86,.18);border:1.5px solid rgba(166,138,86,.4);display:flex;align-items:center;justify-content:center;font-size:40px;flex-shrink:0;line-height:1">${icon||'✦'}</div>
+        <div style="flex:1;min-width:0;padding-top:4px">
+          <div style="font-size:30px;font-weight:800;color:#C9B07A;margin-bottom:8px;line-height:1.2">《${escH(itTitle)}》</div>
+          <div style="font-size:24px;color:rgba(220,200,160,.85);line-height:1.6;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${escH(desc)}</div>
+        </div>
+      </div>`).join('');
+
+    return `${bgBase}
+  <div class="content" style="z-index:6">${headerHtml}
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:4px 0">
+      <div style="font-size:54px;font-weight:900;color:#fff;line-height:1.18;text-shadow:0 4px 28px rgba(0,0,0,.9);margin-bottom:18px">${titleHtml}</div>
+      <div style="width:60px;height:4px;background:${fc};border-radius:2px;margin-bottom:6px"></div>
+      ${itemsHtml}
     </div>
     ${footerHtml}
   </div></div>`;
