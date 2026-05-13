@@ -326,12 +326,8 @@ textarea{min-height:72px;line-height:1.5}
     <div class="plat-info"><span class="plat-label">廣告圖卡</span><span class="plat-size">1080×1350 · 單張</span></div>
   </button>
   <button class="plat-btn" id="btn-ig" onclick="setPlatform('ig')">
-    <div class="plat-icon">📷</div>
-    <div class="plat-info"><span class="plat-label">IG 社群</span><span class="plat-size">1080×1350 · 多頁</span></div>
-  </button>
-  <button class="plat-btn" id="btn-fb" onclick="setPlatform('fb')">
-    <div class="plat-icon">📘</div>
-    <div class="plat-info"><span class="plat-label">FB 社群</span><span class="plat-size">1080×1350 · 多頁</span></div>
+    <div class="plat-icon">📱</div>
+    <div class="plat-info"><span class="plat-label">IG / FB 社群</span><span class="plat-size">1080×1350 · 多頁</span></div>
   </button>
   <button class="plat-btn" id="btn-blog" onclick="setPlatform('blog')">
     <div class="plat-icon">📰</div>
@@ -573,14 +569,13 @@ const FLAT_SCENES = [
 // ── Platform ──────────────────────────────────────────────────────────────────
 const PLAT = {
   ad:     {label:'廣告圖卡 · 單張',    size:'1080 × 1350px',       cardW:1080,cardH:1350,dispW:270,dispH:337.5},
-  ig:     {label:'IG 社群 · 多頁',     size:'1080 × 1350px · 5頁', cardW:1080,cardH:1350,dispW:200,dispH:250},
-  fb:     {label:'FB 社群 · 多頁',     size:'1080 × 1350px · 5頁', cardW:1080,cardH:1350,dispW:200,dispH:250},
+  ig:     {label:'IG / FB 社群 · 多頁', size:'1080 × 1350px · 5頁', cardW:1080,cardH:1350,dispW:200,dispH:250},
   blog:   {label:'部落格 · 封面圖',    size:'800 × 600px',          cardW:800, cardH:600, dispW:480,dispH:360},
 };
 
 function setPlatform(p) {
   platform = p;
-  ['ad','ig','fb','blog'].forEach(x => document.getElementById('btn-'+x)?.classList.toggle('active', x===p));
+  ['ad','ig','blog'].forEach(x => document.getElementById('btn-'+x)?.classList.toggle('active', x===p));
   const cfg = PLAT[p];
   document.getElementById('toolbar-title').textContent = cfg.label;
   document.getElementById('toolbar-size').textContent  = cfg.size;
@@ -1851,7 +1846,7 @@ function renderOutput(d) {
   currentData = Object.assign({}, d, {keyPoints:[...(d.keyPoints||[])], contentPages:[...(d.contentPages||[])], tableRows:[...(d.tableRows||[])]});
   const area=document.getElementById('preview-area');
   area.innerHTML='';
-  if (platform==='ig'||platform==='fb') { renderMultiPageOutput(d,area); return; }
+  if (platform==='ig') { renderMultiPageOutput(d,area); return; }
   const cfg=PLAT[platform], bg=getBgImg();
   const html=platform==='blog'?buildLCardHTML(d,bg):buildSCardHTML(d,bg);
   const lbl=platform==='blog'?'部落格封面':'廣告圖卡';
@@ -1876,7 +1871,7 @@ function renderMultiPageOutput(d, area) {
 // ── Edit Panel ────────────────────────────────────────────────────────────────
 function buildEditPanel(d) {
   const isBlog = platform==='blog';
-  const isMulti = platform==='ig'||platform==='fb';
+  const isMulti = platform==='ig';
   const coverFields = isBlog
     ? [{key:'blogTitle',   label:'文章標題', val:d.blogTitle||d.headline||''},
        {key:'subheadline', label:'副標題',   val:d.subheadline||''},
