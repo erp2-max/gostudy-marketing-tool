@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
@@ -313,7 +313,7 @@ textarea{min-height:72px;line-height:1.5}
 
 /* Card templates */
 .gs-card-s{width:1080px;height:1350px;position:relative;overflow:hidden;font-family:'Noto Sans TC','Microsoft JhengHei',sans-serif}
-.gs-card-s .bg,.gs-card-l .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.gs-card-s .bg,.gs-card-l .bg{position:absolute;inset:0;width:100%;height:100%;background-size:cover;background-position:center}
 .gs-card-s .content{position:absolute;inset:0;padding:80px 90px;display:flex;flex-direction:column}
 .gs-card-l{width:800px;height:600px;position:relative;overflow:hidden;font-family:'Noto Sans TC','Microsoft JhengHei',sans-serif}
 .gs-card-l .content{position:absolute;inset:0;padding:50px 60px;display:flex;flex-direction:column}
@@ -516,6 +516,8 @@ function _defaultOverrides() {
     }
   };
 }
+
+function _deepClone(obj) { return JSON.parse(JSON.stringify(obj)); }
 
 let manualOverrides = _defaultOverrides();
 let _dragState = null;
@@ -1818,7 +1820,9 @@ function renderOutput(d) {
   // ── 廣告圖卡封面（單張） ──
   if (fmts.includes('ad')) {
     const sec = _makeFmtSection('📢 廣告圖卡', '1080 × 1350px · 單張');
-    sec.appendChild(makeWrap(buildSCardHTML(d, bg), '廣告圖卡', 1080, 1350, 270, 337.5));
+    sec._cardType = 'ad'; sec._cardData = _deepClone(d); sec._cardOverrides = _defaultOverrides();
+    sec.appendChild(makeWrap(buildSCardHTML(d, bg), '廣告圖卡', 1080, 1350, 270, 337.5, {cardRole:'cover'}));
+    const ep = buildSectionEditPanel(sec); if(ep) sec.appendChild(ep);
     area.appendChild(sec);
   }
 
@@ -1830,31 +1834,34 @@ function renderOutput(d) {
     const total = coverCount + innerCount;
     let idx = 1;
     const sec = _makeFmtSection('📱 IG / FB 社群', `1080 × 1350px · ${total} 頁`);
+    sec._cardType = 'ig'; sec._cardData = _deepClone(d); sec._cardOverrides = _defaultOverrides();
     const strip = document.createElement('div'); strip.className = 'page-strip';
     if (fmts.includes('igcover')) {
-      strip.appendChild(makeWrap(buildSCardHTML(d, bg), `封面 ${idx}/${total}`, 1080, 1350, 200, 250, {showBgPicker:true}));
+      strip.appendChild(makeWrap(buildSCardHTML(d, bg), `封面 ${idx}/${total}`, 1080, 1350, 200, 250, {showBgPicker:true, cardRole:'cover'}));
       idx++;
     }
     if (fmts.includes('iginner')) {
-      strip.appendChild(makeWrap(buildTableCardHTML(d, bg), `總覽 ${idx}/${total}`, 1080, 1350, 200, 250, {showBgPicker:true}));
+      strip.appendChild(makeWrap(buildTableCardHTML(d, bg), `總覽 ${idx}/${total}`, 1080, 1350, 200, 250, {showBgPicker:true, cardRole:'inner'}));
       idx++;
       cp.forEach((page, i) => {
-        strip.appendChild(makeWrap(buildContentCardHTML(d, page, bg, idx, total), `內容 ${idx}/${total}`, 1080, 1350, 200, 250, {showBgPicker:true}));
+        strip.appendChild(makeWrap(buildContentCardHTML(d, page, bg, idx, total), `內容 ${idx}/${total}`, 1080, 1350, 200, 250, {showBgPicker:true, cardRole:'inner'}));
         idx++;
       });
     }
     sec.appendChild(strip);
+    const ep = buildSectionEditPanel(sec); if(ep) sec.appendChild(ep);
     area.appendChild(sec);
   }
 
   // ── 部落格封面 ──
   if (fmts.includes('blog')) {
     const sec = _makeFmtSection('📰 部落格封面', '800 × 600px');
-    sec.appendChild(makeWrap(buildLCardHTML(d, bg), '部落格封面', 800, 600, 480, 360));
+    sec._cardType = 'blog'; sec._cardData = _deepClone(d); sec._cardOverrides = _defaultOverrides();
+    sec.appendChild(makeWrap(buildLCardHTML(d, bg), '部落格封面', 800, 600, 480, 360, {cardRole:'cover'}));
+    const ep = buildSectionEditPanel(sec); if(ep) sec.appendChild(ep);
     area.appendChild(sec);
   }
 
-  const ep = buildEditPanel(currentData); if(ep) area.appendChild(ep);
   const panel = buildCaptionPanel(d); if(panel) area.appendChild(panel);
   document.getElementById('dl-btn').style.display = '';
 }
@@ -1865,46 +1872,60 @@ function _makeFmtSection(name, size) {
   return sec;
 }
 
-// ── Edit Panel ────────────────────────────────────────────────────────────────
-function buildEditPanel(d) {
-  const fmts   = getActiveFormats();
-  const hasCover = fmts.includes('ad') || fmts.includes('igcover');
-  const isMulti  = fmts.includes('iginner');
-  const hasBlog  = fmts.includes('blog');
-  const isBlog   = hasBlog && !hasCover && !isMulti; // blog-only mode
-  const coverFields = isBlog
-    ? [{key:'blogTitle',   label:'文章標題', val:d.blogTitle||d.headline||''},
-       {key:'subheadline', label:'副標題',   val:d.subheadline||''},
-       {key:'cta',         label:'CTA 按鈕', val:d.cta||''}]
-    : [{key:'headline',    label:'標題',      val:d.headline||''},
-       {key:'hookLine1',   label:'大字 第1行', val:d.hookLine1||''},
-       {key:'hookLine2',   label:'大字 第2行', val:d.hookLine2||''},
-       {key:'hookLine3',   label:'大字 第3行', val:d.hookLine3||''},
-       ...(isMulti?[
-         {key:'kp0', label:'重點 1', val:d.keyPoints?.[0]||''},
-         {key:'kp1', label:'重點 2', val:d.keyPoints?.[1]||''},
-         {key:'kp2', label:'重點 3', val:d.keyPoints?.[2]||''},
-         {key:'cta', label:'CTA',    val:d.cta||''},
-       ]:[]),
-       {key:'hashtags', label:'Hashtags', val:d.hashtags||''}];
-  const contentFields = isMulti
-    ? (d.contentPages||[]).flatMap((cp,i)=>[
-        {key:`cp${i}-title`, label:`P${i+3} 標題`, val:cp.title||''},
-        {key:`cp${i}-body`,  label:`P${i+3} 內文`, val:cp.body||''},
-      ])
-    : [];
-  const fields = [...coverFields, ...contentFields];
+// ── Per-Section Edit Panel ────────────────────────────────────────────────────
+function buildSectionEditPanel(sec) {
+  if (!sec._cardData || !sec._cardOverrides) return null;
+  const d = sec._cardData;
+  const type = sec._cardType;
+  const fmts = getActiveFormats();
+  const hasCover = type === 'ad' || (type === 'ig' && fmts.includes('igcover'));
+  const hasInner = type === 'ig' && fmts.includes('iginner');
+  const isBlog   = type === 'blog';
+  const hasLayout = hasCover || type === 'ad' || isBlog;
+
+  // ── Text fields ──
+  let fields = [];
+  if (isBlog) {
+    fields = [
+      {key:'hookLine1',   label:'大字 第1行', val:d.hookLine1||''},
+      {key:'hookLine2',   label:'大字 第2行', val:d.hookLine2||''},
+      {key:'hookLine3',   label:'大字 第3行', val:d.hookLine3||''},
+      {key:'subheadline', label:'副標題',     val:d.subheadline||''},
+    ];
+  } else {
+    fields = [
+      {key:'headline',  label:'標題',      val:d.headline||''},
+      {key:'hookLine1', label:'大字 第1行', val:d.hookLine1||''},
+      {key:'hookLine2', label:'大字 第2行', val:d.hookLine2||''},
+      {key:'hookLine3', label:'大字 第3行', val:d.hookLine3||''},
+    ];
+    if (hasCover || type === 'ad') fields.push({key:'hashtags', label:'Hashtags', val:d.hashtags||''});
+    if (hasInner) {
+      fields.push(
+        {key:'kp0', label:'重點 1', val:d.keyPoints?.[0]||''},
+        {key:'kp1', label:'重點 2', val:d.keyPoints?.[1]||''},
+        {key:'kp2', label:'重點 3', val:d.keyPoints?.[2]||''},
+        {key:'cta', label:'CTA',    val:d.cta||''},
+        ...(d.contentPages||[]).flatMap((cp,i)=>[
+          {key:`cp${i}-title`, label:`P${i+3} 標題`, val:cp.title||''},
+          {key:`cp${i}-body`,  label:`P${i+3} 內文`, val:cp.body||''},
+        ])
+      );
+    }
+    if (!hasCover && !hasInner) fields.push({key:'hashtags', label:'Hashtags', val:d.hashtags||''});
+  }
 
   const wrap=document.createElement('div'); wrap.className='edit-panel';
   const hdr=document.createElement('div'); hdr.className='edit-panel-hdr';
-  hdr.innerHTML='<span>✏️ 直接編輯文字</span><span class="edit-panel-arrow">▲</span>';
+  hdr.innerHTML='<span>✏️ 編輯此版文字</span><span class="edit-panel-arrow">▲</span>';
   const body=document.createElement('div'); body.className='edit-panel-body';
   let collapsed=false;
   hdr.onclick=()=>{ collapsed=!collapsed; body.style.display=collapsed?'none':''; hdr.querySelector('.edit-panel-arrow').textContent=collapsed?'▼':'▲'; };
   wrap.appendChild(hdr); wrap.appendChild(body);
 
-  // Yellow-line selector (only for ad/ig/fb platforms with hook lines)
-  if (!isBlog) {
+  // ── Layout controls (cover + blog only) ──
+  if (hasLayout) {
+    // Yellow-line selector
     const yRow=document.createElement('div'); yRow.className='edit-row'; yRow.style.alignItems='center';
     const yLbl=document.createElement('label'); yLbl.className='edit-lbl'; yLbl.textContent='黃色第幾行';
     const yBtns=document.createElement('div'); yBtns.style.cssText='display:flex;gap:5px';
@@ -1917,104 +1938,103 @@ function buildEditPanel(d) {
     });
     yRow.appendChild(yLbl); yRow.appendChild(yBtns); body.appendChild(yRow);
 
-    // ── Drag tip ──
-    const dragTip = document.createElement('div');
+    const dragTip=document.createElement('div');
     dragTip.style.cssText='font-size:10px;color:rgba(166,138,86,.55);padding:4px 2px;line-height:1.6';
     dragTip.textContent='↖ 拖曳文字／素材可調整位置';
     body.appendChild(dragTip);
 
-    // ── Font size fine-tune controls ──
-    const adjRow = document.createElement('div'); adjRow.className='edit-row'; adjRow.style.cssText='flex-direction:column;gap:8px;margin-top:4px';
-    const adjLbl = document.createElement('div'); adjLbl.className='edit-lbl'; adjLbl.textContent='字體大小微調';
-    adjRow.appendChild(adjLbl);
+    // Font size controls
+    const adjRow=document.createElement('div'); adjRow.className='edit-row'; adjRow.style.cssText='flex-direction:column;gap:8px;margin-top:4px';
+    adjRow.appendChild(Object.assign(document.createElement('div'),{className:'edit-lbl',textContent:'字體大小微調'}));
 
-    [
-      {label:'標題',key:'hlDelta'},
-      {label:'大字',key:'hookDelta'},
-    ].forEach(({label:flbl, key:fkey})=>{
+    const valEls = {}; // closure refs for reset
+    const btnStyle='padding:3px 10px;font-size:13px;font-weight:700;border-radius:5px;cursor:pointer;font-family:inherit;border:1px solid var(--border);background:transparent;color:var(--muted)';
+
+    const fsKeys = isBlog ? [{label:'大字',key:'hookDelta'}] : [{label:'標題',key:'hlDelta'},{label:'大字',key:'hookDelta'}];
+    fsKeys.forEach(({label:flbl,key:fkey})=>{
       const fRow=document.createElement('div'); fRow.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:6px';
       const fl=document.createElement('span'); fl.style.cssText='font-size:11px;color:var(--muted);flex:1'; fl.textContent=flbl;
-      const btnM=document.createElement('button'); btnM.textContent='－'; btnM.className='side-btn';
-      btnM.style.cssText='padding:3px 10px;font-size:13px;font-weight:700;border-radius:5px;cursor:pointer;font-family:inherit;border:1px solid var(--border);background:transparent;color:var(--muted)';
+      const btnM=document.createElement('button'); btnM.textContent='－'; btnM.className='side-btn'; btnM.style.cssText=btnStyle;
       const valEl=document.createElement('span'); valEl.style.cssText='font-size:12px;font-weight:700;color:var(--gold);min-width:36px;text-align:center';
-      valEl.id='fsize-'+fkey; valEl.textContent=(manualOverrides[fkey]>=0?'+':'')+manualOverrides[fkey];
-      const btnP=document.createElement('button'); btnP.textContent='＋'; btnP.className='side-btn';
-      btnP.style.cssText=btnM.style.cssText;
-      btnM.onclick=()=>{ manualOverrides[fkey]-=4; valEl.textContent=(manualOverrides[fkey]>=0?'+':'')+manualOverrides[fkey]; rebuildSCard(); };
-      btnP.onclick=()=>{ manualOverrides[fkey]+=4; valEl.textContent=(manualOverrides[fkey]>=0?'+':'')+manualOverrides[fkey]; rebuildSCard(); };
+      valEl.textContent=(sec._cardOverrides[fkey]>=0?'+':'')+sec._cardOverrides[fkey];
+      valEls[fkey]=valEl;
+      const btnP=document.createElement('button'); btnP.textContent='＋'; btnP.className='side-btn'; btnP.style.cssText=btnStyle;
+      btnM.onclick=()=>{ sec._cardOverrides[fkey]-=4; valEl.textContent=(sec._cardOverrides[fkey]>=0?'+':'')+sec._cardOverrides[fkey]; rebuildSection(sec); };
+      btnP.onclick=()=>{ sec._cardOverrides[fkey]+=4; valEl.textContent=(sec._cardOverrides[fkey]>=0?'+':'')+sec._cardOverrides[fkey]; rebuildSection(sec); };
       fRow.appendChild(fl); fRow.appendChild(btnM); fRow.appendChild(valEl); fRow.appendChild(btnP);
       adjRow.appendChild(fRow);
     });
 
-    // ── Headline border width control ──
-    const strokeRow=document.createElement('div'); strokeRow.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:6px';
-    const strokeLbl=document.createElement('span'); strokeLbl.style.cssText='font-size:11px;color:var(--muted);flex:1'; strokeLbl.textContent='標題框線粗細';
-    const strokeM=document.createElement('button'); strokeM.textContent='－'; strokeM.className='side-btn';
-    strokeM.style.cssText='padding:3px 10px;font-size:13px;font-weight:700;border-radius:5px;cursor:pointer;font-family:inherit;border:1px solid var(--border);background:transparent;color:var(--muted)';
-    const strokeVal=document.createElement('span'); strokeVal.id='stroke-val';
-    strokeVal.style.cssText='font-size:12px;font-weight:700;color:var(--gold);min-width:36px;text-align:center';
-    strokeVal.textContent=(manualOverrides.textStroke||4)+'px';
-    const strokeP=document.createElement('button'); strokeP.textContent='＋'; strokeP.className='side-btn'; strokeP.style.cssText=strokeM.style.cssText;
-    strokeM.onclick=()=>{ manualOverrides.textStroke=Math.max(0,(manualOverrides.textStroke||4)-1); strokeVal.textContent=manualOverrides.textStroke+'px'; rebuildSCard(); };
-    strokeP.onclick=()=>{ manualOverrides.textStroke=Math.min(12,(manualOverrides.textStroke||4)+1); strokeVal.textContent=manualOverrides.textStroke+'px'; rebuildSCard(); };
-    strokeRow.appendChild(strokeLbl); strokeRow.appendChild(strokeM); strokeRow.appendChild(strokeVal); strokeRow.appendChild(strokeP);
-    adjRow.appendChild(strokeRow);
+    // Stroke (cover only)
+    if (!isBlog) {
+      const strokeRow=document.createElement('div'); strokeRow.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:6px';
+      const strokeLbl=document.createElement('span'); strokeLbl.style.cssText='font-size:11px;color:var(--muted);flex:1'; strokeLbl.textContent='標題框線粗細';
+      const strokeM=document.createElement('button'); strokeM.textContent='－'; strokeM.className='side-btn'; strokeM.style.cssText=btnStyle;
+      const strokeVal=document.createElement('span'); strokeVal.style.cssText='font-size:12px;font-weight:700;color:var(--gold);min-width:36px;text-align:center';
+      strokeVal.textContent=(sec._cardOverrides.textStroke||4)+'px'; valEls.stroke=strokeVal;
+      const strokeP=document.createElement('button'); strokeP.textContent='＋'; strokeP.className='side-btn'; strokeP.style.cssText=btnStyle;
+      strokeM.onclick=()=>{ sec._cardOverrides.textStroke=Math.max(0,(sec._cardOverrides.textStroke||4)-1); strokeVal.textContent=sec._cardOverrides.textStroke+'px'; rebuildSection(sec); };
+      strokeP.onclick=()=>{ sec._cardOverrides.textStroke=Math.min(12,(sec._cardOverrides.textStroke||4)+1); strokeVal.textContent=sec._cardOverrides.textStroke+'px'; rebuildSection(sec); };
+      strokeRow.appendChild(strokeLbl); strokeRow.appendChild(strokeM); strokeRow.appendChild(strokeVal); strokeRow.appendChild(strokeP);
+      adjRow.appendChild(strokeRow);
+    }
 
-    // ── Logo + BN scale controls ──
-    [
-      {label:'Logo 大小', key:'logoScale', id:'logo-scale-val'},
-      {label:'Breaking News 大小', key:'bnScale', id:'bn-scale-val'},
-    ].forEach(({label:sl, key:sk, id:sid})=>{
+    // Logo + BN scale
+    const scaleKeys = isBlog
+      ? [{label:'Logo 大小', key:'logoScale'}]
+      : [{label:'Logo 大小', key:'logoScale'},{label:'Breaking News 大小', key:'bnScale'}];
+    scaleKeys.forEach(({label:sl,key:sk})=>{
       const r2=document.createElement('div'); r2.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:6px';
       const l2=document.createElement('span'); l2.style.cssText='font-size:11px;color:var(--muted);flex:1'; l2.textContent=sl;
-      const bM2=document.createElement('button'); bM2.textContent='－'; bM2.className='side-btn';
-      bM2.style.cssText='padding:3px 10px;font-size:13px;font-weight:700;border-radius:5px;cursor:pointer;font-family:inherit;border:1px solid var(--border);background:transparent;color:var(--muted)';
-      const v2=document.createElement('span'); v2.id=sid; v2.style.cssText='font-size:12px;font-weight:700;color:var(--gold);min-width:42px;text-align:center';
-      v2.textContent=Math.round((manualOverrides[sk]||1)*100)+'%';
-      const bP2=document.createElement('button'); bP2.textContent='＋'; bP2.className='side-btn'; bP2.style.cssText=bM2.style.cssText;
-      bM2.onclick=()=>{ manualOverrides[sk]=Math.max(0.3,+((manualOverrides[sk]||1)-0.1).toFixed(2)); v2.textContent=Math.round(manualOverrides[sk]*100)+'%'; rebuildSCard(); };
-      bP2.onclick=()=>{ manualOverrides[sk]=Math.min(3.0,+((manualOverrides[sk]||1)+0.1).toFixed(2)); v2.textContent=Math.round(manualOverrides[sk]*100)+'%'; rebuildSCard(); };
+      const bM2=document.createElement('button'); bM2.textContent='－'; bM2.className='side-btn'; bM2.style.cssText=btnStyle;
+      const v2=document.createElement('span'); v2.style.cssText='font-size:12px;font-weight:700;color:var(--gold);min-width:42px;text-align:center';
+      v2.textContent=Math.round((sec._cardOverrides[sk]||1)*100)+'%'; valEls[sk]=v2;
+      const bP2=document.createElement('button'); bP2.textContent='＋'; bP2.className='side-btn'; bP2.style.cssText=btnStyle;
+      bM2.onclick=()=>{ sec._cardOverrides[sk]=Math.max(0.3,+((sec._cardOverrides[sk]||1)-0.1).toFixed(2)); v2.textContent=Math.round(sec._cardOverrides[sk]*100)+'%'; rebuildSection(sec); };
+      bP2.onclick=()=>{ sec._cardOverrides[sk]=Math.min(3.0,+((sec._cardOverrides[sk]||1)+0.1).toFixed(2)); v2.textContent=Math.round(sec._cardOverrides[sk]*100)+'%'; rebuildSection(sec); };
       r2.appendChild(l2); r2.appendChild(bM2); r2.appendChild(v2); r2.appendChild(bP2);
       adjRow.appendChild(r2);
     });
 
-    // ── Subject size control (only when subject uploaded) ──
+    // Subject size
     if (subjectUrl) {
       const subSzRow=document.createElement('div'); subSzRow.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:6px';
       const subLbl=document.createElement('span'); subLbl.style.cssText='font-size:11px;color:var(--muted);flex:1'; subLbl.textContent='素材大小';
-      const subM=document.createElement('button'); subM.textContent='－'; subM.className='side-btn';
-      subM.style.cssText='padding:3px 10px;font-size:13px;font-weight:700;border-radius:5px;cursor:pointer;font-family:inherit;border:1px solid var(--border);background:transparent;color:var(--muted)';
-      const subValEl=document.createElement('span'); subValEl.id='sub-scale-val';
-      subValEl.style.cssText='font-size:12px;font-weight:700;color:var(--gold);min-width:42px;text-align:center';
-      subValEl.textContent=Math.round(manualOverrides.subScale*100)+'%';
-      const subP=document.createElement('button'); subP.textContent='＋'; subP.className='side-btn';
-      subP.style.cssText=subM.style.cssText;
-      subM.onclick=()=>{
-        manualOverrides.subScale=Math.max(0.3, +(manualOverrides.subScale-0.1).toFixed(2));
-        subValEl.textContent=Math.round(manualOverrides.subScale*100)+'%'; rebuildSCard();
-      };
-      subP.onclick=()=>{
-        manualOverrides.subScale=Math.min(2.0, +(manualOverrides.subScale+0.1).toFixed(2));
-        subValEl.textContent=Math.round(manualOverrides.subScale*100)+'%'; rebuildSCard();
-      };
+      const subM=document.createElement('button'); subM.textContent='－'; subM.className='side-btn'; subM.style.cssText=btnStyle;
+      const subValEl=document.createElement('span'); subValEl.style.cssText='font-size:12px;font-weight:700;color:var(--gold);min-width:42px;text-align:center';
+      subValEl.textContent=Math.round(sec._cardOverrides.subScale*100)+'%'; valEls.subScale=subValEl;
+      const subP=document.createElement('button'); subP.textContent='＋'; subP.className='side-btn'; subP.style.cssText=btnStyle;
+      subM.onclick=()=>{ sec._cardOverrides.subScale=Math.max(0.3,+(sec._cardOverrides.subScale-0.1).toFixed(2)); subValEl.textContent=Math.round(sec._cardOverrides.subScale*100)+'%'; rebuildSection(sec); };
+      subP.onclick=()=>{ sec._cardOverrides.subScale=Math.min(2.0,+(sec._cardOverrides.subScale+0.1).toFixed(2)); subValEl.textContent=Math.round(sec._cardOverrides.subScale*100)+'%'; rebuildSection(sec); };
       subSzRow.appendChild(subLbl); subSzRow.appendChild(subM); subSzRow.appendChild(subValEl); subSzRow.appendChild(subP);
       adjRow.appendChild(subSzRow);
     }
 
+    // Reset button
     const resetBtn=document.createElement('button'); resetBtn.textContent='↺ 重置版面';
     resetBtn.style.cssText='margin-top:4px;padding:6px 12px;font-size:11px;font-weight:700;border-radius:6px;cursor:pointer;font-family:inherit;border:1px solid var(--border);background:transparent;color:var(--muted);width:100%;transition:all .15s';
     resetBtn.onmouseenter=()=>{resetBtn.style.background='rgba(166,138,86,.15)';resetBtn.style.color='var(--gold)';};
     resetBtn.onmouseleave=()=>{resetBtn.style.background='transparent';resetBtn.style.color='var(--muted)';};
-    resetBtn.onclick=()=>resetLayout();
+    resetBtn.onclick=()=>{
+      sec._cardOverrides = _defaultOverrides();
+      if(valEls.hlDelta)    valEls.hlDelta.textContent='+0';
+      if(valEls.hookDelta)  valEls.hookDelta.textContent='+0';
+      if(valEls.stroke)     valEls.stroke.textContent='4px';
+      if(valEls.logoScale)  valEls.logoScale.textContent='250%';
+      if(valEls.bnScale)    valEls.bnScale.textContent='100%';
+      if(valEls.subScale)   valEls.subScale.textContent='100%';
+      rebuildSection(sec);
+    };
     adjRow.appendChild(resetBtn);
     body.appendChild(adjRow);
   }
 
+  // ── Text input fields ──
   fields.forEach(({key,label,val})=>{
     const row=document.createElement('div'); row.className='edit-row';
     const lbl=document.createElement('label'); lbl.className='edit-lbl'; lbl.textContent=label;
     const inp=document.createElement('input'); inp.type='text'; inp.className='edit-inp'; inp.value=val;
-    inp.oninput=()=>liveUpdateCard(key,inp.value);
+    inp.oninput=()=>liveUpdateCardInSection(key, inp.value, sec);
     row.appendChild(lbl); row.appendChild(inp); body.appendChild(row);
   });
   return wrap;
@@ -2040,32 +2060,9 @@ function setHookYellow(n) {
 
 // ── Layout rebuild (font size changes) ────────────────────────────────────────
 function rebuildSCard() {
-  if (!currentData) return;
-  document.querySelectorAll('.card-preview-shell').forEach(shell => {
-    const inner = shell.querySelector(':scope > div');
-    if (!inner) return;
-    const h = parseInt(inner.style.height)||0;
-    if (h !== 1350 && h !== 600) return;
-    const nW = parseInt(inner.style.width)||1080;
-    const dW = parseInt(shell.style.width)||360;
-    const sc = dW/nW;
-    const imgUrl = selectedImgUrl || inner.querySelector('img.bg')?.src || '';
-    if (!imgUrl) return;
-    inner.innerHTML = h === 600 ? buildLCardHTML(currentData, imgUrl) : buildSCardHTML(currentData, imgUrl);
-    inner.style.transform = `scale(${sc})`;
+  document.querySelectorAll('.fmt-section').forEach(sec=>{
+    if (sec._cardOverrides) rebuildSection(sec);
   });
-}
-
-function resetLayout() {
-  manualOverrides = _defaultOverrides();
-  ['hlDelta','hookDelta'].forEach(k=>{
-    const el=document.getElementById('fsize-'+k); if(el) el.textContent='+0';
-  });
-  const scaleDefaults = {sub:'100%', logo:'250%', bn:'100%'};
-  Object.entries(scaleDefaults).forEach(([k,v])=>{
-    const el=document.getElementById(k+'-scale-val'); if(el) el.textContent=v;
-  });
-  rebuildSCard();
 }
 
 // ── Drag-to-reposition ─────────────────────────────────────────────────────────
@@ -2073,17 +2070,19 @@ document.addEventListener('mousedown', function(e) {
   // ── Resize handle (check first to avoid triggering drag) ──
   const rzEl = e.target.closest('[data-resize]');
   if (rzEl) {
-    const rtype = rzEl.dataset.resize; // 'headline' | 'hook-group'
+    const rtype = rzEl.dataset.resize;
     const inner = rzEl.closest('.card-preview-shell > div');
     if (!inner) return;
     const shell = inner.parentElement;
     const sc = (parseInt(shell?.style.width)||360) / (parseInt(inner.style.width)||1080);
+    const rzSec = rzEl.closest('.fmt-section');
+    const ov = rzSec?._cardOverrides || manualOverrides;
     const parent = rzEl.parentElement;
-    const storedW = rtype==='headline' ? manualOverrides.headlineW
-      : rtype.startsWith('hookLine') ? (manualOverrides.hookLineW?.[parseInt(rtype.replace('hookLine',''))] ?? null)
-      : manualOverrides.hookGroupW;
+    const storedW = rtype==='headline' ? ov.headlineW
+      : rtype.startsWith('hookLine') ? (ov.hookLineW?.[parseInt(rtype.replace('hookLine',''))] ?? null)
+      : ov.hookGroupW;
     const startW = storedW || Math.round(parent.getBoundingClientRect().width / sc);
-    _resizeState = { rtype, sc, startX:e.clientX, startW, handle:rzEl };
+    _resizeState = { rtype, sc, startX:e.clientX, startW, handle:rzEl, ov };
     rzEl.classList.add('active');
     e.preventDefault(); e.stopPropagation();
     return;
@@ -2099,9 +2098,11 @@ document.addEventListener('mousedown', function(e) {
   if (!inner) return;
   const shell = inner.parentElement;
   const sc = (parseInt(shell?.style.width)||360) / (parseInt(inner.style.width)||1080);
-  if (!manualOverrides.offsets[dtype]) manualOverrides.offsets[dtype]={dx:0,dy:0};
-  const {dx:startDx, dy:startDy} = manualOverrides.offsets[dtype];
-  _dragState = { el:dragEl, dtype, sc, startX:e.clientX, startY:e.clientY, startDx, startDy };
+  const dragSec = dragEl.closest('.fmt-section');
+  const dragOv = dragSec?._cardOverrides || manualOverrides;
+  if (!dragOv.offsets[dtype]) dragOv.offsets[dtype]={dx:0,dy:0};
+  const {dx:startDx, dy:startDy} = dragOv.offsets[dtype];
+  _dragState = { el:dragEl, dtype, sc, startX:e.clientX, startY:e.clientY, startDx, startDy, ov:dragOv };
   dragEl.style.cursor = 'grabbing';
   e.preventDefault();
 });
@@ -2113,22 +2114,23 @@ document.addEventListener('mousemove', function(e) {
     const rt = _resizeState.rtype;
     const maxW = rt.startsWith('hookLine') ? 940 : 980; // hookLines can expand to near card edge
     const newW = Math.max(120, Math.min(maxW, Math.round(_resizeState.startW + delta)));
+    const ov = _resizeState.ov || manualOverrides;
     if (rt === 'headline') {
-      manualOverrides.headlineW = newW;
+      ov.headlineW = newW;
       _resizeState.handle.closest('[data-drag="headline"]').style.width = newW+'px';
     } else if (rt.startsWith('hookLine')) {
       const n = parseInt(rt.replace('hookLine',''));
-      if (!manualOverrides.hookLineW) manualOverrides.hookLineW = {};
-      manualOverrides.hookLineW[n] = newW;
+      if (!ov.hookLineW) ov.hookLineW = {};
+      ov.hookLineW[n] = newW;
       const lineEl = _resizeState.handle.closest(`[data-field="hookLine${n}"]`);
       if (lineEl) { lineEl.style.minWidth = newW+'px'; lineEl.style.maxWidth = 'none'; }
     } else if (rt === 'blogTitle' || rt === 'subheadline' || rt === 'cta') {
       const key = rt === 'blogTitle' ? 'blogTitleW' : rt === 'subheadline' ? 'subheadlineW' : 'ctaW';
-      manualOverrides[key] = newW;
+      ov[key] = newW;
       const el = _resizeState.handle.closest(`[data-drag="${rt}"]`);
       if (el) { el.style.minWidth = newW+'px'; el.style.maxWidth = 'none'; }
     } else {
-      manualOverrides.hookGroupW = newW;
+      ov.hookGroupW = newW;
       _resizeState.handle.closest('[data-drag="hook-group"]').style.maxWidth = newW+'px';
     }
     return;
@@ -2137,7 +2139,7 @@ document.addEventListener('mousemove', function(e) {
   if (!_dragState) return;
   const dx = Math.round(_dragState.startDx + (e.clientX-_dragState.startX) / _dragState.sc);
   const dy = Math.round(_dragState.startDy + (e.clientY-_dragState.startY) / _dragState.sc);
-  manualOverrides.offsets[_dragState.dtype] = {dx, dy};
+  (_dragState.ov || manualOverrides).offsets[_dragState.dtype] = {dx, dy};
   _dragState.el.style.transform = `translate(${dx}px,${dy}px)`;
 });
 
@@ -2155,7 +2157,9 @@ document.addEventListener('input', function(e) {
   const clone = el.cloneNode(true);
   clone.querySelectorAll('[contenteditable="false"]').forEach(c => c.remove());
   const value = (clone.innerText || clone.textContent || '').replace(/[\n\r]/g, '').trim();
-  liveUpdateCard(field, value);
+  const sec = el.closest('.fmt-section');
+  if (sec && sec._cardData) liveUpdateCardInSection(field, value, sec);
+  else liveUpdateCard(field, value);
 });
 
 function liveUpdateCard(field, value) {
@@ -2201,6 +2205,61 @@ function liveUpdateCard(field, value) {
   });
 }
 
+// ── Per-section scoped update ─────────────────────────────────────────────────
+function liveUpdateCardInSection(field, value, sec) {
+  const d = sec._cardData;
+  if (!d) return;
+  if (field.startsWith('kp') && !field.includes('-')) {
+    const idx=parseInt(field[2]); d.keyPoints=[...(d.keyPoints||[])]; d.keyPoints[idx]=value;
+  } else if (field.startsWith('cp')) {
+    const parts=field.split('-'); const idx=parseInt(parts[0].replace('cp','')); const rest=parts[1];
+    d.contentPages=[...(d.contentPages||[])]; d.contentPages[idx]={...(d.contentPages[idx]||{})};
+    if (rest==='title') d.contentPages[idx].title=value; else d.contentPages[idx].body=value;
+  } else { d[field]=value; }
+
+  sec.querySelectorAll('.card-preview-shell > div').forEach(card=>{
+    if (field==='hashtags') {
+      const container=card.querySelector('[data-field-container="hashtags"]');
+      if (container) container.innerHTML=value.split(/\s+/).filter(Boolean).slice(0,4)
+        .map(h=>`<span style="display:inline-block;background:rgba(166,138,86,.15);border:1px solid rgba(166,138,86,.55);border-radius:40px;padding:8px 28px;font-size:24px;color:#C9B07A;margin:0 6px 0 0">${escH(h)}</span>`).join('');
+      const plain=card.querySelector('[data-field="hashtags"]');
+      if (plain) plain.textContent=value.split(/\s+/).filter(Boolean).slice(0,3).join('  ');
+    } else {
+      const el=card.querySelector(`[data-field="${field}"]`);
+      if (el) {
+        if (el.isContentEditable && document.activeElement===el) { /* skip */ }
+        else if (el.isContentEditable) {
+          let tn=Array.from(el.childNodes).find(n=>n.nodeType===Node.TEXT_NODE);
+          if (tn) tn.nodeValue=value; else el.insertBefore(document.createTextNode(value),el.firstChild);
+        } else { el.textContent=value; }
+      } else if (['hookLine1','hookLine2','hookLine3'].includes(field) && value.trim()) {
+        rebuildSection(sec);
+      }
+    }
+  });
+}
+
+// ── Per-section rebuild (uses section-specific overrides) ─────────────────────
+function rebuildSection(sec) {
+  if (!sec._cardData || !sec._cardOverrides) return;
+  const savedMo = manualOverrides;
+  manualOverrides = sec._cardOverrides;
+  sec.querySelectorAll('.card-preview-shell').forEach(shell=>{
+    const inner=shell.querySelector(':scope > div');
+    if (!inner) return;
+    if (inner.dataset.cardRole==='inner') return; // skip inner pages
+    const h=parseInt(inner.style.height)||0;
+    if (h!==1350 && h!==600) return;
+    const nW=parseInt(inner.style.width)||1080;
+    const dW=parseInt(shell.style.width)||360;
+    const bgEl=inner.querySelector('.bg');
+    const imgUrl=(bgEl?.style.backgroundImage||'').replace(/^url\(["']?/,'').replace(/["']?\)$/,'')||selectedImgUrl||getBgImg();
+    if (!imgUrl) return;
+    inner.innerHTML=h===600?buildLCardHTML(sec._cardData,imgUrl):buildSCardHTML(sec._cardData,imgUrl);
+    inner.style.transform=`scale(${dW/nW})`;
+  });
+  manualOverrides=savedMo;
+}
 
 function buildCaptionPanel(d) {
   const fmts = getActiveFormats();
@@ -2299,7 +2358,7 @@ function buildSCardHTML(d, imgUrl) {
   const htags = (d.hashtags||'').split(/\s+/).filter(Boolean).slice(0,3).join('  ');
 
   return `<div class="gs-card-s">
-  <img class="bg" src="${imgUrl}" alt="" style="filter:saturate(${mo.bgSat||0.80}) brightness(${mo.bgBright||0.80})">
+  <div class="bg" style="background-image:url('${imgUrl}');filter:saturate(${mo.bgSat||0.80}) brightness(${mo.bgBright||0.80})"></div>
   <div style="position:absolute;inset:0;background:${gradCSS};z-index:2"></div>
   ${subEl}
   <div style="position:absolute;inset:0;padding:58px 68px 50px;display:flex;flex-direction:column;z-index:6">
@@ -2361,9 +2420,8 @@ function buildLCardHTML(d, imgUrl) {
   const subEl = hasSub ? `<img src="${subjectUrl}" alt="" style="position:absolute;right:30px;bottom:0;height:88%;object-fit:contain;z-index:4">` : '';
 
   return `<div class="gs-card-l">
-  <img class="bg" src="${imgUrl}" alt="" style="filter:saturate(0.50) brightness(0.70)">
+  <div class="bg" style="background-image:url('${imgUrl}');filter:saturate(0.50) brightness(0.70)"></div>
   <div style="position:absolute;inset:0;background:linear-gradient(108deg,rgba(0,0,0,.74) 0%,rgba(0,0,0,.50) 50%,rgba(0,0,0,.08) 100%);z-index:2"></div>
-  <div style="position:absolute;inset:0;border:10px solid ${fc};pointer-events:none;z-index:10"></div>
   ${subEl}
   <div style="position:absolute;inset:0;padding:32px 44px;display:flex;flex-direction:column;z-index:6">
 
@@ -2415,7 +2473,7 @@ function buildTableCardHTML(d, imgUrl) {
 
     const tableH = rows.length * 60 + 60; // rough height
     return `<div class="gs-card-s">
-  <img class="bg" src="${imgUrl}" alt="" style="filter:saturate(0.12) brightness(0.40)">
+  <div class="bg" style="background-image:url('${imgUrl}');filter:saturate(0.12) brightness(0.40)"></div>
   <div style="position:absolute;inset:0;background:linear-gradient(175deg,rgba(0,0,0,.55) 0%,rgba(0,0,0,.75) 40%,rgba(0,0,0,.95) 100%);z-index:2"></div>
   <div style="position:absolute;inset:0;border:20px solid #B09060;pointer-events:none;z-index:10"></div>
   <div class="content" style="z-index:6;padding:60px 70px 50px">
@@ -2446,7 +2504,7 @@ function buildTableCardHTML(d, imgUrl) {
     </div>
   </div>`).join('');
   return `<div class="gs-card-s">
-  <img class="bg" src="${imgUrl}" alt="" style="filter:saturate(0.12) brightness(0.40)">
+  <div class="bg" style="background-image:url('${imgUrl}');filter:saturate(0.12) brightness(0.40)"></div>
   <div style="position:absolute;inset:0;background:linear-gradient(175deg,rgba(0,0,0,.55) 0%,rgba(0,0,0,.78) 50%,rgba(0,0,0,.96) 100%);z-index:2"></div>
   <div style="position:absolute;inset:0;border:20px solid #B09060;pointer-events:none;z-index:10"></div>
   <div class="content" style="z-index:6">
@@ -2499,7 +2557,7 @@ function buildContentCardHTML(d, cp, imgUrl, pageNum, total) {
   const sectionTitle = `<div data-field="cp${cpIdx}-title" style="font-size:56px;font-weight:900;color:#fff;line-height:1.12;text-shadow:0 4px 28px rgba(0,0,0,.9);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;margin-bottom:20px">${escH(cp.title||'')}</div>`;
 
   const bgBase = `<div class="gs-card-s">
-  <img class="bg" src="${imgUrl}" alt="" style="filter:${bgF}">
+  <div class="bg" style="background-image:url('${imgUrl}');filter:${bgF}"></div>
   <div style="position:absolute;inset:0;background:${bgOverlay};z-index:2"></div>
   <div style="position:absolute;inset:0;border:20px solid #B09060;pointer-events:none;z-index:10"></div>`;
 
@@ -2704,6 +2762,7 @@ function makeWrap(html, label, nW, nH, dW, dH, opts={}) {
   const lbl=document.createElement('div'); lbl.className='card-label'; lbl.textContent=label; wrap.appendChild(lbl);
   const shell=document.createElement('div'); shell.className='card-preview-shell'; shell.style.cssText=`width:${dW}px;height:${dH}px`;
   const inner=document.createElement('div'); inner.style.cssText=`width:${nW}px;height:${nH}px;transform:scale(${dW/nW});transform-origin:top left`;
+  if (opts.cardRole) inner.dataset.cardRole=opts.cardRole;
   inner.innerHTML=html; shell.appendChild(inner); wrap.appendChild(shell);
   const btns=document.createElement('div'); btns.className='card-btns';
   const dl=document.createElement('button'); dl.className='card-dl'; dl.innerHTML='⬇ 下載 PNG';
@@ -2722,14 +2781,10 @@ function buildMiniScenePicker(cardInner) {
   let _customUrl = null;
 
   function applyBg() {
-    const img = cardInner.querySelector('img.bg');
-    if (!img) return;
-    if (_customUrl) {
-      img.src = _customUrl;
-    } else {
-      const arr = SCENE_IMGS[_scene] || SCENE_IMGS.oxford;
-      img.src = arr[_idx % arr.length];
-    }
+    const bg = cardInner.querySelector('.bg');
+    if (!bg) return;
+    const url = _customUrl || (SCENE_IMGS[_scene] || SCENE_IMGS.oxford)[_idx % (SCENE_IMGS[_scene] || SCENE_IMGS.oxford).length];
+    bg.style.backgroundImage = `url('${url}')`;
     uploadBtn.classList.toggle('on', !!_customUrl);
   }
 
