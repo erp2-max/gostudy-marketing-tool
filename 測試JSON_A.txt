@@ -1,0 +1,66 @@
+{
+"cover": {
+"headline": "2026 QS 世界大學排名正式出爐",
+"subheadline": "MIT 連霸 14 年，帝國理工衝上全球第 2",
+"hookLine1": "1,500+ 所大學激烈競逐",
+"hookLine2": "亞洲首度超越歐洲",
+"hookLine3": ""
+},
+"overview": {
+"title": "2026 QS 排名四大震撼數據",
+"rows": [
+{ "num": "01", "title": "MIT 連霸第 14 年", "brief": "全球第一寶座屹立不搖" },
+{ "num": "02", "title": "亞洲 565 所大學上榜", "brief": "首度超越歐洲 487 所" },
+{ "num": "03", "title": "台大創歷史最佳第 63 名", "brief": "較去年進步 5 個名次" },
+{ "num": "04", "title": "英國 50+ 所大學跌榜", "brief": "帝國理工逆勢升至全球第 2" }
+],
+"rankingSection": {
+"heading": "2026 QS 世界大學排名 TOP 10",
+"rows": [
+{ "rank": "#1", "name": "MIT", "nameZh": "麻省理工學院" },
+{ "rank": "#2", "name": "Imperial College London", "nameZh": "倫敦帝國學院" },
+{ "rank": "#3", "name": "Stanford University", "nameZh": "史丹佛大學" },
+{ "rank": "#4", "name": "University of Oxford", "nameZh": "牛津大學" },
+{ "rank": "#5", "name": "Harvard University", "nameZh": "哈佛大學" },
+{ "rank": "#6", "name": "University of Cambridge", "nameZh": "劍橋大學" },
+{ "rank": "#7", "name": "ETH Zurich", "nameZh": "蘇黎世聯邦理工學院" },
+{ "rank": "#8", "name": "National University of Singapore", "nameZh": "新加坡國立大學" },
+{ "rank": "#9", "name": "UCL", "nameZh": "倫敦大學學院" },
+{ "rank": "#10", "name": "California Institute of Technology", "nameZh": "加州理工學院" }
+]
+}
+},
+"pages": [
+{
+"title": "亞洲崛起：全球學術版圖正在重寫",
+"layout": "bullets",
+"bullets": [
+"亞洲總上榜數｜565 所，首度超越歐洲（487 所），成為全球上榜最多的地區",
+"最大黑馬｜馬來西亞 Sunway University 排名暴衝 120+ 位，東南亞競爭力爆發",
+"新加坡雙強｜NUS 第 8、NTU 第 12，小國大學術，CP 值留學首選",
+"香港大躍進｜香港大學衝上全球第 11，港校整體表現全球升幅第二"
+]
+},
+{
+"title": "台灣大學 2026 QS 成績單",
+"layout": "bullets",
+"bullets": [
+"台灣大學｜全球第 63 名（↑5），台灣唯一百大，就業成果指標獲滿分 100 分",
+"清華大學｜全球第 176 名（↑34），單年暴衝 34 名為台灣最大進步",
+"陽明交大｜全球第 199 名（↑20），首度闖進 QS 全球前 200 強",
+"成功大學｜全球第 203 名，台灣共 27 所大學上榜、8 所進入前 500"
+]
+},
+{
+"title": "你該現在出手的 3 個理由",
+"layout": "bullets",
+"bullets": [
+"競爭加劇中｜帝國理工升至全球第 2，申請門檻同步拉高，提早備戰是關鍵",
+"亞洲窗口縮短｜NUS、NTU 能見度大增，國際申請人數逐年攀升",
+"英國洗牌進行中｜50+ 所英國大學跌榜，選校眼光比以往更重要"
+]
+}
+],
+"cta": "立即預約諮詢，鎖定你的目標名校",
+"hashtags": "#QS2026 #世界大學排名 #留學申請 #英國留學 #帝國理工 #新加坡留學 #GOSTUDY"
+}

@@ -1,0 +1,51 @@
+{
+"cover": {
+"headline": "排名剛出爐，你的留學夢還在等什麼？",
+"subheadline": "2026 QS 排名揭曉，現在才是衝刺的最佳時機",
+"hookLine1": "別讓觀望毀了你的名校夢",
+"hookLine2": "世界正在重新洗牌",
+"hookLine3": ""
+},
+"overview": {
+"title": "排名背後，藏著你的留學機會",
+"rows": [
+{ "num": "01", "title": "名校競爭更激烈了", "brief": "帝國理工衝上全球第 2" },
+{ "num": "02", "title": "亞洲學生正在搶先機", "brief": "NUS、港大排名持續攀升" },
+{ "num": "03", "title": "台灣生有亮眼實力", "brief": "台大全球第 63，創歷史新高" },
+{ "num": "04", "title": "英國正在洗牌", "brief": "選對學校比以前更關鍵" }
+],
+"rankingSection": {
+"heading": "2026 QS 世界大學排名 TOP 5",
+"rows": [
+{ "rank": "#1", "name": "MIT", "nameZh": "麻省理工學院" },
+{ "rank": "#2", "name": "Imperial College London", "nameZh": "倫敦帝國學院" },
+{ "rank": "#3", "name": "Stanford University", "nameZh": "史丹佛大學" },
+{ "rank": "#4", "name": "University of Oxford", "nameZh": "牛津大學" },
+{ "rank": "#5", "name": "Harvard University", "nameZh": "哈佛大學" }
+]
+}
+},
+"pages": [
+{
+"title": "還在觀望？這三類學生最適合現在出發",
+"layout": "bullets",
+"bullets": [
+"想去英國的你｜帝國理工全球第 2、UCL 第 9，英國 G5 名校仍是職涯鍍金最強跳板",
+"考慮亞洲的你｜NUS 第 8、港大第 11，離台灣近、文化近、競爭力卻是世界級",
+"目標美國的你｜MIT、史丹佛、哈佛包辦前三，頂尖學校申請時程必須提前 12-18 個月"
+]
+},
+{
+"title": "台灣生在世界舞台的真實競爭力",
+"layout": "steps",
+"bullets": [
+"確認目標：對照 2026 QS 排名，鎖定你理想的學校區間（前 50？前 200？）",
+"評估差距：參考台大第 63、清大第 176，理解台灣學歷的國際定位與銜接優勢",
+"提早備戰：GoStudy 顧問協助你制定個人化申請策略，從選校到文件一條龍規劃",
+"把握時機：排名公布後申請人數激增，現在啟動規劃才能搶在競爭對手前面"
+]
+}
+],
+"cta": "讓 GoStudy 幫你把排名變成錄取通知",
+"hashtags": "#QS2026 #世界大學排名 #英國留學 #新加坡留學 #留學申請 #名校夢 #GOSTUDY"
+}
