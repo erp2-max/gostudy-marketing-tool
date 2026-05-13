@@ -345,12 +345,12 @@ textarea{min-height:72px;line-height:1.5}
     <div class="fmt-chk-info"><span class="fmt-chk-name">廣告圖卡</span><span class="fmt-chk-size">1080×1350 · 單張</span></div>
   </label>
   <label class="fmt-chk-row">
-    <input type="checkbox" id="chk-igcover" onchange="onFmtChange()">
+    <input type="checkbox" id="chk-igcover" checked onchange="onFmtChange()">
     <div class="fmt-chk-icon">📱</div>
     <div class="fmt-chk-info"><span class="fmt-chk-name">IG / FB 封面</span><span class="fmt-chk-size">1080×1350 · 封面頁</span></div>
   </label>
   <label class="fmt-chk-row">
-    <input type="checkbox" id="chk-blog" onchange="onFmtChange()">
+    <input type="checkbox" id="chk-blog" checked onchange="onFmtChange()">
     <div class="fmt-chk-icon">📰</div>
     <div class="fmt-chk-info"><span class="fmt-chk-name">部落格封面</span><span class="fmt-chk-size">800×600 · 橫式</span></div>
   </label>
@@ -396,21 +396,11 @@ textarea{min-height:72px;line-height:1.5}
           <div id="upload-area" style="display:none">
             <div class="upload-thumbs" id="upload-thumbs"></div>
           </div>
-          <div class="scene-divider">
-            <div class="scene-divider-line"></div>
-            <div class="scene-divider-text">或使用場景圖</div>
-            <div class="scene-divider-line"></div>
-          </div>
-          <div class="scene-flat-grid" id="scene-flat-grid"></div>
-          <div class="scene-cycle-row" id="scene-cycle-row" style="display:none">
-            <span class="scene-cycle-info" id="scene-cycle-info">第 1 張 / 共 10 張</span>
-            <button class="scene-cycle-btn" onclick="cycleScenePhoto()">換一張 ↻</button>
-          </div>
         </div>
 
         <!-- Step 1b: Brand assets (logo / subject / label) -->
         <div class="field" id="asset-field">
-          <label class="field-label"><span class="step-badge">1b</span>品牌素材</label>
+          <label class="field-label"><span class="step-badge">2</span>品牌素材</label>
           <div class="asset-strip">
             <div class="asset-col">
               <div class="mini-lbl">公司 Logo <span class="opt">(選填)</span></div>
@@ -444,18 +434,6 @@ textarea{min-height:72px;line-height:1.5}
           </div>
         </div>
 
-        <!-- Step 2: Article content -->
-        <div class="field" id="article-field">
-          <label class="field-label"><span class="step-badge">2</span>文章內容 *</label>
-          <div class="article-row">
-            <label class="article-file-btn" for="txt-upload">📄 上傳 .txt</label>
-            <input type="file" id="txt-upload" accept=".txt,text/plain" style="display:none">
-            <button class="article-clear-btn" id="article-clear-btn" onclick="clearArticle()" style="display:none">✕ 清除</button>
-          </div>
-          <textarea id="inp-article" rows="9" placeholder="貼入文章內容…&#10;&#10;• 第一行自動成為首圖標題&#10;• 支援 Markdown / 條列格式&#10;• 或直接上傳 .txt 檔&#10;&#10;系統將自動分析內容，&#10;依結構選擇最適合的版面"></textarea>
-          <div id="article-hint" class="article-hint"></div>
-        </div>
-
 
       </div>
       <div class="gen-btn-wrap">
@@ -463,29 +441,10 @@ textarea{min-height:72px;line-height:1.5}
         <!-- ① 桌面版 Claude / 無 API Key 工作流 -->
         <div class="gen-section-label">不需 API Key · 用桌面版 Claude</div>
         <div class="gen-desktop-row">
-          <button class="gen-desktop-btn" id="copy-prompt-btn" onclick="copyToClaudeDesktop()" type="button">
-            📋 複製提示詞
-          </button>
           <button class="gen-desktop-btn" id="paste-json-btn" onclick="openJsonPasteEditor()" type="button">
             📥 貼入 JSON 回應
           </button>
         </div>
-        <div class="gen-desktop-steps">
-          <span>① 複製提示詞</span><span class="gen-step-arrow">→</span>
-          <span>② 貼到 Claude</span><span class="gen-step-arrow">→</span>
-          <span>③ 貼入 JSON</span><span class="gen-step-arrow">→</span>
-          <span>④ 生成圖卡</span>
-        </div>
-
-        <!-- ② API Key 自動流程 -->
-        <div class="gen-section-label" style="margin-top:10px">有 API Key · 全自動</div>
-        <div class="api-key-row">
-          <span id="api-key-dot" class="api-key-dot" title="未設定 API Key">○</span>
-          <input type="password" id="claude-api-key" class="api-key-input"
-            placeholder="Anthropic API Key (sk-ant-…)"
-            autocomplete="off" oninput="saveClaudeApiKey(this.value)" />
-        </div>
-        <button class="gen-claude-btn" id="claude-btn" onclick="analyzeWithClaude()" type="button">🤖 Claude 分析 → 直接生成圖卡</button>
 
         <!-- ③ 本地快速 -->
         <div class="gen-section-label" style="margin-top:10px">本地快速（不需 Claude）</div>
@@ -712,7 +671,6 @@ function selectUploadedImg(idx) {
   selectedImgUrl = uploadedImages[idx]?.url || null;
   document.querySelectorAll('.upload-thumb').forEach((el,i) => el.classList.toggle('on', i===idx));
   document.querySelectorAll('.scene-flat-btn').forEach(el => el.classList.remove('on'));
-  document.getElementById('scene-cycle-row').style.display = 'none';
   if (generated) renderOutput(generated);
 }
 
@@ -732,30 +690,11 @@ function getBgImg() {
 
 // ── Scene grid ────────────────────────────────────────────────────────────────
 function initSceneGrid() {
-  const grid = document.getElementById('scene-flat-grid');
-  FLAT_SCENES.forEach(({key, label}) => {
-    const btn = document.createElement('button');
-    btn.type='button'; btn.className='scene-flat-btn'+(key===currentScene&&!selectedImgUrl?' on':''); btn.dataset.scene=key;
-    const img = document.createElement('img'); img.src=(SCENE_IMGS[key]||[])[0]||''; img.alt=label; img.loading='lazy';
-    const span = document.createElement('span'); span.textContent=label;
-    btn.appendChild(img); btn.appendChild(span);
-    btn.addEventListener('click', () => {
-      selectedImgUrl = null; currentScene = key; scenePhotoIdx = 0;
-      document.querySelectorAll('.scene-flat-btn').forEach(el => el.classList.toggle('on', el.dataset.scene===key));
-      document.querySelectorAll('.upload-thumb').forEach(el => el.classList.remove('on'));
-      updateSceneCycleRow();
-      if (generated) renderOutput(generated);
-    });
-    grid.appendChild(btn);
-  });
+  // 場景選擇已移除，僅保留函式以免其他地方呼叫時報錯
 }
 
 function updateSceneCycleRow() {
-  const row  = document.getElementById('scene-cycle-row');
-  const info = document.getElementById('scene-cycle-info');
-  const total = (SCENE_IMGS[currentScene]||[]).length;
-  row.style.display = selectedImgUrl ? 'none' : 'flex';
-  info.textContent  = `第 ${scenePhotoIdx+1} 張 / 共 ${total} 張`;
+  // 場景選擇已移除
 }
 
 function cycleScenePhoto() {
@@ -1621,7 +1560,7 @@ function _jsonConfigToCardData(cfg) {
       title: r.title || '',
       brief: r.brief || ''
     })),
-    rankingSection: null,
+    rankingSection: ov.rankingSection || null,
     contentPages: pages.map(p => ({
       title:        p.title  || '',
       layout:       p.layout || 'bullets',
@@ -1834,8 +1773,7 @@ function _generateFromConfig(d) {
 
 // ── Generate ──────────────────────────────────────────────────────────────────
 async function generate() {
-  const raw = document.getElementById('inp-article').value.trim();
-  if (!raw) { alert('請先貼入文章內容或上傳 .txt 檔'); return; }
+  const raw = '';
   const genBtn = document.getElementById('gen-btn'), infoEl = document.getElementById('preview-info');
   genBtn.disabled = true; genBtn.textContent = '解析中…';
   infoEl.textContent = '✦ 分析文章結構…';
@@ -2820,9 +2758,7 @@ function makeWrap(html, label, nW, nH, dW, dH, opts={}) {
   const btns=document.createElement('div'); btns.className='card-btns';
   const dl=document.createElement('button'); dl.className='card-dl'; dl.innerHTML='⬇ 下載 PNG';
   dl.onclick=()=>exportCard(inner,label,nW,nH);
-  const cv=document.createElement('button'); cv.className='card-canva'; cv.innerHTML='🖊 在 Photopea 開啟';
-  cv.onclick=()=>openInPhotopea(inner,label,nW,nH);
-  btns.appendChild(dl); btns.appendChild(cv); wrap.appendChild(btns);
+  btns.appendChild(dl); wrap.appendChild(btns);
   // 每頁獨立換背景選擇器（僅多頁輪播使用）
   if (opts.showBgPicker) wrap.appendChild(buildMiniScenePicker(inner));
   return wrap;
@@ -2844,15 +2780,7 @@ function buildMiniScenePicker(cardInner) {
       const arr = SCENE_IMGS[_scene] || SCENE_IMGS.oxford;
       img.src = arr[_idx % arr.length];
     }
-    // 場景按鈕：使用自訂圖時全部取消 on
-    row.querySelectorAll('.mini-bg-btn[data-scene]').forEach(b =>
-      b.classList.toggle('on', !_customUrl && b.dataset.scene === _scene)
-    );
-    // 上傳按鈕：使用中時顯示 on 狀態
     uploadBtn.classList.toggle('on', !!_customUrl);
-    // 換下一張：使用自訂圖時顯示為禁用
-    nextBtn.style.opacity = _customUrl ? '0.3' : '';
-    nextBtn.style.pointerEvents = _customUrl ? 'none' : '';
   }
 
   const wrap = document.createElement('div');
@@ -2862,35 +2790,6 @@ function buildMiniScenePicker(cardInner) {
   lbl.className = 'mini-bg-picker-label';
   lbl.textContent = '🖼 此頁背景';
   wrap.appendChild(lbl);
-
-  const row = document.createElement('div');
-  row.className = 'mini-bg-picker-row';
-  FLAT_SCENES.forEach(({key, label}) => {
-    const btn = document.createElement('button');
-    btn.className = 'mini-bg-btn' + (key === _scene ? ' on' : '');
-    btn.dataset.scene = key;
-    btn.textContent = label;
-    btn.type = 'button';
-    btn.onclick = () => {
-      // 切換場景時釋放自訂圖 URL，回到場景圖庫
-      if (_customUrl) { URL.revokeObjectURL(_customUrl); _customUrl = null; }
-      _scene = key; _idx = 0; applyBg();
-    };
-    row.appendChild(btn);
-  });
-  wrap.appendChild(row);
-
-  const nextBtn = document.createElement('button');
-  nextBtn.className = 'mini-bg-next';
-  nextBtn.type = 'button';
-  nextBtn.textContent = '↻ 換下一張';
-  nextBtn.onclick = () => {
-    if (_customUrl) return; // 使用自訂圖時不作用
-    const total = (SCENE_IMGS[_scene] || SCENE_IMGS.oxford).length;
-    _idx = (_idx + 1) % total;
-    applyBg();
-  };
-  wrap.appendChild(nextBtn);
 
   // ── 自訂上傳區 ──────────────────────────────────────────────────────────
   const fileInput = document.createElement('input');
