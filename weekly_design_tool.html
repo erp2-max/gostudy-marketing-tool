@@ -446,10 +446,6 @@ textarea{min-height:72px;line-height:1.5}
           </button>
         </div>
 
-        <!-- ③ 本地快速 -->
-        <div class="gen-section-label" style="margin-top:10px">本地快速（不需 Claude）</div>
-        <button class="gen-main-btn" id="gen-btn" onclick="generate()">▶ 快速生成（本地解析）</button>
-
       </div>
     </div>
 
@@ -2155,19 +2151,18 @@ async function analyzeCardImage(imgUrl) {
 // ── Layout rebuild (font size changes) ────────────────────────────────────────
 function rebuildSCard() {
   if (!currentData) return;
-  const shells = document.querySelectorAll('.card-preview-shell');
-  if (!shells.length) return;
-  // Only rebuild the S-card (first shell, ad platform) — inner div holds the HTML
-  const first = shells[0];
-  const inner = first.querySelector(':scope > div');
-  if (!inner) return;
-  const nW = parseInt(inner.style.width)||1080, nH = parseInt(inner.style.height)||1350;
-  const dW = parseInt(first.style.width)||360;
-  const sc = dW/nW;
-  const imgUrl = selectedImgUrl || inner.querySelector('img.bg')?.src || '';
-  if (!imgUrl) return;
-  inner.innerHTML = buildSCardHTML(currentData, imgUrl);
-  inner.style.transform = `scale(${sc})`;
+  document.querySelectorAll('.card-preview-shell').forEach(shell => {
+    const inner = shell.querySelector(':scope > div');
+    if (!inner) return;
+    if ((parseInt(inner.style.height)||0) !== 1350) return; // only S-cards (not blog 600px)
+    const nW = parseInt(inner.style.width)||1080;
+    const dW = parseInt(shell.style.width)||360;
+    const sc = dW/nW;
+    const imgUrl = selectedImgUrl || inner.querySelector('img.bg')?.src || '';
+    if (!imgUrl) return;
+    inner.innerHTML = buildSCardHTML(currentData, imgUrl);
+    inner.style.transform = `scale(${sc})`;
+  });
 }
 
 function resetLayout() {
@@ -2206,6 +2201,8 @@ document.addEventListener('mousedown', function(e) {
   // ── Drag ──
   const dragEl = e.target.closest('[data-drag]');
   if (!dragEl) return;
+  // If the element is contenteditable and already focused, let the browser handle text editing
+  if (dragEl.isContentEditable && document.activeElement === dragEl) return;
   const dtype = dragEl.dataset.drag;
   const inner = dragEl.closest('[style*="transform:scale"]') || dragEl.closest('.card-preview-shell > div');
   if (!inner) return;
@@ -2253,6 +2250,18 @@ document.addEventListener('mouseup', function() {
   if (_dragState) { _dragState.el.style.cursor='grab'; _dragState=null; }
 });
 
+// ── Inline contenteditable editing on cover cards ──────────────────────────────
+document.addEventListener('input', function(e) {
+  const el = e.target;
+  if (!el.isContentEditable || !el.dataset.field || !currentData) return;
+  const field = el.dataset.field;
+  // Extract text, excluding contenteditable="false" children (rz-handle etc.)
+  const clone = el.cloneNode(true);
+  clone.querySelectorAll('[contenteditable="false"]').forEach(c => c.remove());
+  const value = (clone.innerText || clone.textContent || '').replace(/[\n\r]/g, '').trim();
+  liveUpdateCard(field, value);
+});
+
 function liveUpdateCard(field, value) {
   if (!currentData) return;
   // Update state
@@ -2278,7 +2287,16 @@ function liveUpdateCard(field, value) {
     } else {
       const el=card.querySelector(`[data-field="${field}"]`);
       if (el) {
-        el.textContent=value;
+        if (el.isContentEditable && document.activeElement === el) {
+          // User is actively editing this element — skip DOM update
+        } else if (el.isContentEditable) {
+          // Preserve child elements (e.g. rz-handle); only update the text node
+          let tn = Array.from(el.childNodes).find(n => n.nodeType === Node.TEXT_NODE);
+          if (tn) tn.nodeValue = value;
+          else el.insertBefore(document.createTextNode(value), el.firstChild);
+        } else {
+          el.textContent = value;
+        }
       } else if (['hookLine1','hookLine2','hookLine3'].includes(field) && value.trim()) {
         // Line was empty (not rendered) but now has content → full re-render
         renderOutput(currentData);
@@ -2372,7 +2390,7 @@ function buildSCardHTML(d, imgUrl) {
       // Default: ceil(chars/2) chars per line → exactly 2 lines
       const defaultW = Math.ceil(charLen / 2) * hookFS + Math.round(hookFS * 0.4);
       const lineW = mo.hookLineW?.[n] ?? defaultW;
-      return `<div data-field="hookLine${n}" data-drag="hookLine${n}" style="font-size:${hookFS}px;font-weight:900;color:${n===yLine?'#FFE132':'#fff'};line-height:1.1;text-shadow:0 3px 18px rgba(0,0,0,.65);overflow-wrap:break-word;min-width:${lineW}px;max-width:none;position:relative;cursor:grab;${tr('hookLine'+n)}">${escH(txt)}<div data-no-export="1" data-resize="hookLine${n}" class="rz-handle"></div></div>`;
+      return `<div data-field="hookLine${n}" data-drag="hookLine${n}" contenteditable="true" spellcheck="false" style="font-size:${hookFS}px;font-weight:900;color:${n===yLine?'#FFE132':'#fff'};line-height:1.1;text-shadow:0 3px 18px rgba(0,0,0,.65);overflow-wrap:break-word;min-width:${lineW}px;max-width:none;position:relative;cursor:grab;${tr('hookLine'+n)}">${escH(txt)}<div data-no-export="1" data-resize="hookLine${n}" contenteditable="false" class="rz-handle"></div></div>`;
     })
     .join('');
 
@@ -2400,7 +2418,7 @@ function buildSCardHTML(d, imgUrl) {
       </div>
 
       <!-- ② Headline: white outline box, right-aligned text, auto-sized -->
-      <div data-field="headline" data-drag="headline" style="border:${mo.textStroke||4}px solid ${mo.headlineBorder||'rgba(255,255,255,.78)'};border-radius:6px;padding:14px 24px;font-size:${hlFontSz}px;font-weight:900;color:${mo.headlineColor||'#fff'};line-height:1.28;text-shadow:0 2px 8px rgba(0,0,0,.22);word-break:keep-all;overflow-wrap:break-word;text-align:right;margin-bottom:22px;cursor:grab;position:relative;${mo.headlineW?'width:'+mo.headlineW+'px':''};${tr('headline')}">${escH(d.headline||'')}<div data-no-export="1" data-resize="headline" class="rz-handle"></div></div>
+      <div data-field="headline" data-drag="headline" contenteditable="true" spellcheck="false" style="border:${mo.textStroke||4}px solid ${mo.headlineBorder||'rgba(255,255,255,.78)'};border-radius:6px;padding:14px 24px;font-size:${hlFontSz}px;font-weight:900;color:${mo.headlineColor||'#fff'};line-height:1.28;text-shadow:0 2px 8px rgba(0,0,0,.22);word-break:keep-all;overflow-wrap:break-word;text-align:right;margin-bottom:22px;cursor:grab;position:relative;${mo.headlineW?'width:'+mo.headlineW+'px':''};${tr('headline')}">${escH(d.headline||'')}<div data-no-export="1" data-resize="headline" contenteditable="false" class="rz-handle"></div></div>
 
       <!-- ③ Gold accent bar -->
       <div style="width:68px;height:4px;background:${fc};border-radius:2px;margin-bottom:20px;${barAlign}"></div>
@@ -2413,7 +2431,7 @@ function buildSCardHTML(d, imgUrl) {
     </div>
 
     <!-- ⑤ Hashtags — margin-top:auto pins to bottom of card -->
-    <div data-field="hashtags" data-drag="hashtags" style="margin-top:auto;${hasSub ? `max-width:${groupW}px` : 'width:100%;text-align:center'};font-size:20px;color:rgba(255,255,255,.46);letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:grab;${tr('hashtags')}">${escH(htags)}</div>
+    <div data-field="hashtags" data-drag="hashtags" contenteditable="true" spellcheck="false" style="margin-top:auto;${hasSub ? `max-width:${groupW}px` : 'width:100%;text-align:center'};font-size:20px;color:rgba(255,255,255,.46);letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:grab;${tr('hashtags')}">${escH(htags)}</div>
 
   </div></div>`;
 }
