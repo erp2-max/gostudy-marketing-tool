@@ -2265,6 +2265,10 @@ function _patchCardInPlace(inner, d, mo, h) {
   const isBlog = h === 600;
   const hasSub = !!subjectUrl;
   const h1 = d.hookLine1||'', h2 = d.hookLine2||'', h3 = d.hookLine3||'';
+  // If hookLine count changed (line added/removed), need full rebuild
+  const dataLines = [h1,h2,h3].filter(Boolean).length;
+  const domLines  = inner.querySelectorAll('[data-field^="hookLine"]').length;
+  if (dataLines !== domLines) return false;
   const maxHLen = Math.max(...[h1,h2,h3].filter(Boolean).map(t=>t.replace(/\s+/g,'').length), 3);
 
   // ── Hook font size (mirrors buildSCardHTML / buildLCardHTML exactly) ──
