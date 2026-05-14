@@ -206,7 +206,7 @@ textarea{min-height:72px;line-height:1.5}
 /* Card wrap */
 .card-wrap{display:flex;flex-direction:column;align-items:center;gap:10px}
 .card-label{font-size:10px;font-weight:700;color:rgba(200,176,122,.88);letter-spacing:2px;text-transform:uppercase}
-.card-preview-shell{border-radius:12px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.6);position:relative}
+.card-preview-shell{border-radius:12px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.6);position:relative;background:#111}
 .card-btns{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center}
 .card-dl{background:rgba(166,138,86,.2);border:1px solid rgba(166,138,86,.38);border-radius:8px;padding:7px 20px;font-size:11px;font-weight:700;color:var(--gold-l);cursor:pointer;font-family:inherit;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
 .card-dl:hover{background:rgba(166,138,86,.42);transform:translateY(-1px)}
@@ -322,6 +322,10 @@ textarea{min-height:72px;line-height:1.5}
 .status-bar{background:var(--brand);color:rgba(255,255,255,.8);padding:5px 20px;font-size:11px;display:flex;gap:16px;align-items:center}
 .sdot{width:6px;height:6px;border-radius:50%;background:#4ade80;display:inline-block}
 *:focus-visible{outline:2px solid var(--green);outline-offset:2px;border-radius:3px}
+
+
+
+
 </style>
 </head>
 <body>
@@ -373,6 +377,7 @@ textarea{min-height:72px;line-height:1.5}
   <div class="toolbar">
     <span class="toolbar-title">GOSTUDY · 行銷圖卡生成工具</span>
     <button class="btn btn-outline" onclick="resetAll()">重置</button>
+
     <button class="btn btn-gold" id="dl-btn" onclick="downloadAll()" style="display:none">↓ 下載</button>
   </div>
 
@@ -477,9 +482,22 @@ textarea{min-height:72px;line-height:1.5}
 </div>
 
 <script>
+// ── Style Presets ─────────────────────────────────────────────────────────────
+const STYLE_PRESETS = {
+  brand: {
+    colorDark:'#1A1A2E', colorMid:'#A68A56', colorAccent:'#A68A56',
+    borderColor:'#A68A56', yellowLine:'#FFD700',
+    bgSat:0.28, bgBright:0.62,
+    innerSat:0.22, innerBright:0.52,
+    iconA:'#C9B07A', iconB:'#7A5828',
+    label:'BRAND', icon:'🥇', name:'行銷歷史風格'
+  }
+};
+let activeStyle = 'brand';
+let colorDark = '#1A1A2E', colorMid = '#A68A56', colorAccent = '#A68A56';
+
 // ── State ─────────────────────────────────────────────────────────────────────
 // platform removed — format selection now via checkboxes (chk-ad/igcover/iginner/blog)
-const colorDark = '#0e6b59', colorMid = '#16a085', colorAccent = '#c8b89a';
 let generated    = null;
 let currentScene = 'oxford';
 let scenePhotoIdx = 0;
@@ -493,6 +511,7 @@ let hookYellowLine   = 2; // which hook line (1/2/3) renders in yellow
 
 // ── Manual layout overrides (drag + font adjust) ──────────────────────────────
 function _defaultOverrides() {
+  const ps = STYLE_PRESETS[activeStyle] || STYLE_PRESETS.brand;
   return {
     hlDelta:0, hookDelta:0,
     subScale:1.0, logoScale:2.5, bnScale:1.0,   // logo defaults to 250%
@@ -500,9 +519,9 @@ function _defaultOverrides() {
     blogTitleW:null, subheadlineW:null, ctaW:null,
     textStroke:4,                                  // headline box border width (px)
     headlineColor:'#ffffff',
-    headlineBorder:'rgba(255,255,255,.78)',
+    headlineBorder: ps.borderColor,               // 卡其金 #A68A56
     subjectGlow:null,
-    bgSat:0.80, bgBright:0.80,
+    bgSat:ps.bgSat, bgBright:ps.bgBright,
     hookLineW:{},   // {1:px, 2:px, 3:px}  null/missing = use computed default
     offsets:{
       'logo-row'  :{dx:0,dy:0},
@@ -794,7 +813,7 @@ function kpIconHtml(text, fallback) {
            + `data-reg="${regularSrc}" data-fb="${escH(fb)}" `
            + `width="54" height="54" crossorigin="anonymous" alt="" `
            + `loading="eager" onerror="_iconFallback(this)" `
-           + `style="display:block">`;
+           + `style="display:block;filter:brightness(0) invert(1)">`;
     }
   }
   return fb;
@@ -1219,6 +1238,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const inp = document.getElementById('claude-api-key');
   if (inp && saved) inp.value = saved;
   _updateApiKeyDot();
+  _updateStyleUI();
 });
 
 // ── 桌面版 Claude 工作流 ───────────────────────────────────────────────────────
@@ -2053,7 +2073,7 @@ function setHookYellow(n) {
   document.querySelectorAll('.card-preview-shell > div').forEach(card=>{
     [1,2,3].forEach(i=>{
       const el=card.querySelector(`[data-field="hookLine${i}"]`);
-      if (el) el.style.color = i===n ? '#FFE132' : '#fff';
+      if (el) el.style.color = i===n ? (STYLE_PRESETS[activeStyle]||STYLE_PRESETS.brand).yellowLine : '#fff';
     });
   });
 }
@@ -2240,6 +2260,70 @@ function liveUpdateCardInSection(field, value, sec) {
 }
 
 // ── Per-section rebuild (uses section-specific overrides) ─────────────────────
+// ── Surgical in-place patch — no innerHTML replacement, no gray flash ─────────
+function _patchCardInPlace(inner, d, mo, h) {
+  const isBlog = h === 600;
+  const hasSub = !!subjectUrl;
+  const h1 = d.hookLine1||'', h2 = d.hookLine2||'', h3 = d.hookLine3||'';
+  const maxHLen = Math.max(...[h1,h2,h3].filter(Boolean).map(t=>t.replace(/\s+/g,'').length), 3);
+
+  // ── Hook font size (mirrors buildSCardHTML / buildLCardHTML exactly) ──
+  let hookFS;
+  if (!isBlog) {
+    const groupW = hasSub ? 550 : 920;
+    const hookFSBase = Math.max(56, Math.min(108, Math.floor(groupW / Math.max(Math.ceil(maxHLen/1.8), 3))));
+    hookFS = Math.max(32, hookFSBase + (mo.hookDelta||0));
+    // Headline
+    const hlEl = inner.querySelector('[data-field="headline"]');
+    if (hlEl) {
+      const hlLen = (d.headline||'').length;
+      const hlScale = hlLen<=12?1.0 : hlLen<=18?0.85 : hlLen<=26?0.70 : 0.58;
+      const hlFontSz = Math.max(22, Math.round(hookFS * 0.56 * hlScale) + (mo.hlDelta||0));
+      hlEl.style.fontSize = hlFontSz + 'px';
+      hlEl.style.borderWidth = (mo.textStroke??4) + 'px';
+      if (mo.headlineBorder) hlEl.style.borderColor = mo.headlineBorder;
+      if (mo.headlineColor)  hlEl.style.color = mo.headlineColor;
+    }
+  } else {
+    const groupW = hasSub ? 400 : 560;
+    const hookFSBase = Math.max(30, Math.min(72, Math.floor(groupW / Math.max(Math.ceil(maxHLen/1.8), 3))));
+    hookFS = Math.max(20, hookFSBase + (mo.hookDelta||0));
+  }
+
+  // ── Hook lines: font-size + min-width ──
+  [{txt:h1,n:1},{txt:h2,n:2},{txt:h3,n:3}].forEach(({txt,n})=>{
+    const el = inner.querySelector(`[data-field="hookLine${n}"]`);
+    if (!el) return;
+    el.style.fontSize = hookFS + 'px';
+    const charLen = txt.replace(/\s/g,'').length || 1;
+    const defaultW = Math.ceil(charLen/2) * hookFS + Math.round(hookFS * 0.4);
+    el.style.minWidth = (mo.hookLineW?.[n] ?? defaultW) + 'px';
+  });
+
+  // ── Background filter (only write if changed — avoids compositor layer churn) ──
+  const bgEl = inner.querySelector('.bg');
+  if (bgEl) {
+    const newFilter = `saturate(${mo.bgSat??0.80}) brightness(${mo.bgBright??0.80})`;
+    if (bgEl.style.filter !== newFilter) bgEl.style.filter = newFilter;
+  }
+
+  // ── Logo scale ──
+  const sh = Math.round(44 * (mo.logoScale||1));
+  const logoImg  = inner.querySelector('[data-drag="logo-row"] img[alt="Logo"]');
+  const logoSpan = inner.querySelector('[data-drag="logo-row"] span');
+  if (logoImg)  { logoImg.style.height = sh+'px'; logoImg.style.maxWidth = (sh*4)+'px'; }
+  if (logoSpan) { logoSpan.style.fontSize = Math.round(sh*0.58)+'px'; }
+
+  // ── Subject scale ──
+  const subEl = inner.querySelector('[data-drag="subject"]');
+  if (subEl && mo.subScale) {
+    const off = mo.offsets?.subject || {dx:0,dy:0};
+    subEl.style.transform = `translate(${off.dx}px,${off.dy}px) scale(${mo.subScale})`;
+  }
+
+  return true;
+}
+
 function rebuildSection(sec) {
   if (!sec._cardData || !sec._cardOverrides) return;
   const savedMo = manualOverrides;
@@ -2247,11 +2331,19 @@ function rebuildSection(sec) {
   sec.querySelectorAll('.card-preview-shell').forEach(shell=>{
     const inner=shell.querySelector(':scope > div');
     if (!inner) return;
-    if (inner.dataset.cardRole==='inner') return; // skip inner pages
+    if (inner.dataset.cardRole==='inner') return;
     const h=parseInt(inner.style.height)||0;
     if (h!==1350 && h!==600) return;
     const nW=parseInt(inner.style.width)||1080;
     const dW=parseInt(shell.style.width)||360;
+
+    // Patch in-place first — avoids gray compositing flash
+    if (_patchCardInPlace(inner, sec._cardData, sec._cardOverrides, h)) {
+      manualOverrides=savedMo;
+      return;
+    }
+
+    // Fallback: full innerHTML rebuild (only if patch explicitly returns false)
     const bgEl=inner.querySelector('.bg');
     const imgUrl=(bgEl?.style.backgroundImage||'').replace(/^url\(["']?/,'').replace(/["']?\)$/,'')||selectedImgUrl||getBgImg();
     if (!imgUrl) return;
@@ -2296,15 +2388,17 @@ function buildLogoEl(h=44, scale=1) {
 
 function buildSCardHTML(d, imgUrl) {
   const fc = colorAccent;
+  const sPs = STYLE_PRESETS[activeStyle] || STYLE_PRESETS.brand;
   const sd = subjectSide;
   const hasSub = !!subjectUrl;
 
-  // ── Gradient: ~5% overall shadow, no heavy side darken ──
+  // ── Gradient: brand dark-navy overlay for depth + readability ──
+  const _cd = sPs.colorDark; // #1A1A2E
   const gradCSS = hasSub
     ? (sd==='right'
-        ? `linear-gradient(90deg,rgba(0,0,0,.05) 0%,rgba(0,0,0,.06) 50%,rgba(0,0,0,0) 100%)`
-        : `linear-gradient(270deg,rgba(0,0,0,.05) 0%,rgba(0,0,0,.06) 50%,rgba(0,0,0,0) 100%)`)
-    : `rgba(0,0,0,.05)`;
+        ? `linear-gradient(90deg,${_cd}CC 0%,${_cd}99 45%,${_cd}22 100%)`
+        : `linear-gradient(270deg,${_cd}CC 0%,${_cd}99 45%,${_cd}22 100%)`)
+    : `linear-gradient(175deg,${_cd}B8 0%,${_cd}80 45%,${_cd}C0 100%)`;
 
   // ── Subject image ──
   const mo = manualOverrides;
@@ -2345,7 +2439,7 @@ function buildSCardHTML(d, imgUrl) {
       // Default: ceil(chars/2) chars per line → exactly 2 lines
       const defaultW = Math.ceil(charLen / 2) * hookFS + Math.round(hookFS * 0.4);
       const lineW = mo.hookLineW?.[n] ?? defaultW;
-      return `<div data-field="hookLine${n}" data-drag="hookLine${n}" contenteditable="true" spellcheck="false" style="font-size:${hookFS}px;font-weight:900;color:${n===yLine?'#FFE132':'#fff'};line-height:1.1;text-shadow:0 3px 18px rgba(0,0,0,.65);overflow-wrap:break-word;min-width:${lineW}px;max-width:none;position:relative;cursor:grab;${tr('hookLine'+n)}">${escH(txt)}<div data-no-export="1" data-resize="hookLine${n}" contenteditable="false" class="rz-handle"></div></div>`;
+      return `<div data-field="hookLine${n}" data-drag="hookLine${n}" contenteditable="true" spellcheck="false" style="font-size:${hookFS}px;font-weight:900;color:${n===yLine?sPs.yellowLine:'#fff'};line-height:1.1;text-shadow:0 3px 18px rgba(0,0,0,.65);overflow-wrap:break-word;min-width:${lineW}px;max-width:none;position:relative;cursor:grab;${tr('hookLine'+n)}">${escH(txt)}<div data-no-export="1" data-resize="hookLine${n}" contenteditable="false" class="rz-handle"></div></div>`;
     })
     .join('');
 
@@ -2373,7 +2467,7 @@ function buildSCardHTML(d, imgUrl) {
       </div>
 
       <!-- ② Headline: white outline box, right-aligned text, auto-sized -->
-      <div data-field="headline" data-drag="headline" contenteditable="true" spellcheck="false" style="border:${mo.textStroke||4}px solid ${mo.headlineBorder||'rgba(255,255,255,.78)'};border-radius:6px;padding:14px 24px;font-size:${hlFontSz}px;font-weight:900;color:${mo.headlineColor||'#fff'};line-height:1.28;text-shadow:0 2px 8px rgba(0,0,0,.22);word-break:keep-all;overflow-wrap:break-word;text-align:right;margin-bottom:22px;cursor:grab;position:relative;${mo.headlineW?'width:'+mo.headlineW+'px':''};${tr('headline')}">${escH(d.headline||'')}<div data-no-export="1" data-resize="headline" contenteditable="false" class="rz-handle"></div></div>
+      <div data-field="headline" data-drag="headline" contenteditable="true" spellcheck="false" style="border:${mo.textStroke||4}px solid ${mo.headlineBorder||sPs.borderColor};border-radius:6px;padding:14px 24px;font-size:${hlFontSz}px;font-weight:900;color:${mo.headlineColor||'#fff'};line-height:1.28;text-shadow:0 2px 8px rgba(0,0,0,.22);word-break:keep-all;overflow-wrap:break-word;text-align:right;margin-bottom:22px;cursor:grab;position:relative;${mo.headlineW?'width:'+mo.headlineW+'px':''};${tr('headline')}">${escH(d.headline||'')}<div data-no-export="1" data-resize="headline" contenteditable="false" class="rz-handle"></div></div>
 
       <!-- ③ Gold accent bar -->
       <div style="width:68px;height:4px;background:${fc};border-radius:2px;margin-bottom:20px;${barAlign}"></div>
@@ -2393,6 +2487,7 @@ function buildSCardHTML(d, imgUrl) {
 
 function buildLCardHTML(d, imgUrl) {
   const fc = colorAccent;
+  const lPs = STYLE_PRESETS[activeStyle] || STYLE_PRESETS.brand;
   const mo = manualOverrides;
   const hasSub = !!subjectUrl;
 
@@ -2410,7 +2505,7 @@ function buildLCardHTML(d, imgUrl) {
       const charLen = txt.replace(/\s/g,'').length || 1;
       const defaultW = Math.ceil(charLen/2) * hookFS + Math.round(hookFS * 0.4);
       const lineW = mo.hookLineW?.[n] ?? defaultW;
-      return `<div data-field="hookLine${n}" data-drag="hookLine${n}" contenteditable="true" spellcheck="false" style="font-size:${hookFS}px;font-weight:900;color:${n===yLine?'#FFE132':'#fff'};line-height:1.12;text-shadow:0 2px 12px rgba(0,0,0,.65);overflow-wrap:break-word;min-width:${lineW}px;max-width:none;position:relative;cursor:grab">${escH(txt)}<div data-no-export="1" data-resize="hookLine${n}" contenteditable="false" class="rz-handle"></div></div>`;
+      return `<div data-field="hookLine${n}" data-drag="hookLine${n}" contenteditable="true" spellcheck="false" style="font-size:${hookFS}px;font-weight:900;color:${n===yLine?lPs.yellowLine:'#fff'};line-height:1.12;text-shadow:0 2px 12px rgba(0,0,0,.65);overflow-wrap:break-word;min-width:${lineW}px;max-width:none;position:relative;cursor:grab">${escH(txt)}<div data-no-export="1" data-resize="hookLine${n}" contenteditable="false" class="rz-handle"></div></div>`;
     }).join('');
 
   // ── Category tag (reuses breakingNewsText field) ──
@@ -2420,7 +2515,7 @@ function buildLCardHTML(d, imgUrl) {
   const subEl = hasSub ? `<img src="${subjectUrl}" alt="" style="position:absolute;right:30px;bottom:0;height:88%;object-fit:contain;z-index:4">` : '';
 
   return `<div class="gs-card-l">
-  <div class="bg" style="background-image:url('${imgUrl}');filter:saturate(0.50) brightness(0.70)"></div>
+  <div class="bg" style="background-image:url('${imgUrl}');filter:saturate(${lPs.bgSat}) brightness(${lPs.bgBright})"></div>
   <div style="position:absolute;inset:0;background:linear-gradient(108deg,rgba(0,0,0,.74) 0%,rgba(0,0,0,.50) 50%,rgba(0,0,0,.08) 100%);z-index:2"></div>
   ${subEl}
   <div style="position:absolute;inset:0;padding:32px 44px;display:flex;flex-direction:column;z-index:6">
@@ -2447,6 +2542,7 @@ function buildLCardHTML(d, imgUrl) {
 // ── Multi-page: Table card (P2) ───────────────────────────────────────────────
 function buildTableCardHTML(d, imgUrl) {
   const fc = colorAccent;
+  const tPs = STYLE_PRESETS[activeStyle] || STYLE_PRESETS.brand;
 
   // ── If article has ranking data → render proper ranking table ────────────────
   if (d.rankingSection && d.rankingSection.rows && d.rankingSection.rows.length >= 2) {
@@ -2473,9 +2569,9 @@ function buildTableCardHTML(d, imgUrl) {
 
     const tableH = rows.length * 60 + 60; // rough height
     return `<div class="gs-card-s">
-  <div class="bg" style="background-image:url('${imgUrl}');filter:saturate(0.12) brightness(0.40)"></div>
+  <div class="bg" style="background-image:url('${imgUrl}');filter:saturate(${tPs.innerSat}) brightness(${tPs.innerBright})"></div>
   <div style="position:absolute;inset:0;background:linear-gradient(175deg,rgba(0,0,0,.55) 0%,rgba(0,0,0,.75) 40%,rgba(0,0,0,.95) 100%);z-index:2"></div>
-  <div style="position:absolute;inset:0;border:20px solid #B09060;pointer-events:none;z-index:10"></div>
+  <div style="position:absolute;inset:0;border:20px solid ${tPs.borderColor};pointer-events:none;z-index:10"></div>
   <div class="content" style="z-index:6;padding:60px 70px 50px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
       ${buildLogoEl(44)}
@@ -2504,9 +2600,9 @@ function buildTableCardHTML(d, imgUrl) {
     </div>
   </div>`).join('');
   return `<div class="gs-card-s">
-  <div class="bg" style="background-image:url('${imgUrl}');filter:saturate(0.12) brightness(0.40)"></div>
+  <div class="bg" style="background-image:url('${imgUrl}');filter:saturate(${tPs.innerSat}) brightness(${tPs.innerBright})"></div>
   <div style="position:absolute;inset:0;background:linear-gradient(175deg,rgba(0,0,0,.55) 0%,rgba(0,0,0,.78) 50%,rgba(0,0,0,.96) 100%);z-index:2"></div>
-  <div style="position:absolute;inset:0;border:20px solid #B09060;pointer-events:none;z-index:10"></div>
+  <div style="position:absolute;inset:0;border:20px solid ${tPs.borderColor};pointer-events:none;z-index:10"></div>
   <div class="content" style="z-index:6">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
       ${buildLogoEl(44)}
@@ -2532,7 +2628,9 @@ function buildContentCardHTML(d, cp, imgUrl, pageNum, total) {
   const layout = cp.layout || 'body'; // 'bullets' | 'steps' | 'stats' | 'comparison' | 'body'
 
   // ── Shared fragments ──────────────────────────────────────────────────────────
-  const bgFilters = ['saturate(0.12) brightness(0.40)', 'saturate(0.10) brightness(0.38)', 'saturate(0.14) brightness(0.42)', 'saturate(0.11) brightness(0.39)'];
+  const cPs = STYLE_PRESETS[activeStyle] || STYLE_PRESETS.brand;
+  const _s = cPs.innerSat, _b = cPs.innerBright;
+  const bgFilters = [`saturate(${_s}) brightness(${_b})`, `saturate(${Math.max(0,_s-.02)}) brightness(${Math.max(0,_b-.02)})`, `saturate(${Math.min(1,_s+.02)}) brightness(${Math.min(1,_b+.02)})`, `saturate(${Math.max(0,_s-.01)}) brightness(${Math.max(0,_b-.01)})`];
   const bgF = bgFilters[cpIdx % bgFilters.length];
   const overlays = [
     'linear-gradient(180deg,rgba(0,0,0,.60) 0%,rgba(0,0,0,.72) 50%,rgba(0,0,0,.92) 100%)',
@@ -2559,7 +2657,7 @@ function buildContentCardHTML(d, cp, imgUrl, pageNum, total) {
   const bgBase = `<div class="gs-card-s">
   <div class="bg" style="background-image:url('${imgUrl}');filter:${bgF}"></div>
   <div style="position:absolute;inset:0;background:${bgOverlay};z-index:2"></div>
-  <div style="position:absolute;inset:0;border:20px solid #B09060;pointer-events:none;z-index:10"></div>`;
+  <div style="position:absolute;inset:0;border:20px solid ${cPs.borderColor};pointer-events:none;z-index:10"></div>`;
 
   // ── BULLETS: icon 圓框 + 金色標題 + 說明文 ───────────────────────────────────
   if (layout === 'bullets') {
@@ -2577,14 +2675,15 @@ function buildContentCardHTML(d, cp, imgUrl, pageNum, total) {
       const ptitle = sep ? b.slice(0, b.indexOf(sep)) : b.slice(0, Math.min(10, b.length));
       const pdesc  = sep ? b.slice(b.indexOf(sep) + 1).trim() : b.slice(Math.min(10, b.length)).trim();
       // icon 容器：isImg → 深色底（白色圖示高對比）；emoji → 同樣深色底
+      const _iA = cPs.iconA||'#C9B07A', _iB = cPs.iconB||'#7A5828';
       const iconBox = isImg
-        ? `style="width:76px;height:76px;border-radius:18px;background:linear-gradient(135deg,#C9B07A,#A27B3E);box-shadow:0 6px 20px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden"`
-        : `style="width:76px;height:76px;border-radius:18px;background:linear-gradient(135deg,#C9B07A,#A27B3E);box-shadow:0 6px 20px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:40px;flex-shrink:0;line-height:1"`;
+        ? `style="width:76px;height:76px;border-radius:18px;background:linear-gradient(135deg,${_iA},${_iB});box-shadow:0 6px 20px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0"`
+        : `style="width:76px;height:76px;border-radius:18px;background:linear-gradient(135deg,${_iA},${_iB});box-shadow:0 6px 20px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:40px;flex-shrink:0;line-height:1"`;
       return `
       <div style="display:flex;gap:22px;align-items:flex-start;padding:18px 0;${i < bullets.length - 1 ? 'border-bottom:1px solid rgba(176,144,96,.15)' : ''}">
         <div ${iconBox}>${iconHtml}</div>
         <div style="flex:1;min-width:0;padding-top:4px">
-          <div style="font-size:27px;font-weight:800;color:#C9B07A;margin-bottom:6px;line-height:1.25">《${escH(ptitle)}》</div>
+          <div style="font-size:27px;font-weight:800;color:${cPs.colorAccent};margin-bottom:6px;line-height:1.25">《${escH(ptitle)}》</div>
           ${pdesc ? `<div style="font-size:24px;color:rgba(220,200,160,.85);line-height:1.6;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${escH(pdesc)}</div>` : ''}
         </div>
       </div>`;
@@ -2689,9 +2788,10 @@ function buildContentCardHTML(d, cp, imgUrl, pageNum, total) {
     const itemsHtml = items.map(({icon, title: itTitle, desc}) => {
       const _iconHtml = kpIconHtml(itTitle, icon || '✦');
       const _isImg    = _iconHtml.startsWith('<img');
+      const _iA2 = cPs.iconA||'#C9B07A', _iB2 = cPs.iconB||'#7A5828';
       const _iconBox  = _isImg
-        ? `style="width:80px;height:80px;border-radius:18px;background:linear-gradient(135deg,#C9B07A,#A27B3E);box-shadow:0 6px 20px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden"`
-        : `style="width:80px;height:80px;border-radius:18px;background:linear-gradient(135deg,#C9B07A,#A27B3E);box-shadow:0 6px 20px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:44px;flex-shrink:0;line-height:1"`;
+        ? `style="width:80px;height:80px;border-radius:18px;background:linear-gradient(135deg,${_iA2},${_iB2});box-shadow:0 6px 20px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0"`
+        : `style="width:80px;height:80px;border-radius:18px;background:linear-gradient(135deg,${_iA2},${_iB2});box-shadow:0 6px 20px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:44px;flex-shrink:0;line-height:1"`;
       return `
       <div style="display:flex;gap:24px;align-items:flex-start;padding:22px 0;border-bottom:1px solid rgba(166,138,86,.15)">
         <div ${_iconBox}>${_iconHtml}</div>
@@ -2761,7 +2861,7 @@ function makeWrap(html, label, nW, nH, dW, dH, opts={}) {
   const wrap=document.createElement('div'); wrap.className='card-wrap';
   const lbl=document.createElement('div'); lbl.className='card-label'; lbl.textContent=label; wrap.appendChild(lbl);
   const shell=document.createElement('div'); shell.className='card-preview-shell'; shell.style.cssText=`width:${dW}px;height:${dH}px`;
-  const inner=document.createElement('div'); inner.style.cssText=`width:${nW}px;height:${nH}px;transform:scale(${dW/nW});transform-origin:top left`;
+  const inner=document.createElement('div'); inner.style.cssText=`width:${nW}px;height:${nH}px;transform:scale(${dW/nW});transform-origin:top left;background:${colorDark||'#111'}`;
   if (opts.cardRole) inner.dataset.cardRole=opts.cardRole;
   inner.innerHTML=html; shell.appendChild(inner); wrap.appendChild(shell);
   const btns=document.createElement('div'); btns.className='card-btns';
@@ -2891,7 +2991,7 @@ async function openInPhotopea(el, label, w, h) {
 function clearPreview() {
   document.getElementById('preview-area').innerHTML='<div class="empty-preview"><div class="empty-icon">✦</div><div style="font-size:14px;font-weight:600;color:rgba(200,176,122,.55)">準備好開始了嗎？</div></div>';
   document.getElementById('dl-btn').style.display='none';
-  generated=null;
+  generated=null; currentData=null;
 }
 
 function resetAll() { clearArticle(); clearPreview(); }
