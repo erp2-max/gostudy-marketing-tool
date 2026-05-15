@@ -850,19 +850,22 @@ function _iconFallback(img) {
 }
 
 // 傳回 inline <img> SVG icon 或 emoji fallback
-function kpIconHtml(text, fallback) {
+// iconColorHex: 若傳入（如 '#CDA87D'），直接用該色，不套白色反轉 filter
+function kpIconHtml(text, fallback, iconColorHex) {
   const fb = fallback || kpIcon(text) || '📌';
+  const colorParam = iconColorHex
+    ? '%23' + iconColorHex.replace('#', '')
+    : _ICON_COLOR;
+  const filterStyle = iconColorHex ? '' : 'filter:brightness(0) invert(1)';
   for (const [re, name] of ICON_MAP) {
     if (re.test(text)) {
-      // 優先使用 fill（實心）版本，白色圖示在深色容器上清晰可見
-      const fillSrc    = `${_ICON_BASE}/${name}-fill.svg?color=${_ICON_COLOR}&width=54&height=54`;
-      const regularSrc = `${_ICON_BASE}/${name}.svg?color=${_ICON_COLOR}&width=54&height=54`;
-      // fb 只含 emoji，不含 HTML，可以安全放入 data-*
+      const fillSrc    = `${_ICON_BASE}/${name}-fill.svg?color=${colorParam}&width=54&height=54`;
+      const regularSrc = `${_ICON_BASE}/${name}.svg?color=${colorParam}&width=54&height=54`;
       return `<img src="${fillSrc}" `
            + `data-reg="${regularSrc}" data-fb="${escH(fb)}" `
            + `width="54" height="54" crossorigin="anonymous" alt="" `
            + `loading="eager" onerror="_iconFallback(this)" `
-           + `style="display:block;filter:brightness(0) invert(1)">`;
+           + `style="display:block;${filterStyle}">`;
     }
   }
   return fb;
@@ -2504,8 +2507,8 @@ function buildSCardHTML(d, imgUrl) {
   const bn = (breakingNewsText||'').trim();
   const bnSc = mo.bnScale||1;
   const bnEl = bn
-    ? `<div style="mix-blend-mode:screen;display:inline-flex;align-items:center;background:#ffffff;border-radius:${Math.round(4*bnSc)}px;padding:${Math.round(4*bnSc)}px ${Math.round(14*bnSc)}px;font-size:${Math.round(22*bnSc)}px;font-weight:900;font-style:italic;color:#000000;white-space:nowrap;letter-spacing:-0.3px;">${escH(bn)}</div>`
-    : '';
+    ? `<div style="color:#fff;font-weight:700;font-size:${Math.round(20*bnSc)}px;border-bottom:2.5px solid #fff;padding-bottom:5px;line-height:1.3;letter-spacing:.03em;white-space:nowrap;text-shadow:0 1px 6px rgba(0,0,0,.5)"># ${escH(bn)}</div>`
+    : '<div></div>';
 
   // ── Font sizes: derive headline FROM hook size so ratio stays ~1.7:1 ──
   const h1 = d.hookLine1||'', h2 = d.hookLine2||'', h3 = d.hookLine3||'';
@@ -2533,7 +2536,7 @@ function buildSCardHTML(d, imgUrl) {
       // Default: ceil(chars/2) chars per line → exactly 2 lines
       const defaultW = Math.ceil(charLen / 2) * hookFS + Math.round(hookFS * 0.4);
       const lineW = mo.hookLineW?.[n] ?? defaultW;
-      return `<div data-field="hookLine${n}" data-drag="hookLine${n}" contenteditable="true" spellcheck="false" style="font-size:${hookFS}px;font-weight:900;color:${yLines.has(n)?sPs.yellowLine:'#fff'};line-height:1.1;${hookTextStroke||'text-shadow:0 3px 18px rgba(0,0,0,.65);'}overflow-wrap:break-word;min-width:${lineW}px;max-width:none;position:relative;cursor:grab;${tr('hookLine'+n)}">${escH(txt)}<div data-no-export="1" data-resize="hookLine${n}" contenteditable="false" class="rz-handle"></div></div>`;
+      return `<div data-field="hookLine${n}" data-drag="hookLine${n}" contenteditable="true" spellcheck="false" style="font-size:${hookFS}px;font-weight:900;letter-spacing:0.05em;color:${yLines.has(n)?sPs.yellowLine:'#fff'};line-height:1.1;${hookTextStroke||'text-shadow:0 3px 18px rgba(0,0,0,.65);'}overflow-wrap:break-word;min-width:${lineW}px;max-width:none;position:relative;cursor:grab;${tr('hookLine'+n)}">${escH(txt)}<div data-no-export="1" data-resize="hookLine${n}" contenteditable="false" class="rz-handle"></div></div>`;
     })
     .join('');
 
@@ -2554,10 +2557,10 @@ function buildSCardHTML(d, imgUrl) {
     <!-- ALL TEXT — each element individually draggable; starts at top of card -->
     <div style="display:flex;flex-direction:column;max-width:${groupW}px;${groupMargin}">
 
-      <!-- ① Logo + BN: right-aligned header (width:100% ensures flex-end hits card right) -->
-      <div data-drag="logo-row" style="width:100%;display:flex;align-items:center;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-bottom:14px;cursor:grab;${tr('logo-row')}">
-        ${buildLogoEl(44, mo.logoScale||1)}
+      <!-- ① BN (left) + Logo (right) -->
+      <div data-drag="logo-row" style="width:100%;display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:14px;cursor:grab;${tr('logo-row')}">
         ${bnEl}
+        ${buildLogoEl(44, mo.logoScale||1)}
       </div>
 
       <!-- ② Headline: brand = outline box; 2026 = dark box with white border -->
@@ -2602,7 +2605,7 @@ function buildLCardHTML(d, imgUrl) {
       const charLen = txt.replace(/\s/g,'').length || 1;
       const defaultW = Math.ceil(charLen/2) * hookFS + Math.round(hookFS * 0.4);
       const lineW = mo.hookLineW?.[n] ?? defaultW;
-      return `<div data-field="hookLine${n}" data-drag="hookLine${n}" contenteditable="true" spellcheck="false" style="font-size:${hookFS}px;font-weight:900;color:${yLines.has(n)?lPs.yellowLine:'#fff'};line-height:1.12;${lHookTextStroke||'text-shadow:0 2px 12px rgba(0,0,0,.65);'}overflow-wrap:break-word;min-width:${lineW}px;max-width:none;position:relative;cursor:grab;">${escH(txt)}<div data-no-export="1" data-resize="hookLine${n}" contenteditable="false" class="rz-handle"></div></div>`;
+      return `<div data-field="hookLine${n}" data-drag="hookLine${n}" contenteditable="true" spellcheck="false" style="font-size:${hookFS}px;font-weight:900;letter-spacing:0.05em;color:${yLines.has(n)?lPs.yellowLine:'#fff'};line-height:1.12;${lHookTextStroke||'text-shadow:0 2px 12px rgba(0,0,0,.65);'}overflow-wrap:break-word;min-width:${lineW}px;max-width:none;position:relative;cursor:grab;">${escH(txt)}<div data-no-export="1" data-resize="hookLine${n}" contenteditable="false" class="rz-handle"></div></div>`;
     }).join('');
 
   // ── Category tag (reuses breakingNewsText field) ──
@@ -2619,7 +2622,7 @@ function buildLCardHTML(d, imgUrl) {
 
     <!-- Top: category tag + logo -->
     <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px">
-      ${tag ? `<div style="font-size:15px;font-weight:700;color:#fff;border-bottom:2px solid ${fc};padding-bottom:3px;letter-spacing:.04em"># ${escH(tag)}</div>` : '<div></div>'}
+      ${tag ? `<div style="font-size:15px;font-weight:700;color:#fff;border-bottom:2px solid #fff;padding-bottom:3px;letter-spacing:.04em;text-shadow:0 1px 6px rgba(0,0,0,.5)"># ${escH(tag)}</div>` : '<div></div>'}
       ${buildLogoEl(28, mo.logoScale||1)}
     </div>
 
@@ -2739,8 +2742,7 @@ function buildContentCardHTML(d, cp, imgUrl, pageNum, total) {
   const bgOverlay = overlays[cpIdx % overlays.length];
 
   const headerHtml = `
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-      ${buildLogoEl(44)}
+    <div style="display:flex;align-items:center;justify-content:flex-end;margin-bottom:6px">
       <div style="font-size:20px;font-weight:600;color:rgba(166,138,86,.6)">${pageNum} / ${total}</div>
     </div>`;
 
@@ -2755,14 +2757,16 @@ function buildContentCardHTML(d, cp, imgUrl, pageNum, total) {
   const bgBase = `<div class="gs-card-s">
   <div class="bg" style="background-image:url('${imgUrl}');filter:${bgF}"></div>
   <div style="position:absolute;inset:0;background:${bgOverlay};z-index:2"></div>
-  <div style="position:absolute;inset:0;border:20px solid ${cPs.borderColor};pointer-events:none;z-index:10"></div>`;
+  <div style="position:absolute;inset:0;border:20px solid ${cPs.borderColor};pointer-events:none;z-index:10"></div>
+  <div data-drag="logo-row" style="position:absolute;bottom:52px;left:0;right:0;z-index:8;display:flex;justify-content:center;cursor:grab;transform:translate(0px,0px)">${buildLogoEl(44)}</div>`;
 
   // ── BULLETS: icon 圓框 + 金色標題 + 說明文 ───────────────────────────────────
   if (layout === 'bullets') {
     const bullets = (cp.bullets || (cp.body||'').split('\n').filter(Boolean)).slice(0, 4);
     const _fbEmoji = ['📌','📊','🎓','✅','🌍','💡','⚡','🏆'];
     const bulletsHtml = bullets.map((b, i) => {
-      const iconHtml = kpIconHtml(b, _fbEmoji[i % _fbEmoji.length]);
+      const is2026b = !!(cPs.headlineSkew);
+      const iconHtml = kpIconHtml(b, _fbEmoji[i % _fbEmoji.length], is2026b ? '#CDA87D' : undefined);
       const isImg    = iconHtml.startsWith('<img');
       // 自動分割標題 + 說明：以「：」「，」或前 10 字為標題
       const sep = b.indexOf('：') > 0 && b.indexOf('：') <= 16 ? '：'
@@ -2772,11 +2776,13 @@ function buildContentCardHTML(d, cp, imgUrl, pageNum, total) {
                 : null;
       const ptitle = sep ? b.slice(0, b.indexOf(sep)) : b.slice(0, Math.min(10, b.length));
       const pdesc  = sep ? b.slice(b.indexOf(sep) + 1).trim() : b.slice(Math.min(10, b.length)).trim();
-      // icon 容器：isImg → 深色底（白色圖示高對比）；emoji → 同樣深色底
       const _iA = cPs.iconA||'#C9B07A', _iB = cPs.iconB||'#7A5828';
+      const _boxBase2026 = 'width:76px;height:76px;border-radius:18px;background:rgba(10,30,46,0.6);border:1px solid rgba(205,168,125,0.35);display:flex;align-items:center;justify-content:center;flex-shrink:0';
+      const _boxBaseBrand = `width:76px;height:76px;border-radius:18px;background:linear-gradient(135deg,${_iA},${_iB});box-shadow:0 6px 20px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0`;
       const iconBox = isImg
-        ? `style="width:76px;height:76px;border-radius:18px;background:linear-gradient(135deg,${_iA},${_iB});box-shadow:0 6px 20px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0"`
-        : `style="width:76px;height:76px;border-radius:18px;background:linear-gradient(135deg,${_iA},${_iB});box-shadow:0 6px 20px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:40px;flex-shrink:0;line-height:1"`;
+        ? `style="${is2026b ? _boxBase2026 : _boxBaseBrand}"`
+        : `style="${is2026b ? _boxBase2026 + ';font-size:40px;line-height:1' : _boxBaseBrand + ';font-size:40px;line-height:1'}"`;
+
       return `
       <div style="display:flex;gap:22px;align-items:flex-start;padding:18px 0;${i < bullets.length - 1 ? 'border-bottom:1px solid rgba(176,144,96,.15)' : ''}">
         <div ${iconBox}>${iconHtml}</div>
@@ -2883,13 +2889,16 @@ function buildContentCardHTML(d, cp, imgUrl, pageNum, total) {
       : [cardTitle];
     const titleHtml = titleLines.map(t => `<div>${escH(t)}</div>`).join('');
 
+    const is2026kp = !!(cPs.headlineSkew);
     const itemsHtml = items.map(({icon, title: itTitle, desc}) => {
-      const _iconHtml = kpIconHtml(itTitle, icon || '✦');
+      const _iconHtml = kpIconHtml(itTitle, icon || '✦', is2026kp ? '#CDA87D' : undefined);
       const _isImg    = _iconHtml.startsWith('<img');
       const _iA2 = cPs.iconA||'#C9B07A', _iB2 = cPs.iconB||'#7A5828';
+      const _kpBase2026 = 'width:80px;height:80px;border-radius:18px;background:rgba(10,30,46,0.6);border:1px solid rgba(205,168,125,0.35);display:flex;align-items:center;justify-content:center;flex-shrink:0';
+      const _kpBaseBrand = `width:80px;height:80px;border-radius:18px;background:linear-gradient(135deg,${_iA2},${_iB2});box-shadow:0 6px 20px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0`;
       const _iconBox  = _isImg
-        ? `style="width:80px;height:80px;border-radius:18px;background:linear-gradient(135deg,${_iA2},${_iB2});box-shadow:0 6px 20px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0"`
-        : `style="width:80px;height:80px;border-radius:18px;background:linear-gradient(135deg,${_iA2},${_iB2});box-shadow:0 6px 20px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:44px;flex-shrink:0;line-height:1"`;
+        ? `style="${is2026kp ? _kpBase2026 : _kpBaseBrand}"`
+        : `style="${is2026kp ? _kpBase2026 + ';font-size:44px;line-height:1' : _kpBaseBrand + ';font-size:44px;line-height:1'}"`;
       return `
       <div style="display:flex;gap:24px;align-items:flex-start;padding:22px 0;border-bottom:1px solid rgba(166,138,86,.15)">
         <div ${_iconBox}>${_iconHtml}</div>
