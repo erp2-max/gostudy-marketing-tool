@@ -2260,8 +2260,7 @@ document.addEventListener('mousemove', function(e) {
   const dx = Math.round(_dragState.startDx + (e.clientX-_dragState.startX) / _dragState.sc);
   const dy = Math.round(_dragState.startDy + (e.clientY-_dragState.startY) / _dragState.sc);
   (_dragState.ov || manualOverrides).offsets[_dragState.dtype] = {dx, dy};
-  const _dSkew = _dragState.el.dataset.skewPfx ? _dragState.el.dataset.skewPfx + ' ' : '';
-  _dragState.el.style.transform = `${_dSkew}translate(${dx}px,${dy}px)`;
+  _dragState.el.style.transform = `translate(${dx}px,${dy}px)`;
 });
 
 document.addEventListener('mouseup', function() {
@@ -2550,9 +2549,7 @@ function buildSCardHTML(d, imgUrl) {
       // Default: ceil(chars/2) chars per line → exactly 2 lines
       const defaultW = Math.ceil(charLen / 2) * hookFS + Math.round(hookFS * 0.4);
       const lineW = mo.hookLineW?.[n] ?? defaultW;
-      const _skewPfx = sPs.headlineSkew ? 'skewX(-8deg) ' : '';
-      const _hOff = off('hookLine'+n);
-      return `<div data-field="hookLine${n}" data-drag="hookLine${n}" data-skew-pfx="${_skewPfx.trim()}" contenteditable="true" spellcheck="false" style="font-size:${hookFS}px;font-weight:900;letter-spacing:0.08em;color:${yLines.has(n)?sPs.yellowLine:'#fff'};line-height:1.2;${hookTextStroke||'text-shadow:0 3px 18px rgba(0,0,0,.65);'}overflow-wrap:break-word;min-width:${lineW}px;max-width:none;position:relative;cursor:grab;transform:${_skewPfx}translate(${_hOff.dx}px,${_hOff.dy}px)">${escH(txt)}<div data-no-export="1" data-resize="hookLine${n}" contenteditable="false" class="rz-handle"></div></div>`;
+      return `<div data-field="hookLine${n}" data-drag="hookLine${n}" contenteditable="true" spellcheck="false" style="font-size:${hookFS}px;font-weight:900;letter-spacing:0.08em;color:${yLines.has(n)?sPs.yellowLine:'#fff'};line-height:1.2;${hookTextStroke||'text-shadow:0 3px 18px rgba(0,0,0,.65);'}overflow-wrap:break-word;min-width:${lineW}px;max-width:none;position:relative;cursor:grab;${tr('hookLine'+n)}">${escH(txt)}<div data-no-export="1" data-resize="hookLine${n}" contenteditable="false" class="rz-handle"></div></div>`;
     })
     .join('');
 
@@ -2586,7 +2583,7 @@ function buildSCardHTML(d, imgUrl) {
       <div style="width:68px;height:4px;background:${fc};border-radius:2px;margin-bottom:20px;${barAlign}"></div>
 
       <!-- ④ Hook lines: each line has own drag + resize handle -->
-      <div data-drag="hook-group" style="${hooksTA};cursor:grab;position:relative;transform:${hookGroupRotate}translate(${off('hook-group').dx}px,${off('hook-group').dy}px);transform-origin:center center">
+      <div data-drag="hook-group" style="${hooksTA};cursor:grab;position:relative;transform:${hookGroupRotate}${hlSkew}translate(${off('hook-group').dx}px,${off('hook-group').dy}px);transform-origin:center center">
         ${hookLinesHtml}
         <div data-no-export="1" data-fs-resize="hooks" contenteditable="false" class="fs-handle"></div>
       </div>
@@ -2622,8 +2619,7 @@ function buildLCardHTML(d, imgUrl) {
       const charLen = txt.replace(/\s/g,'').length || 1;
       const defaultW = Math.ceil(charLen/2) * hookFS + Math.round(hookFS * 0.4);
       const lineW = mo.hookLineW?.[n] ?? defaultW;
-      const _lSkewPfx = lPs.headlineSkew ? 'skewX(-8deg) ' : '';
-      return `<div data-field="hookLine${n}" data-drag="hookLine${n}" data-skew-pfx="${_lSkewPfx.trim()}" contenteditable="true" spellcheck="false" style="font-size:${hookFS}px;font-weight:900;letter-spacing:0.08em;color:${yLines.has(n)?lPs.yellowLine:'#fff'};line-height:1.2;${lHookTextStroke||'text-shadow:0 2px 12px rgba(0,0,0,.65);'}overflow-wrap:break-word;min-width:${lineW}px;max-width:none;position:relative;cursor:grab;transform:${_lSkewPfx}translate(0px,0px)">${escH(txt)}<div data-no-export="1" data-resize="hookLine${n}" contenteditable="false" class="rz-handle"></div></div>`;
+      return `<div data-field="hookLine${n}" data-drag="hookLine${n}" contenteditable="true" spellcheck="false" style="font-size:${hookFS}px;font-weight:900;letter-spacing:0.08em;color:${yLines.has(n)?lPs.yellowLine:'#fff'};line-height:1.2;${lHookTextStroke||'text-shadow:0 2px 12px rgba(0,0,0,.65);'}overflow-wrap:break-word;min-width:${lineW}px;max-width:none;position:relative;cursor:grab;">${escH(txt)}<div data-no-export="1" data-resize="hookLine${n}" contenteditable="false" class="rz-handle"></div></div>`;
     }).join('');
 
   // ── Category tag (reuses breakingNewsText field) ──
@@ -2646,7 +2642,7 @@ function buildLCardHTML(d, imgUrl) {
 
     <!-- Hook lines -->
     <div style="flex:1;display:flex;flex-direction:column;justify-content:center;max-width:${groupW}px">
-      <div data-drag="hook-group" style="cursor:grab;position:relative;transform:${lHookGroupRotate}translate(0px,0px);transform-origin:center center">
+      <div data-drag="hook-group" style="cursor:grab;position:relative;transform:${lHookGroupRotate}${lHlSkew}translate(0px,0px);transform-origin:center center">
         ${hookLinesHtml || `<div style="font-size:32px;font-weight:900;color:rgba(255,255,255,.25)">請輸入大字文案</div>`}
         <div data-no-export="1" data-fs-resize="hooks" contenteditable="false" class="fs-handle"></div>
       </div>

@@ -1,6 +1,6 @@
 # Cloudflare Pages response headers
 
-/weekly_design_tool
+/weekly_design_tool.html
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
