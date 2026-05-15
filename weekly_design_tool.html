@@ -2536,7 +2536,7 @@ function buildSCardHTML(d, imgUrl) {
       // Default: ceil(chars/2) chars per line → exactly 2 lines
       const defaultW = Math.ceil(charLen / 2) * hookFS + Math.round(hookFS * 0.4);
       const lineW = mo.hookLineW?.[n] ?? defaultW;
-      return `<div data-field="hookLine${n}" data-drag="hookLine${n}" contenteditable="true" spellcheck="false" style="font-size:${hookFS}px;font-weight:900;letter-spacing:0.05em;color:${yLines.has(n)?sPs.yellowLine:'#fff'};line-height:1.1;${hookTextStroke||'text-shadow:0 3px 18px rgba(0,0,0,.65);'}overflow-wrap:break-word;min-width:${lineW}px;max-width:none;position:relative;cursor:grab;${tr('hookLine'+n)}">${escH(txt)}<div data-no-export="1" data-resize="hookLine${n}" contenteditable="false" class="rz-handle"></div></div>`;
+      return `<div data-field="hookLine${n}" data-drag="hookLine${n}" contenteditable="true" spellcheck="false" style="font-size:${hookFS}px;font-weight:900;letter-spacing:0.08em;color:${yLines.has(n)?sPs.yellowLine:'#fff'};line-height:1.2;${hookTextStroke||'text-shadow:0 3px 18px rgba(0,0,0,.65);'}overflow-wrap:break-word;min-width:${lineW}px;max-width:none;position:relative;cursor:grab;${tr('hookLine'+n)}">${escH(txt)}<div data-no-export="1" data-resize="hookLine${n}" contenteditable="false" class="rz-handle"></div></div>`;
     })
     .join('');
 
@@ -2605,7 +2605,7 @@ function buildLCardHTML(d, imgUrl) {
       const charLen = txt.replace(/\s/g,'').length || 1;
       const defaultW = Math.ceil(charLen/2) * hookFS + Math.round(hookFS * 0.4);
       const lineW = mo.hookLineW?.[n] ?? defaultW;
-      return `<div data-field="hookLine${n}" data-drag="hookLine${n}" contenteditable="true" spellcheck="false" style="font-size:${hookFS}px;font-weight:900;letter-spacing:0.05em;color:${yLines.has(n)?lPs.yellowLine:'#fff'};line-height:1.12;${lHookTextStroke||'text-shadow:0 2px 12px rgba(0,0,0,.65);'}overflow-wrap:break-word;min-width:${lineW}px;max-width:none;position:relative;cursor:grab;">${escH(txt)}<div data-no-export="1" data-resize="hookLine${n}" contenteditable="false" class="rz-handle"></div></div>`;
+      return `<div data-field="hookLine${n}" data-drag="hookLine${n}" contenteditable="true" spellcheck="false" style="font-size:${hookFS}px;font-weight:900;letter-spacing:0.08em;color:${yLines.has(n)?lPs.yellowLine:'#fff'};line-height:1.2;${lHookTextStroke||'text-shadow:0 2px 12px rgba(0,0,0,.65);'}overflow-wrap:break-word;min-width:${lineW}px;max-width:none;position:relative;cursor:grab;">${escH(txt)}<div data-no-export="1" data-resize="hookLine${n}" contenteditable="false" class="rz-handle"></div></div>`;
     }).join('');
 
   // ── Category tag (reuses breakingNewsText field) ──
@@ -2747,9 +2747,12 @@ function buildContentCardHTML(d, cp, imgUrl, pageNum, total) {
     </div>`;
 
   const footerHtml = `
-    <div style="border-top:1px solid rgba(166,138,86,.2);padding-top:16px;display:flex;align-items:center;justify-content:space-between">
+    <div style="border-top:1px solid rgba(166,138,86,.2);padding-top:12px;display:flex;align-items:center;justify-content:space-between">
       <div style="display:inline-block;background:linear-gradient(135deg,${colorDark},${colorMid});border-radius:10px;padding:10px 28px;font-size:22px;font-weight:800;color:#fff">${escH(d.cta||'立即預約免費諮詢')}</div>
-      <div style="font-size:15px;color:rgba(166,138,86,.4)">go-study.com.tw</div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+        ${buildLogoEl(36)}
+        <div style="font-size:15px;color:rgba(166,138,86,.4)">go-study.com.tw</div>
+      </div>
     </div>`;
 
   const sectionTitle = `<div data-field="cp${cpIdx}-title" style="font-size:56px;font-weight:900;color:#fff;line-height:1.12;text-shadow:0 4px 28px rgba(0,0,0,.9);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;margin-bottom:20px">${escH(cp.title||'')}</div>`;
@@ -2757,8 +2760,7 @@ function buildContentCardHTML(d, cp, imgUrl, pageNum, total) {
   const bgBase = `<div class="gs-card-s">
   <div class="bg" style="background-image:url('${imgUrl}');filter:${bgF}"></div>
   <div style="position:absolute;inset:0;background:${bgOverlay};z-index:2"></div>
-  <div style="position:absolute;inset:0;border:20px solid ${cPs.borderColor};pointer-events:none;z-index:10"></div>
-  <div data-drag="logo-row" style="position:absolute;bottom:52px;left:0;right:0;z-index:8;display:flex;justify-content:center;cursor:grab;transform:translate(0px,0px)">${buildLogoEl(44)}</div>`;
+  <div style="position:absolute;inset:0;border:20px solid ${cPs.borderColor};pointer-events:none;z-index:10"></div>`;
 
   // ── BULLETS: icon 圓框 + 金色標題 + 說明文 ───────────────────────────────────
   if (layout === 'bullets') {
