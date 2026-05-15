@@ -2570,7 +2570,7 @@ function buildSCardHTML(d, imgUrl) {
       <div style="width:68px;height:4px;background:${fc};border-radius:2px;margin-bottom:20px;${barAlign}"></div>
 
       <!-- ④ Hook lines: each line has own drag + resize handle -->
-      <div data-drag="hook-group" style="${hooksTA};cursor:grab;position:relative;transform:${hookGroupRotate}translate(${off('hook-group').dx}px,${off('hook-group').dy}px);transform-origin:center center">
+      <div data-drag="hook-group" style="${hooksTA};cursor:grab;position:relative;transform:${hookGroupRotate}${hlSkew}translate(${off('hook-group').dx}px,${off('hook-group').dy}px);transform-origin:center center">
         ${hookLinesHtml}
         <div data-no-export="1" data-fs-resize="hooks" contenteditable="false" class="fs-handle"></div>
       </div>
