@@ -555,6 +555,8 @@ function _defaultOverrides() {
   const ps = STYLE_PRESETS[activeStyle] || STYLE_PRESETS.style2026;
   return {
     hlDelta:0, hookDelta:0,
+    lTagDelta:0, lSubDelta:0, lLogoDelta:0,
+    sBnDelta:0, sLogoDelta:0, ctaBannerFsDelta:0,
     subScale:1.0, logoScale:2.5, bnScale:1.0,   // logo defaults to 250%
     headlineW:null, hookGroupW:null,
     blogTitleW:null, subheadlineW:null, ctaW:null,
@@ -573,6 +575,12 @@ function _defaultOverrides() {
       'hookLine3' :{dx:0,dy:0},
       'hashtags'  :{dx:0,dy:0},
       'subject'   :{dx:0,dy:0},
+      'l-tag'      :{dx:0,dy:0},
+      'l-logo'     :{dx:0,dy:0},
+      'l-sub'      :{dx:0,dy:0},
+      's-bn'       :{dx:0,dy:0},
+      's-logo'     :{dx:0,dy:0},
+      'cta-banner' :{dx:0,dy:0},
     }
   };
 }
@@ -2156,7 +2164,7 @@ document.addEventListener('mousedown', function(e) {
     const fsSec = fsEl.closest('.fmt-section');
     const ov = fsSec?._cardOverrides || manualOverrides;
     const d = fsSec?._cardData || (generated ? generated : null);
-    const startDelta = fsType === 'headline' ? (ov.hlDelta||0) : fsType === 'cp-logo' ? (ov.cpLogoDelta||0) : (ov.hookDelta||0);
+    const startDelta = fsType === 'headline' ? (ov.hlDelta||0) : fsType === 'cp-logo' ? (ov.cpLogoDelta||0) : fsType === 'l-tag' ? (ov.lTagDelta||0) : fsType === 'l-sub' ? (ov.lSubDelta||0) : fsType === 'l-logo' ? (ov.lLogoDelta||0) : fsType === 's-bn' ? (ov.sBnDelta||0) : fsType === 's-logo' ? (ov.sLogoDelta||0) : fsType === 'cta-banner' ? (ov.ctaBannerFsDelta||0) : (ov.hookDelta||0);
     _fsState = { fsType, sc, startY:e.clientY, startDelta, handle:fsEl, ov, inner, d };
     fsEl.classList.add('active');
     e.preventDefault(); e.stopPropagation(); return;
@@ -2215,12 +2223,43 @@ document.addEventListener('mousemove', function(e) {
         _patchCardInPlace(_fsState.inner, _fsState.d, ov, h);
       }
     } else if (_fsState.fsType === 'cp-logo') {
-      ov.cpLogoDelta = Math.max(-16, Math.min(60, _fsState.startDelta + delta));
+      ov.cpLogoDelta = Math.max(-60, Math.min(80, _fsState.startDelta + delta));
       const logoEl = _fsState.handle.parentElement.querySelector('img, span');
       if (logoEl) {
-        const newH = Math.max(20, Math.min(96, 36 + ov.cpLogoDelta));
-        logoEl.style.height = newH + 'px';
-        if (logoEl.tagName === 'IMG') logoEl.style.maxWidth = (newH * 4) + 'px';
+        const newH = Math.max(20, Math.min(140, 90 + ov.cpLogoDelta));
+        if (logoEl.tagName === 'IMG') { logoEl.style.height = newH + 'px'; logoEl.style.maxWidth = (newH * 4) + 'px'; }
+        else logoEl.style.fontSize = Math.round(newH * 0.58) + 'px';
+      }
+    } else if (_fsState.fsType === 's-bn') {
+      ov.sBnDelta = Math.max(-10, Math.min(40, _fsState.startDelta + delta));
+      const el = _fsState.handle.parentElement;
+      el.style.fontSize = Math.max(10, 20 + ov.sBnDelta) + 'px';
+    } else if (_fsState.fsType === 's-logo') {
+      ov.sLogoDelta = Math.max(-24, Math.min(60, _fsState.startDelta + delta));
+      const logoEl = _fsState.handle.parentElement.querySelector('img, span');
+      if (logoEl) {
+        const newH = Math.max(16, 44 + ov.sLogoDelta);
+        if (logoEl.tagName === 'IMG') { logoEl.style.height = newH + 'px'; logoEl.style.maxWidth = (newH * 4) + 'px'; }
+        else logoEl.style.fontSize = Math.round(newH * 0.58) + 'px';
+      }
+    } else if (_fsState.fsType === 'cta-banner') {
+      ov.ctaBannerFsDelta = Math.max(-8, Math.min(30, _fsState.startDelta + delta));
+      const el = _fsState.handle.parentElement;
+      el.style.fontSize = Math.max(10, 17 + ov.ctaBannerFsDelta) + 'px';
+    } else if (_fsState.fsType === 'l-tag') {
+      ov.lTagDelta = Math.max(-8, Math.min(40, _fsState.startDelta + delta));
+      const el = _fsState.handle.parentElement;
+      el.style.fontSize = Math.max(8, 15 + ov.lTagDelta) + 'px';
+    } else if (_fsState.fsType === 'l-sub') {
+      ov.lSubDelta = Math.max(-8, Math.min(40, _fsState.startDelta + delta));
+      const el = _fsState.handle.parentElement;
+      el.style.fontSize = Math.max(8, 16 + ov.lSubDelta) + 'px';
+    } else if (_fsState.fsType === 'l-logo') {
+      ov.lLogoDelta = Math.max(-20, Math.min(60, _fsState.startDelta + delta));
+      const logoEl = _fsState.handle.parentElement.querySelector('img, span');
+      if (logoEl) {
+        const newH = Math.max(12, 28 + ov.lLogoDelta);
+        if (logoEl.tagName === 'IMG') { logoEl.style.height = newH + 'px'; logoEl.style.maxWidth = (newH * 4) + 'px'; }
         else logoEl.style.fontSize = Math.round(newH * 0.58) + 'px';
       }
     } else {
@@ -2522,9 +2561,8 @@ function buildSCardHTML(d, imgUrl) {
   // ── Breaking News badge: white bg + knockout/cutout text (screen blend) ──
   // mix-blend-mode:screen → white areas stay white, black text reveals card background through
   const bn = (breakingNewsText||'').trim();
-  const bnSc = mo.bnScale||1;
   const bnEl = bn
-    ? `<div style="color:#fff;font-weight:700;font-size:${Math.round(20*bnSc)}px;border-bottom:2.5px solid #fff;padding-bottom:5px;line-height:1.3;letter-spacing:.03em;white-space:nowrap;text-shadow:0 1px 6px rgba(0,0,0,.5)"># ${escH(bn)}</div>`
+    ? `<div data-drag="s-bn" style="position:relative;cursor:grab;color:#fff;font-weight:700;font-size:${Math.max(10, 20+(mo.sBnDelta||0))}px;border-bottom:2.5px solid #fff;padding-bottom:5px;line-height:1.3;letter-spacing:.03em;white-space:nowrap;text-shadow:0 1px 6px rgba(0,0,0,.5);transform:${tr('s-bn')}"># ${escH(bn)}<div data-no-export="1" data-fs-resize="s-bn" contenteditable="false" class="fs-handle"></div></div>`
     : '<div></div>';
 
   // ── Font sizes: derive headline FROM hook size so ratio stays ~1.7:1 ──
@@ -2574,10 +2612,10 @@ function buildSCardHTML(d, imgUrl) {
     <!-- ALL TEXT — each element individually draggable; starts at top of card -->
     <div style="display:flex;flex-direction:column;max-width:${groupW}px;${groupMargin}">
 
-      <!-- ① BN (left) + Logo (right) -->
-      <div data-drag="logo-row" style="width:100%;display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:14px;cursor:grab;${tr('logo-row')}">
+      <!-- ① BN (left) + Logo (right) — each independently draggable -->
+      <div style="width:100%;display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:14px">
         ${bnEl}
-        ${buildLogoEl(44, mo.logoScale||1)}
+        <div data-drag="s-logo" style="position:relative;cursor:grab;transform:${tr('s-logo')}">${buildLogoEl(Math.max(16, 44+(mo.sLogoDelta||0)))}<div data-no-export="1" data-fs-resize="s-logo" contenteditable="false" class="fs-handle"></div></div>
       </div>
 
       <!-- ② Headline: plain subtitle style (no box/border) -->
@@ -2596,7 +2634,7 @@ function buildSCardHTML(d, imgUrl) {
 
     <!-- ⑤ Bottom: CTA banner (left) + hashtags -->
     <div style="margin-top:auto;display:flex;flex-direction:column;gap:10px;${hasSub ? `max-width:${groupW}px` : 'width:100%'}">
-      ${ctaBannerVisible && (ctaBannerText||'').trim() ? `<div style="display:inline-block;align-self:flex-start;background:#A68A56;border-radius:0 12px 0 12px;padding:10px 28px;font-size:17px;font-weight:800;color:#fff;letter-spacing:.05em;text-shadow:0 1px 4px rgba(0,0,0,.28)">${escH(ctaBannerText)}</div>` : ''}
+      ${ctaBannerVisible && (ctaBannerText||'').trim() ? `<div data-drag="cta-banner" style="display:inline-block;align-self:flex-start;position:relative;cursor:grab;background:#A68A56;border-radius:0 12px 0 12px;padding:10px 28px;font-size:${Math.max(10,17+(mo.ctaBannerFsDelta||0))}px;font-weight:800;color:#fff;letter-spacing:.05em;text-shadow:0 1px 4px rgba(0,0,0,.28);transform:${tr('cta-banner')}">${escH(ctaBannerText)}<div data-no-export="1" data-fs-resize="cta-banner" contenteditable="false" class="fs-handle"></div></div>` : ''}
       <div data-field="hashtags" data-drag="hashtags" contenteditable="true" spellcheck="false" style="${hasSub ? '' : 'text-align:center'};font-size:20px;color:rgba(255,255,255,.46);letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:grab;${tr('hashtags')}">${escH(htags)}</div>
     </div>
 
@@ -2631,6 +2669,8 @@ function buildLCardHTML(d, imgUrl) {
 
   // ── Category tag (reuses breakingNewsText field) ──
   const tag = (breakingNewsText||'').trim();
+  const lOff = k => mo.offsets?.[k] || {dx:0,dy:0};
+  const lTr  = k => { const o=lOff(k); return `translate(${o.dx}px,${o.dy}px)`; };
 
   // ── Subject image (right-anchored) ──
   const subEl = hasSub ? `<img src="${subjectUrl}" alt="" style="position:absolute;right:0;bottom:0;height:92%;object-fit:contain;object-position:bottom right;z-index:4">` : '';
@@ -2643,8 +2683,8 @@ function buildLCardHTML(d, imgUrl) {
 
     <!-- Top: category tag + logo -->
     <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px">
-      ${tag ? `<div style="font-size:15px;font-weight:700;color:#fff;border-bottom:2px solid #fff;padding-bottom:3px;letter-spacing:.04em;text-shadow:0 1px 6px rgba(0,0,0,.5)"># ${escH(tag)}</div>` : '<div></div>'}
-      ${buildLogoEl(28, mo.logoScale||1)}
+      ${tag ? `<div data-drag="l-tag" style="position:relative;cursor:grab;font-size:${15+(mo.lTagDelta||0)}px;font-weight:700;color:#fff;border-bottom:2px solid #fff;padding-bottom:3px;letter-spacing:.04em;text-shadow:0 1px 6px rgba(0,0,0,.5);transform:${lTr('l-tag')}"># ${escH(tag)}<div data-no-export="1" data-fs-resize="l-tag" contenteditable="false" class="fs-handle"></div></div>` : '<div></div>'}
+      <div data-drag="l-logo" style="position:relative;cursor:grab;transform:${lTr('l-logo')}">${buildLogoEl(28+(mo.lLogoDelta||0), 1)}<div data-no-export="1" data-fs-resize="l-logo" contenteditable="false" class="fs-handle"></div></div>
     </div>
 
     <!-- Hook lines -->
@@ -2656,7 +2696,7 @@ function buildLCardHTML(d, imgUrl) {
     </div>
 
     <!-- Subheadline -->
-    ${d.subheadline ? `<div data-field="subheadline" data-drag="subheadline" contenteditable="true" spellcheck="false" style="font-size:16px;color:rgba(255,255,255,.82);line-height:1.65;cursor:grab;position:relative;max-width:${groupW}px;${mo.subheadlineW?'min-width:'+mo.subheadlineW+'px;max-width:none':''}">${escH(d.subheadline)}<div data-no-export="1" data-resize="subheadline" contenteditable="false" class="rz-handle"></div></div>` : ''}
+    ${d.subheadline ? `<div data-field="subheadline" data-drag="l-sub" contenteditable="true" spellcheck="false" style="font-size:${16+(mo.lSubDelta||0)}px;color:rgba(255,255,255,.82);line-height:1.65;cursor:grab;position:relative;max-width:${groupW}px;${mo.subheadlineW?'min-width:'+mo.subheadlineW+'px;max-width:none':''};transform:${lTr('l-sub')}">${escH(d.subheadline)}<div data-no-export="1" data-resize="subheadline" contenteditable="false" class="rz-handle"></div><div data-no-export="1" data-fs-resize="l-sub" contenteditable="false" class="fs-handle"></div></div>` : ''}
 
   </div></div>`;
 }
@@ -2772,22 +2812,21 @@ function buildContentCardHTML(d, cp, imgUrl, pageNum, total) {
   const _ctaDy = mo.offsets?.['cp-cta']?.dy || 0;
 
   const footerHtml = `
-    <div style="border-top:1px solid rgba(166,138,86,.2);padding-top:12px;display:flex;align-items:center;justify-content:space-between">
+    <div style="border-top:1px solid rgba(166,138,86,.2);padding-top:12px">
       <div data-drag="cp-cta" style="display:inline-block;background:linear-gradient(135deg,#7A5828,${fc});border-radius:10px;padding:10px 28px;font-size:22px;font-weight:800;color:#fff;cursor:grab;transform:translate(${_ctaDx}px,${_ctaDy}px)">${escH(d.cta||'立即預約免費諮詢')}</div>
-      <div style="font-size:15px;color:rgba(166,138,86,.4)">go-study.com.tw</div>
     </div>`;
 
   const sectionTitle = `<div data-field="cp${cpIdx}-title" style="font-size:56px;font-weight:900;color:#fff;line-height:1.12;text-shadow:0 4px 28px rgba(0,0,0,.9);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;margin-bottom:20px">${escH(cp.title||'')}</div>`;
 
   const _cpLogoDx = mo.offsets?.['cp-logo']?.dx || 0;
   const _cpLogoDy = mo.offsets?.['cp-logo']?.dy || 0;
-  const _cpLogoH  = Math.max(20, Math.min(96, 36 + (mo.cpLogoDelta||0)));
+  const _cpLogoH  = Math.max(20, Math.min(140, 90 + (mo.cpLogoDelta||0)));
 
   const bgBase = `<div class="gs-card-s">
   <div class="bg" style="background-image:url('${imgUrl}');filter:${bgF}"></div>
   <div style="position:absolute;inset:0;background:${bgOverlay};z-index:2"></div>
   <div style="position:absolute;inset:0;border:20px solid ${cPs.borderColor};pointer-events:none;z-index:10"></div>
-  <div data-drag="cp-logo" style="position:absolute;bottom:28px;right:90px;z-index:8;cursor:grab;transform:translate(${_cpLogoDx}px,${_cpLogoDy}px)">${buildLogoEl(_cpLogoH)}<div data-no-export="1" data-fs-resize="cp-logo" contenteditable="false" class="fs-handle"></div></div>`;
+  <div data-drag="cp-logo" style="position:absolute;bottom:22px;left:50%;transform:translate(calc(-50% + ${_cpLogoDx}px),${_cpLogoDy}px);z-index:8;cursor:grab;display:flex;align-items:center;gap:16px">${buildLogoEl(_cpLogoH)}<span style="font-size:13px;color:rgba(166,138,86,.38);letter-spacing:.04em">go-study.com.tw</span><div data-no-export="1" data-fs-resize="cp-logo" contenteditable="false" class="fs-handle"></div></div>`;
 
   // ── BULLETS: icon 圓框 + 金色標題 + 說明文 ───────────────────────────────────
   if (layout === 'bullets') {
