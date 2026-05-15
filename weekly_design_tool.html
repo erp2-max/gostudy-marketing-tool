@@ -81,6 +81,12 @@ html,body{height:100%;font-family:'Noto Sans TC','Microsoft JhengHei',sans-serif
 .api-status.ok{color:#4ade80}
 .api-status.none{color:rgba(200,176,122,.85)}
 
+/* Style switcher */
+.style-switcher{padding:6px 22px 10px;display:flex;gap:6px}
+.style-btn{flex:1;padding:6px 4px;border-radius:7px;border:1px solid rgba(166,138,86,.3);background:rgba(166,138,86,.1);color:rgba(220,200,160,.7);font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;text-align:center;transition:all .15s}
+.style-btn:hover{background:rgba(166,138,86,.2);color:#e8d8b8}
+.style-btn.active{background:var(--gold);color:#1a1410;border-color:var(--gold)}
+
 /* Toolbar */
 .toolbar{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;gap:10px;min-height:52px}
 .toolbar-title{font-size:14px;font-weight:700;color:var(--brand);flex:1}
@@ -310,6 +316,10 @@ textarea{min-height:72px;line-height:1.5}
 .rz-handle{position:absolute;right:-2px;top:0;height:100%;width:22px;cursor:ew-resize;z-index:20;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .18s}
 .rz-handle::after{content:'';display:block;width:4px;height:60%;background:rgba(255,255,255,.55);border-radius:2px;box-shadow:0 0 6px rgba(0,0,0,.5)}
 [data-drag="headline"]:hover .rz-handle,[data-drag="hook-group"]:hover .rz-handle,.rz-handle.active{opacity:1}
+/* Font-size drag handles (↕) */
+.fs-handle{position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);width:48px;height:20px;cursor:ns-resize;z-index:21;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .18s}
+.fs-handle::after{content:'↕';font-size:13px;line-height:1;color:rgba(255,255,255,.8);text-shadow:0 0 6px rgba(0,0,0,.9)}
+[data-drag="hook-group"]:hover .fs-handle,[data-drag="headline"]:hover .fs-handle,.fs-handle.active{opacity:1}
 
 /* Card templates */
 .gs-card-s{width:1080px;height:1350px;position:relative;overflow:hidden;font-family:'Noto Sans TC','Microsoft JhengHei',sans-serif}
@@ -367,6 +377,12 @@ textarea{min-height:72px;line-height:1.5}
   </label>
 
   <div class="sidebar-divider"></div>
+
+  <div class="sidebar-section-label">設計風格</div>
+  <div class="style-switcher">
+    <button class="style-btn active" id="style-btn-brand" onclick="setStyle('brand')">🥇 行銷歷史</button>
+    <button class="style-btn" id="style-btn-style2026" onclick="setStyle('style2026')">✨ 2026新風格</button>
+  </div>
 
   <div class="sidebar-divider"></div>
   <div style="padding:8px 22px 16px;font-size:10px;color:rgba(200,176,122,.35);line-height:1.7">圖片：Unsplash CC0 · 免費商用<br>貼入文章 → 自動解析 → 一鍵生成圖卡<br>匯出：PNG 全尺寸直接上傳社群</div>
@@ -491,23 +507,55 @@ const STYLE_PRESETS = {
     innerSat:0.22, innerBright:0.52,
     iconA:'#C9B07A', iconB:'#7A5828',
     label:'BRAND', icon:'🥇', name:'行銷歷史風格'
+  },
+  style2026: {
+    colorDark:'#0D2B3E', colorMid:'#3CBFB4', colorAccent:'#CDA87D',
+    borderColor:'#CDA87D', yellowLine:'#FFE901',
+    bgSat:0.30, bgBright:0.52,
+    innerSat:0.25, innerBright:0.42,
+    iconA:'#3CBFB4', iconB:'#CDA87D',
+    headlineColor:'#ffffff', headlineBorderColor:'#412F2B', headlineSkew:true,
+    label:'2026', icon:'✨', name:'2026新風格'
   }
 };
 let activeStyle = 'brand';
 let colorDark = '#1A1A2E', colorMid = '#A68A56', colorAccent = '#A68A56';
+
+function setStyle(key) {
+  activeStyle = key;
+  manualOverrides = _defaultOverrides();
+  const ps = STYLE_PRESETS[key] || STYLE_PRESETS.brand;
+  colorDark = ps.colorDark; colorMid = ps.colorMid; colorAccent = ps.colorAccent;
+  Object.keys(STYLE_PRESETS).forEach(k => {
+    const btn = document.getElementById('style-btn-' + k);
+    if (btn) btn.classList.toggle('active', k === key);
+  });
+  if (generated) renderOutput(generated);
+}
 
 // ── State ─────────────────────────────────────────────────────────────────────
 // platform removed — format selection now via checkboxes (chk-ad/igcover/iginner/blog)
 let generated    = null;
 let currentScene = 'oxford';
 let scenePhotoIdx = 0;
+// ── 2026 style text-shadow outline (html2canvas compatible) ──────────────────
+// Brown ring at r=7px (14px stroke) + white outer ring at r=11px, 24 directions each
+const _2026_TS = (()=>{
+  const br='#412F2B', wh='#fff';
+  const ring = (r,c) => Array.from({length:24},(_,i)=>{
+    const a=i*15*Math.PI/180;
+    return `${(Math.cos(a)*r).toFixed(1)}px ${(Math.sin(a)*r).toFixed(1)}px 0 ${c}`;
+  }).join(',');
+  return `text-shadow:${ring(7,br)},${ring(11,wh)};`;
+})();
+
 let uploadedImages = [];   // [{url, name}]
 let selectedImgUrl = null; // null → use scene
 let logoUrl        = null; // uploaded company logo
 let subjectUrl     = null; // uploaded person/subject PNG
 let subjectSide    = 'right';
 let breakingNewsText = 'Breaking News！';
-let hookYellowLine   = 2; // which hook line (1/2/3) renders in yellow
+let hookYellowLine   = new Set([2]); // which hook lines render in yellow (multi-select)
 
 // ── Manual layout overrides (drag + font adjust) ──────────────────────────────
 function _defaultOverrides() {
@@ -518,8 +566,8 @@ function _defaultOverrides() {
     headlineW:null, hookGroupW:null,
     blogTitleW:null, subheadlineW:null, ctaW:null,
     textStroke:4,                                  // headline box border width (px)
-    headlineColor:'#ffffff',
-    headlineBorder: ps.borderColor,               // 卡其金 #A68A56
+    headlineColor: ps.headlineColor || '#ffffff',
+    headlineBorder: ps.headlineBorderColor || ps.borderColor,
     subjectGlow:null,
     bgSat:ps.bgSat, bgBright:ps.bgBright,
     hookLineW:{},   // {1:px, 2:px, 3:px}  null/missing = use computed default
@@ -540,7 +588,8 @@ function _deepClone(obj) { return JSON.parse(JSON.stringify(obj)); }
 
 let manualOverrides = _defaultOverrides();
 let _dragState = null;
-let _resizeState = null; // {rtype, sc, startX, startW, el}
+let _resizeState = null;
+let _fsState = null; // {fsType:'hooks'|'headline', sc, startY, startDelta, handle, ov, inner, d}
 
 // ── Image URL map ─────────────────────────────────────────────────────────────
 const Q = '?auto=format&fit=crop&w=1080&q=80';
@@ -1952,7 +2001,8 @@ function buildSectionEditPanel(sec) {
     [1,2,3].forEach(n=>{
       const b=document.createElement('button');
       b.className='side-btn yln-btn'; b.dataset.yln=n; b.textContent=`第${n}行`;
-      b.style.cssText=`padding:5px 11px;font-size:12px;font-weight:700;border-radius:6px;cursor:pointer;font-family:inherit;border:1.5px solid ${n===hookYellowLine?'var(--gold)':'var(--border)'};background:${n===hookYellowLine?'var(--gold)':'transparent'};color:${n===hookYellowLine?'#1a1410':'var(--muted)'}`;
+      const ya=hookYellowLine.has(n);
+      b.style.cssText=`padding:5px 11px;font-size:12px;font-weight:700;border-radius:6px;cursor:pointer;font-family:inherit;border:1.5px solid ${ya?'var(--gold)':'var(--border)'};background:${ya?'var(--gold)':'transparent'};color:${ya?'#1a1410':'var(--muted)'}`;
       b.onclick=()=>setHookYellow(n);
       yBtns.appendChild(b);
     });
@@ -2061,19 +2111,20 @@ function buildSectionEditPanel(sec) {
 }
 
 function setHookYellow(n) {
-  hookYellowLine = n;
+  if (hookYellowLine.has(n)) hookYellowLine.delete(n); else hookYellowLine.add(n);
   // Update selector button styles
   document.querySelectorAll('.yln-btn').forEach(b=>{
-    const active = +b.dataset.yln === n;
-    b.style.background    = active ? 'var(--gold)' : 'transparent';
-    b.style.color         = active ? '#1a1410' : 'var(--muted)';
-    b.style.borderColor   = active ? 'var(--gold)' : 'var(--border)';
+    const active = hookYellowLine.has(+b.dataset.yln);
+    b.style.background  = active ? 'var(--gold)' : 'transparent';
+    b.style.color       = active ? '#1a1410' : 'var(--muted)';
+    b.style.borderColor = active ? 'var(--gold)' : 'var(--border)';
   });
   // Live-update hook line colors in preview
+  const sPs = STYLE_PRESETS[activeStyle] || STYLE_PRESETS.brand;
   document.querySelectorAll('.card-preview-shell > div').forEach(card=>{
     [1,2,3].forEach(i=>{
       const el=card.querySelector(`[data-field="hookLine${i}"]`);
-      if (el) el.style.color = i===n ? (STYLE_PRESETS[activeStyle]||STYLE_PRESETS.brand).yellowLine : '#fff';
+      if (el) el.style.color = hookYellowLine.has(i) ? sPs.yellowLine : '#fff';
     });
   });
 }
@@ -2087,6 +2138,23 @@ function rebuildSCard() {
 
 // ── Drag-to-reposition ─────────────────────────────────────────────────────────
 document.addEventListener('mousedown', function(e) {
+  // ── Font-size drag handle ──
+  const fsEl = e.target.closest('[data-fs-resize]');
+  if (fsEl) {
+    const fsType = fsEl.dataset.fsResize;
+    const inner = fsEl.closest('.card-preview-shell > div');
+    if (!inner) return;
+    const shell = inner.parentElement;
+    const sc = (parseInt(shell?.style.width)||360) / (parseInt(inner.style.width)||1080);
+    const fsSec = fsEl.closest('.fmt-section');
+    const ov = fsSec?._cardOverrides || manualOverrides;
+    const d = fsSec?._cardData || (generated ? generated : null);
+    const startDelta = fsType === 'headline' ? (ov.hlDelta||0) : (ov.hookDelta||0);
+    _fsState = { fsType, sc, startY:e.clientY, startDelta, handle:fsEl, ov, inner, d };
+    fsEl.classList.add('active');
+    e.preventDefault(); e.stopPropagation(); return;
+  }
+
   // ── Resize handle (check first to avoid triggering drag) ──
   const rzEl = e.target.closest('[data-resize]');
   if (rzEl) {
@@ -2128,6 +2196,22 @@ document.addEventListener('mousedown', function(e) {
 });
 
 document.addEventListener('mousemove', function(e) {
+  // ── Font-size drag ──
+  if (_fsState) {
+    const dyPx = (_fsState.startY - e.clientY) / _fsState.sc; // up = positive = bigger
+    const delta = Math.round(dyPx * 0.18);
+    const ov = _fsState.ov;
+    if (_fsState.fsType === 'headline') {
+      ov.hlDelta = Math.max(-40, Math.min(80, _fsState.startDelta + delta));
+    } else {
+      ov.hookDelta = Math.max(-40, Math.min(80, _fsState.startDelta + delta));
+    }
+    if (_fsState.inner && _fsState.d) {
+      const h = parseInt(_fsState.inner.style.height) || 1350;
+      _patchCardInPlace(_fsState.inner, _fsState.d, ov, h);
+    }
+    return;
+  }
   // ── Resize ──
   if (_resizeState) {
     const delta = (e.clientX - _resizeState.startX) / _resizeState.sc;
@@ -2164,6 +2248,7 @@ document.addEventListener('mousemove', function(e) {
 });
 
 document.addEventListener('mouseup', function() {
+  if (_fsState) { _fsState.handle.classList.remove('active'); _fsState=null; return; }
   if (_resizeState) { _resizeState.handle.classList.remove('active'); _resizeState=null; return; }
   if (_dragState) { _dragState.el.style.cursor='grab'; _dragState=null; }
 });
@@ -2432,10 +2517,15 @@ function buildSCardHTML(d, imgUrl) {
   const hlScale  = hlLen <= 12 ? 1.0 : hlLen <= 18 ? 0.85 : hlLen <= 26 ? 0.70 : 0.58;
   const hlFontSz = Math.max(22, Math.round(hookFS * 0.56 * hlScale) + (manualOverrides.hlDelta||0));
 
+  // ── 2026 style: thick stroke outline + diagonal hook group ──
+  const hlSkew = sPs.headlineSkew ? 'skewX(-8deg) ' : '';
+  const hookTextStroke = sPs.headlineSkew ? _2026_TS : '';
+  const hookGroupRotate = sPs.headlineSkew ? 'rotate(-3deg) ' : '';
+
   // ── Hook lines HTML — each line has own resize handle + drag ──
   // Use min-width (not max-width) so lines can BREAK OUT of parent container when expanded,
   // allowing text to go from 2 lines → 1 line even when parent is narrow (e.g. 550px w/ subject).
-  const yLine = hookYellowLine || 2;
+  const yLines = hookYellowLine instanceof Set ? hookYellowLine : new Set([hookYellowLine||2]);
   const hookLinesHtml = [{txt:h1,n:1},{txt:h2,n:2},{txt:h3,n:3}]
     .filter(({txt})=>txt.trim())
     .map(({txt,n})=>{
@@ -2443,7 +2533,7 @@ function buildSCardHTML(d, imgUrl) {
       // Default: ceil(chars/2) chars per line → exactly 2 lines
       const defaultW = Math.ceil(charLen / 2) * hookFS + Math.round(hookFS * 0.4);
       const lineW = mo.hookLineW?.[n] ?? defaultW;
-      return `<div data-field="hookLine${n}" data-drag="hookLine${n}" contenteditable="true" spellcheck="false" style="font-size:${hookFS}px;font-weight:900;color:${n===yLine?sPs.yellowLine:'#fff'};line-height:1.1;text-shadow:0 3px 18px rgba(0,0,0,.65);overflow-wrap:break-word;min-width:${lineW}px;max-width:none;position:relative;cursor:grab;${tr('hookLine'+n)}">${escH(txt)}<div data-no-export="1" data-resize="hookLine${n}" contenteditable="false" class="rz-handle"></div></div>`;
+      return `<div data-field="hookLine${n}" data-drag="hookLine${n}" contenteditable="true" spellcheck="false" style="font-size:${hookFS}px;font-weight:900;color:${yLines.has(n)?sPs.yellowLine:'#fff'};line-height:1.1;${hookTextStroke||'text-shadow:0 3px 18px rgba(0,0,0,.65);'}overflow-wrap:break-word;min-width:${lineW}px;max-width:none;position:relative;cursor:grab;${tr('hookLine'+n)}">${escH(txt)}<div data-no-export="1" data-resize="hookLine${n}" contenteditable="false" class="rz-handle"></div></div>`;
     })
     .join('');
 
@@ -2470,15 +2560,16 @@ function buildSCardHTML(d, imgUrl) {
         ${bnEl}
       </div>
 
-      <!-- ② Headline: white outline box, right-aligned text, auto-sized -->
-      <div data-field="headline" data-drag="headline" contenteditable="true" spellcheck="false" style="border:${mo.textStroke||4}px solid ${mo.headlineBorder||sPs.borderColor};border-radius:6px;padding:14px 24px;font-size:${hlFontSz}px;font-weight:900;color:${mo.headlineColor||'#fff'};line-height:1.28;text-shadow:0 2px 8px rgba(0,0,0,.22);word-break:keep-all;overflow-wrap:break-word;text-align:right;margin-bottom:22px;cursor:grab;position:relative;${mo.headlineW?'width:'+mo.headlineW+'px':''};${tr('headline')}">${escH(d.headline||'')}<div data-no-export="1" data-resize="headline" contenteditable="false" class="rz-handle"></div></div>
+      <!-- ② Headline: brand = outline box; 2026 = dark box with white border -->
+      <div data-field="headline" data-drag="headline" contenteditable="true" spellcheck="false" style="${sPs.headlineSkew?`border:2px solid rgba(255,255,255,0.85);background:rgba(10,30,50,0.80);border-radius:4px;padding:12px 20px;text-shadow:none;`:`border:${mo.textStroke||4}px solid ${mo.headlineBorder||sPs.borderColor};border-radius:6px;padding:14px 24px;text-shadow:0 2px 8px rgba(0,0,0,.22);`}font-size:${hlFontSz}px;font-weight:900;color:${mo.headlineColor||'#fff'};line-height:1.28;word-break:keep-all;overflow-wrap:break-word;text-align:right;margin-bottom:22px;cursor:grab;position:relative;${mo.headlineW?'width:'+mo.headlineW+'px':''};transform:translate(${(mo.offsets?.headline||{dx:0,dy:0}).dx}px,${(mo.offsets?.headline||{dx:0,dy:0}).dy}px)">${escH(d.headline||'')}<div data-no-export="1" data-resize="headline" contenteditable="false" class="rz-handle"></div><div data-no-export="1" data-fs-resize="headline" contenteditable="false" class="fs-handle"></div></div>
 
       <!-- ③ Gold accent bar -->
       <div style="width:68px;height:4px;background:${fc};border-radius:2px;margin-bottom:20px;${barAlign}"></div>
 
       <!-- ④ Hook lines: each line has own drag + resize handle -->
-      <div data-drag="hook-group" style="${hooksTA};cursor:grab;${tr('hook-group')}">
+      <div data-drag="hook-group" style="${hooksTA};cursor:grab;position:relative;transform:${hookGroupRotate}translate(${off('hook-group').dx}px,${off('hook-group').dy}px);transform-origin:center center">
         ${hookLinesHtml}
+        <div data-no-export="1" data-fs-resize="hooks" contenteditable="false" class="fs-handle"></div>
       </div>
 
     </div>
@@ -2502,14 +2593,16 @@ function buildLCardHTML(d, imgUrl) {
   const hookFSBase = Math.max(30, Math.min(72, Math.floor(groupW / Math.max(Math.ceil(maxHLen/1.8), 3))));
   const hookFS = Math.max(20, hookFSBase + (mo.hookDelta||0));
 
-  const yLine = hookYellowLine || 2;
+  const lHookTextStroke = lPs.headlineSkew ? _2026_TS : '';
+  const lHookGroupRotate = lPs.headlineSkew ? 'rotate(-3deg) ' : '';
+  const yLines = hookYellowLine instanceof Set ? hookYellowLine : new Set([hookYellowLine||2]);
   const hookLinesHtml = [{txt:h1,n:1},{txt:h2,n:2},{txt:h3,n:3}]
     .filter(({txt})=>txt.trim())
     .map(({txt,n})=>{
       const charLen = txt.replace(/\s/g,'').length || 1;
       const defaultW = Math.ceil(charLen/2) * hookFS + Math.round(hookFS * 0.4);
       const lineW = mo.hookLineW?.[n] ?? defaultW;
-      return `<div data-field="hookLine${n}" data-drag="hookLine${n}" contenteditable="true" spellcheck="false" style="font-size:${hookFS}px;font-weight:900;color:${n===yLine?lPs.yellowLine:'#fff'};line-height:1.12;text-shadow:0 2px 12px rgba(0,0,0,.65);overflow-wrap:break-word;min-width:${lineW}px;max-width:none;position:relative;cursor:grab">${escH(txt)}<div data-no-export="1" data-resize="hookLine${n}" contenteditable="false" class="rz-handle"></div></div>`;
+      return `<div data-field="hookLine${n}" data-drag="hookLine${n}" contenteditable="true" spellcheck="false" style="font-size:${hookFS}px;font-weight:900;color:${yLines.has(n)?lPs.yellowLine:'#fff'};line-height:1.12;${lHookTextStroke||'text-shadow:0 2px 12px rgba(0,0,0,.65);'}overflow-wrap:break-word;min-width:${lineW}px;max-width:none;position:relative;cursor:grab;">${escH(txt)}<div data-no-export="1" data-resize="hookLine${n}" contenteditable="false" class="rz-handle"></div></div>`;
     }).join('');
 
   // ── Category tag (reuses breakingNewsText field) ──
@@ -2532,8 +2625,9 @@ function buildLCardHTML(d, imgUrl) {
 
     <!-- Hook lines -->
     <div style="flex:1;display:flex;flex-direction:column;justify-content:center;max-width:${groupW}px">
-      <div data-drag="hook-group" style="cursor:grab">
+      <div data-drag="hook-group" style="cursor:grab;position:relative;transform:${lHookGroupRotate}translate(0px,0px);transform-origin:center center">
         ${hookLinesHtml || `<div style="font-size:32px;font-weight:900;color:rgba(255,255,255,.25)">請輸入大字文案</div>`}
+        <div data-no-export="1" data-fs-resize="hooks" contenteditable="false" class="fs-handle"></div>
       </div>
     </div>
 
@@ -2940,7 +3034,7 @@ async function exportCard(el, label, w, h) {
   noExport.forEach(n=>n.style.visibility='hidden');
   el.style.transform='none';
   try {
-    const canvas=await html2canvas(el,{scale:1,width:w,height:h,useCORS:true,allowTaint:false,backgroundColor:null,logging:false});
+    const canvas=await html2canvas(el,{scale:1,width:w,height:h,useCORS:true,allowTaint:false,backgroundColor:null,logging:false,onclone:(_,clonedEl)=>{clonedEl.querySelectorAll('[data-drag="hook-group"]').forEach(hg=>{hg.style.transform=hg.style.transform.replace(/rotate\([^)]+\)\s*/,'');});}});
     const a=document.createElement('a'); a.download=`GOSTUDY-${label.replace(/\s/g,'-')}-${Date.now()}.png`; a.href=canvas.toDataURL('image/png'); a.click();
   } catch(e) { alert('下載失敗：'+e.message); }
   finally { noExport.forEach(n=>n.style.visibility=''); el.style.transform=`scale(${parseInt(el.parentElement?.style.width||w)/w})`; }
@@ -2976,7 +3070,7 @@ async function openInPhotopea(el, label, w, h) {
   el.style.transform = 'none';
 
   try {
-    const canvas = await html2canvas(el,{scale:1,width:w,height:h,useCORS:true,allowTaint:false,backgroundColor:null,logging:false});
+    const canvas = await html2canvas(el,{scale:1,width:w,height:h,useCORS:true,allowTaint:false,backgroundColor:null,logging:false,onclone:(_,clonedEl)=>{clonedEl.querySelectorAll('[data-drag="hook-group"]').forEach(hg=>{hg.style.transform=hg.style.transform.replace(/rotate\([^)]+\)\s*/,'');});}});
     // 使用 JPEG 壓縮降低 URL 長度（大約 100-250KB → base64 130-330KB）
     const dataUrl = canvas.toDataURL('image/jpeg', 0.90);
     const config  = JSON.stringify({ files: [dataUrl] });
