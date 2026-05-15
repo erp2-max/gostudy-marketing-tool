@@ -2611,6 +2611,7 @@ function buildLCardHTML(d, imgUrl) {
 
   const lHookTextStroke = lPs.headlineSkew ? _2026_TS : '';
   const lHookGroupRotate = lPs.headlineSkew ? 'rotate(-3deg) ' : '';
+  const lHlSkew = lPs.headlineSkew ? 'skewX(-8deg) ' : '';
   const yLines = hookYellowLine instanceof Set ? hookYellowLine : new Set([hookYellowLine||2]);
   const hookLinesHtml = [{txt:h1,n:1},{txt:h2,n:2},{txt:h3,n:3}]
     .filter(({txt})=>txt.trim())
@@ -2641,7 +2642,7 @@ function buildLCardHTML(d, imgUrl) {
 
     <!-- Hook lines -->
     <div style="flex:1;display:flex;flex-direction:column;justify-content:center;max-width:${groupW}px">
-      <div data-drag="hook-group" style="cursor:grab;position:relative;transform:${lHookGroupRotate}translate(0px,0px);transform-origin:center center">
+      <div data-drag="hook-group" style="cursor:grab;position:relative;transform:${lHookGroupRotate}${lHlSkew}translate(0px,0px);transform-origin:center center">
         ${hookLinesHtml || `<div style="font-size:32px;font-weight:900;color:rgba(255,255,255,.25)">請輸入大字文案</div>`}
         <div data-no-export="1" data-fs-resize="hooks" contenteditable="false" class="fs-handle"></div>
       </div>
