@@ -323,7 +323,7 @@ textarea{min-height:72px;line-height:1.5}
 
 /* Card templates */
 .gs-card-s{width:1080px;height:1350px;position:relative;overflow:hidden;font-family:'Noto Sans TC','Microsoft JhengHei',sans-serif}
-.gs-card-s .bg,.gs-card-l .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;display:block}
+.gs-card-s .bg,.gs-card-l .bg{position:absolute;inset:0;width:100%;height:100%;background-size:cover;background-position:center}
 .gs-card-s .content{position:absolute;inset:0;padding:80px 90px;display:flex;flex-direction:column}
 .gs-card-l{width:800px;height:600px;position:relative;overflow:hidden;font-family:'Noto Sans TC','Microsoft JhengHei',sans-serif}
 .gs-card-l .content{position:absolute;inset:0;padding:50px 60px;display:flex;flex-direction:column}
@@ -556,14 +556,15 @@ let generated    = null;
 let currentScene = 'oxford';
 let scenePhotoIdx = 0;
 // ── 2026 style text-shadow outline (html2canvas compatible) ──────────────────
-// Brown ring at r=7px (14px stroke) + white outer ring at r=11px, 24 directions each
+// Brown ring at r=7px + white outer ring at r=11px, 48 directions each (7.5° gap)
+// 48pts + 1px blur fills the gap between points so html2canvas doesn't show jagged edges
 const _2026_TS = (()=>{
   const br='#412F2B', wh='#fff';
-  const ring = (r,c) => Array.from({length:24},(_,i)=>{
-    const a=i*15*Math.PI/180;
-    return `${(Math.cos(a)*r).toFixed(1)}px ${(Math.sin(a)*r).toFixed(1)}px 0 ${c}`;
+  const ring = (r,c,blur) => Array.from({length:48},(_,i)=>{
+    const a=i*7.5*Math.PI/180;
+    return `${(Math.cos(a)*r).toFixed(1)}px ${(Math.sin(a)*r).toFixed(1)}px ${blur}px ${c}`;
   }).join(',');
-  return `text-shadow:${ring(7,br)},${ring(11,wh)};`;
+  return `text-shadow:${ring(7,br,1)},${ring(11,wh,1)};`;
 })();
 
 let uploadedImages = [];   // [{url, name}]
@@ -2599,7 +2600,7 @@ function buildSCardHTML(d, imgUrl) {
   const htags = (d.hashtags||'').split(/\s+/).filter(Boolean).slice(0,3).join('  ');
 
   return `<div class="gs-card-s">
-  <img class="bg" src="${imgUrl}" style="filter:saturate(${mo.bgSat||0.80}) brightness(${mo.bgBright||0.80})">
+  <div class="bg" style="background-image:url('${imgUrl}');filter:saturate(${mo.bgSat||0.80}) brightness(${mo.bgBright||0.80})"></div>
   <div style="position:absolute;inset:0;background:${gradCSS};z-index:2"></div>
   ${subEl}
   <div style="position:absolute;inset:0;padding:58px 68px 50px;display:flex;flex-direction:column;z-index:6">
@@ -2671,7 +2672,7 @@ function buildLCardHTML(d, imgUrl) {
   const subEl = hasSub ? `<img src="${subjectUrl}" alt="" style="position:absolute;right:0;bottom:0;height:92%;object-fit:contain;object-position:bottom right;z-index:4">` : '';
 
   return `<div class="gs-card-l">
-  <img class="bg" src="${imgUrl}" style="filter:saturate(${lPs.bgSat}) brightness(${lPs.bgBright})">
+  <div class="bg" style="background-image:url('${imgUrl}');filter:saturate(${lPs.bgSat}) brightness(${lPs.bgBright})"></div>
   <div style="position:absolute;inset:0;background:${hasSub ? 'linear-gradient(90deg,rgba(0,0,0,.82) 0%,rgba(0,0,0,.60) 42%,rgba(0,0,0,.0) 68%)' : 'linear-gradient(108deg,rgba(0,0,0,.74) 0%,rgba(0,0,0,.50) 50%,rgba(0,0,0,.08) 100%)'};z-index:2"></div>
   ${subEl}
   <div style="position:absolute;inset:0;padding:32px 44px;display:flex;flex-direction:column;z-index:6">
@@ -2726,7 +2727,7 @@ function buildTableCardHTML(d, imgUrl) {
 
     const tableH = rows.length * 60 + 60; // rough height
     return `<div class="gs-card-s">
-  <img class="bg" src="${imgUrl}" style="filter:saturate(${tPs.innerSat}) brightness(${tPs.innerBright})">
+  <div class="bg" style="background-image:url('${imgUrl}');filter:saturate(${tPs.innerSat}) brightness(${tPs.innerBright})"></div>
   <div style="position:absolute;inset:0;background:linear-gradient(175deg,rgba(0,0,0,.55) 0%,rgba(0,0,0,.75) 40%,rgba(0,0,0,.95) 100%);z-index:2"></div>
   <div style="position:absolute;inset:0;border:20px solid ${tPs.borderColor};pointer-events:none;z-index:10"></div>
   <div class="content" style="z-index:6;padding:60px 70px 50px">
@@ -2757,7 +2758,7 @@ function buildTableCardHTML(d, imgUrl) {
     </div>
   </div>`).join('');
   return `<div class="gs-card-s">
-  <img class="bg" src="${imgUrl}" style="filter:saturate(${tPs.innerSat}) brightness(${tPs.innerBright})">
+  <div class="bg" style="background-image:url('${imgUrl}');filter:saturate(${tPs.innerSat}) brightness(${tPs.innerBright})"></div>
   <div style="position:absolute;inset:0;background:linear-gradient(175deg,rgba(0,0,0,.55) 0%,rgba(0,0,0,.78) 50%,rgba(0,0,0,.96) 100%);z-index:2"></div>
   <div style="position:absolute;inset:0;border:20px solid ${tPs.borderColor};pointer-events:none;z-index:10"></div>
   <div class="content" style="z-index:6">
@@ -2818,7 +2819,7 @@ function buildContentCardHTML(d, cp, imgUrl, pageNum, total) {
   const _cpLogoH  = Math.max(20, Math.min(140, 90 + (mo.cpLogoDelta||0)));
 
   const bgBase = `<div class="gs-card-s">
-  <img class="bg" src="${imgUrl}" style="filter:${bgF}">
+  <div class="bg" style="background-image:url('${imgUrl}');filter:${bgF}"></div>
   <div style="position:absolute;inset:0;background:${bgOverlay};z-index:2"></div>
   <div style="position:absolute;inset:0;border:20px solid ${cPs.borderColor};pointer-events:none;z-index:10"></div>
   <div data-drag="cp-logo" style="position:absolute;bottom:22px;left:50%;transform:translate(calc(-50% + ${_cpLogoDx}px),${_cpLogoDy}px);z-index:8;cursor:grab;display:flex;align-items:center;gap:16px">${buildLogoEl(_cpLogoH)}<span style="font-size:13px;color:rgba(166,138,86,.38);letter-spacing:.04em">go-study.com.tw</span><div data-no-export="1" data-fs-resize="cp-logo" contenteditable="false" class="fs-handle"></div></div>`;
@@ -3093,6 +3094,43 @@ function buildMiniScenePicker(cardInner) {
   return wrap;
 }
 
+// 將 .bg 的 CSS filter 預先燒進背景圖，讓 html2canvas 正確輸出
+// 回傳 restore 函數，export 結束後呼叫還原
+async function bakeBgFilter(el, w, h) {
+  const bgEl = el.querySelector('.bg');
+  if (!bgEl) return null;
+  const origFilter = bgEl.style.filter;
+  if (!origFilter || origFilter === 'none') return null;
+  const origBg = bgEl.style.backgroundImage;
+  const urlMatch = origBg.match(/url\(['"]?([^'")\s]+)['"]?\)/);
+  if (!urlMatch) return null;
+  const imgUrl = urlMatch[1];
+  try {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    // 非 blob URL 加 _bake=1 強制重新以 CORS 模式載入
+    const loadUrl = imgUrl.startsWith('blob:') ? imgUrl : imgUrl + (imgUrl.includes('?') ? '&' : '?') + '_bake=1';
+    await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = loadUrl; });
+    if (!img.naturalWidth || !img.naturalHeight) return null;
+    const cvs = document.createElement('canvas');
+    cvs.width = w; cvs.height = h;
+    const ctx = cvs.getContext('2d');
+    // object-fit:cover 計算（整數座標避免 sub-pixel 變形）
+    const iR = img.naturalWidth / img.naturalHeight;
+    const cR = w / h;
+    let sx, sy, sw, sh;
+    if (iR > cR) { sh = img.naturalHeight; sw = sh * cR; sx = (img.naturalWidth - sw) / 2; sy = 0; }
+    else         { sw = img.naturalWidth;  sh = sw / cR; sx = 0; sy = (img.naturalHeight - sh) / 2; }
+    ctx.filter = origFilter;
+    ctx.drawImage(img, Math.round(sx), Math.round(sy), Math.round(sw), Math.round(sh), 0, 0, w, h);
+    bgEl.style.backgroundImage = `url('${cvs.toDataURL('image/jpeg', 0.95)}')`;
+    bgEl.style.filter = 'none';
+    return () => { bgEl.style.backgroundImage = origBg; bgEl.style.filter = origFilter; };
+  } catch(e) {
+    return null; // CORS 或其他錯誤：讓 html2canvas 直接渲染原始背景
+  }
+}
+
 async function exportCard(el, label, w, h) {
   if (typeof html2canvas==='undefined') { alert('匯出套件尚未載入，請稍後再試'); return; }
   const imgs=el.querySelectorAll('img');
@@ -3105,11 +3143,15 @@ async function exportCard(el, label, w, h) {
   const noExport=el.querySelectorAll('[data-no-export]');
   noExport.forEach(n=>n.style.visibility='hidden');
   el.style.transform='none';
+  const restoreBg = await bakeBgFilter(el, w, h);
   try {
-    const canvas=await html2canvas(el,{scale:1,width:w,height:h,useCORS:true,allowTaint:false,backgroundColor:null,logging:false,onclone:(_,clonedEl)=>{clonedEl.querySelectorAll('[data-drag="hook-group"]').forEach(hg=>{hg.style.transform=hg.style.transform.replace(/rotate\([^)]+\)\s*/,'');});}});
+    // scale:2 渲染再縮回 1x，下採樣產生 antialiasing，消除文字/筆劃鋸齒
+    const raw=await html2canvas(el,{scale:2,width:w,height:h,useCORS:true,allowTaint:false,backgroundColor:null,logging:false,onclone:(_,clonedEl)=>{clonedEl.querySelectorAll('[data-drag="hook-group"]').forEach(hg=>{let t=hg.style.transform;t=t.replace(/rotate\([^)]+\)\s*/g,'');t=t.replace(/skewX\((-?[\d.]+)deg\)/g,(_,d)=>{const v=Math.tan(parseFloat(d)*Math.PI/180).toFixed(6);return `matrix(1,0,${v},1,0,0)`;});hg.style.transform=t;});}});
+    const canvas=document.createElement('canvas'); canvas.width=w; canvas.height=h;
+    canvas.getContext('2d').drawImage(raw,0,0,w,h);
     const a=document.createElement('a'); a.download=`GOSTUDY-${label.replace(/\s/g,'-')}-${Date.now()}.png`; a.href=canvas.toDataURL('image/png'); a.click();
   } catch(e) { alert('下載失敗：'+e.message); }
-  finally { noExport.forEach(n=>n.style.visibility=''); el.style.transform=`scale(${parseInt(el.parentElement?.style.width||w)/w})`; }
+  finally { if(restoreBg) restoreBg(); noExport.forEach(n=>n.style.visibility=''); el.style.transform=`scale(${parseInt(el.parentElement?.style.width||w)/w})`; }
 }
 
 async function downloadAll() {
@@ -3140,9 +3182,12 @@ async function openInPhotopea(el, label, w, h) {
   const noExp = el.querySelectorAll('[data-no-export]');
   noExp.forEach(n => n.style.visibility='hidden');
   el.style.transform = 'none';
+  const restoreBg = await bakeBgFilter(el, w, h);
 
   try {
-    const canvas = await html2canvas(el,{scale:1,width:w,height:h,useCORS:true,allowTaint:false,backgroundColor:null,logging:false,onclone:(_,clonedEl)=>{clonedEl.querySelectorAll('[data-drag="hook-group"]').forEach(hg=>{hg.style.transform=hg.style.transform.replace(/rotate\([^)]+\)\s*/,'');});}});
+    const raw = await html2canvas(el,{scale:2,width:w,height:h,useCORS:true,allowTaint:false,backgroundColor:null,logging:false,onclone:(_,clonedEl)=>{clonedEl.querySelectorAll('[data-drag="hook-group"]').forEach(hg=>{let t=hg.style.transform;t=t.replace(/rotate\([^)]+\)\s*/g,'');t=t.replace(/skewX\((-?[\d.]+)deg\)/g,(_,d)=>{const v=Math.tan(parseFloat(d)*Math.PI/180).toFixed(6);return `matrix(1,0,${v},1,0,0)`;});hg.style.transform=t;});});
+    const canvas=document.createElement('canvas'); canvas.width=w; canvas.height=h;
+    canvas.getContext('2d').drawImage(raw,0,0,w,h);
     // 使用 JPEG 壓縮降低 URL 長度（大約 100-250KB → base64 130-330KB）
     const dataUrl = canvas.toDataURL('image/jpeg', 0.90);
     const config  = JSON.stringify({ files: [dataUrl] });
@@ -3151,6 +3196,7 @@ async function openInPhotopea(el, label, w, h) {
     showToast('✅ 已在 Photopea 開啟！可直接編輯，完成後 File → Save As 下載');
   } catch(e) { alert('開啟失敗：' + e.message); }
   finally {
+    if(restoreBg) restoreBg();
     noExp.forEach(n => n.style.visibility='');
     el.style.transform = `scale(${parseInt(el.parentElement?.style.width||w)/w})`;
     if (btn) { btn.innerHTML=origText; btn.disabled=false; }
