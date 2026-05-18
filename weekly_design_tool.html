@@ -323,7 +323,7 @@ textarea{min-height:72px;line-height:1.5}
 
 /* Card templates */
 .gs-card-s{width:1080px;height:1350px;position:relative;overflow:hidden;font-family:'Noto Sans TC','Microsoft JhengHei',sans-serif}
-.gs-card-s .bg,.gs-card-l .bg{position:absolute;inset:0;width:100%;height:100%;background-size:cover;background-position:center}
+.gs-card-s .bg,.gs-card-l .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;display:block}
 .gs-card-s .content{position:absolute;inset:0;padding:80px 90px;display:flex;flex-direction:column}
 .gs-card-l{width:800px;height:600px;position:relative;overflow:hidden;font-family:'Noto Sans TC','Microsoft JhengHei',sans-serif}
 .gs-card-l .content{position:absolute;inset:0;padding:50px 60px;display:flex;flex-direction:column}
@@ -2599,7 +2599,7 @@ function buildSCardHTML(d, imgUrl) {
   const htags = (d.hashtags||'').split(/\s+/).filter(Boolean).slice(0,3).join('  ');
 
   return `<div class="gs-card-s">
-  <div class="bg" style="background-image:url('${imgUrl}');filter:saturate(${mo.bgSat||0.80}) brightness(${mo.bgBright||0.80})"></div>
+  <img class="bg" src="${imgUrl}" style="filter:saturate(${mo.bgSat||0.80}) brightness(${mo.bgBright||0.80})">
   <div style="position:absolute;inset:0;background:${gradCSS};z-index:2"></div>
   ${subEl}
   <div style="position:absolute;inset:0;padding:58px 68px 50px;display:flex;flex-direction:column;z-index:6">
@@ -2671,7 +2671,7 @@ function buildLCardHTML(d, imgUrl) {
   const subEl = hasSub ? `<img src="${subjectUrl}" alt="" style="position:absolute;right:0;bottom:0;height:92%;object-fit:contain;object-position:bottom right;z-index:4">` : '';
 
   return `<div class="gs-card-l">
-  <div class="bg" style="background-image:url('${imgUrl}');filter:saturate(${lPs.bgSat}) brightness(${lPs.bgBright})"></div>
+  <img class="bg" src="${imgUrl}" style="filter:saturate(${lPs.bgSat}) brightness(${lPs.bgBright})">
   <div style="position:absolute;inset:0;background:${hasSub ? 'linear-gradient(90deg,rgba(0,0,0,.82) 0%,rgba(0,0,0,.60) 42%,rgba(0,0,0,.0) 68%)' : 'linear-gradient(108deg,rgba(0,0,0,.74) 0%,rgba(0,0,0,.50) 50%,rgba(0,0,0,.08) 100%)'};z-index:2"></div>
   ${subEl}
   <div style="position:absolute;inset:0;padding:32px 44px;display:flex;flex-direction:column;z-index:6">
@@ -2726,7 +2726,7 @@ function buildTableCardHTML(d, imgUrl) {
 
     const tableH = rows.length * 60 + 60; // rough height
     return `<div class="gs-card-s">
-  <div class="bg" style="background-image:url('${imgUrl}');filter:saturate(${tPs.innerSat}) brightness(${tPs.innerBright})"></div>
+  <img class="bg" src="${imgUrl}" style="filter:saturate(${tPs.innerSat}) brightness(${tPs.innerBright})">
   <div style="position:absolute;inset:0;background:linear-gradient(175deg,rgba(0,0,0,.55) 0%,rgba(0,0,0,.75) 40%,rgba(0,0,0,.95) 100%);z-index:2"></div>
   <div style="position:absolute;inset:0;border:20px solid ${tPs.borderColor};pointer-events:none;z-index:10"></div>
   <div class="content" style="z-index:6;padding:60px 70px 50px">
@@ -2757,7 +2757,7 @@ function buildTableCardHTML(d, imgUrl) {
     </div>
   </div>`).join('');
   return `<div class="gs-card-s">
-  <div class="bg" style="background-image:url('${imgUrl}');filter:saturate(${tPs.innerSat}) brightness(${tPs.innerBright})"></div>
+  <img class="bg" src="${imgUrl}" style="filter:saturate(${tPs.innerSat}) brightness(${tPs.innerBright})">
   <div style="position:absolute;inset:0;background:linear-gradient(175deg,rgba(0,0,0,.55) 0%,rgba(0,0,0,.78) 50%,rgba(0,0,0,.96) 100%);z-index:2"></div>
   <div style="position:absolute;inset:0;border:20px solid ${tPs.borderColor};pointer-events:none;z-index:10"></div>
   <div class="content" style="z-index:6">
@@ -2818,7 +2818,7 @@ function buildContentCardHTML(d, cp, imgUrl, pageNum, total) {
   const _cpLogoH  = Math.max(20, Math.min(140, 90 + (mo.cpLogoDelta||0)));
 
   const bgBase = `<div class="gs-card-s">
-  <div class="bg" style="background-image:url('${imgUrl}');filter:${bgF}"></div>
+  <img class="bg" src="${imgUrl}" style="filter:${bgF}">
   <div style="position:absolute;inset:0;background:${bgOverlay};z-index:2"></div>
   <div style="position:absolute;inset:0;border:20px solid ${cPs.borderColor};pointer-events:none;z-index:10"></div>
   <div data-drag="cp-logo" style="position:absolute;bottom:22px;left:50%;transform:translate(calc(-50% + ${_cpLogoDx}px),${_cpLogoDy}px);z-index:8;cursor:grab;display:flex;align-items:center;gap:16px">${buildLogoEl(_cpLogoH)}<span style="font-size:13px;color:rgba(166,138,86,.38);letter-spacing:.04em">go-study.com.tw</span><div data-no-export="1" data-fs-resize="cp-logo" contenteditable="false" class="fs-handle"></div></div>`;
