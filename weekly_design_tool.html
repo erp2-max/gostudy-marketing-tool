@@ -532,15 +532,23 @@ let scenePhotoIdx = 0;
 // ── 2026 style text-shadow outline (html2canvas compatible) ──────────────────
 // Brown ring at r=7px (14px stroke) + white outer ring at r=11px, 24 directions each
 // Sticker stroke: two absolutely-positioned duplicate spans give sharp, clean, connected borders.
-// White outer (0.4em) sits behind brown inner (0.2em), both behind the real text fill.
+// White outer (0.28em) sits behind brown inner (0.18em), both behind the real text fill.
 // Using em units so stroke thickness scales with font size automatically.
 // paint-order:stroke fill on color:transparent spans = stroke visible both sides, no fill overlap.
-// stroke-linejoin:round eliminates the sharp miter points at character corners
+// multiRingShadow fills stroke miter corners with circular shadows → rounded appearance
+function multiRingShadow(rEm, color, n = 24) {
+  const out = [];
+  for (let i = 0; i < n; i++) {
+    const a = (2 * Math.PI * i) / n;
+    out.push(`${(rEm * Math.cos(a)).toFixed(3)}em ${(rEm * Math.sin(a)).toFixed(3)}em 0 ${color}`);
+  }
+  return out.join(',');
+}
 const _STK_BASE = `position:absolute;top:0;left:0;right:0;pointer-events:none;color:transparent;paint-order:stroke fill;stroke-linejoin:round;stroke-linecap:round;font-size:inherit;font-family:inherit;font-weight:inherit;letter-spacing:inherit;line-height:inherit;overflow-wrap:inherit`;
-// text-shadow on stk-w: blur spreads past the white border (0.23em outward) → soft drop shadow
-// without hard-edge artifacts. 0 shadow + blurred shadow combo gives depth at small offsets.
-const _STK_W  = `${_STK_BASE};-webkit-text-stroke:0.28em #fff;text-shadow:5px 8px 0 rgba(0,0,0,0.28),5px 8px 18px rgba(0,0,0,0.32)`;
-const _STK_B  = `${_STK_BASE};-webkit-text-stroke:0.18em #412F2B`;
+// stk-w: 24-dir white ring fills miter corners → rounded edge; hard+soft drop shadow for 3D depth
+const _STK_W  = `${_STK_BASE};-webkit-text-stroke:0.28em #fff;text-shadow:${multiRingShadow(0.14,'#fff')},6px 10px 0 rgba(0,0,0,0.35),6px 10px 20px rgba(0,0,0,0.30)`;
+// stk-b: 24-dir brown ring fills miter corners → rounded edge
+const _STK_B  = `${_STK_BASE};-webkit-text-stroke:0.18em #412F2B;text-shadow:${multiRingShadow(0.09,'#412F2B')}`;
 const _2026_TS = ''; // legacy compat — no longer used for text-shadow
 
 function buildStickerInner(txt) {
