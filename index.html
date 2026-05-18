@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GOSTUDY · 行銷工具 — 登入</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:'Noto Sans TC','Microsoft JhengHei',sans-serif}
+body{
+  display:flex;align-items:center;justify-content:center;min-height:100vh;
+  background:#1a1410;
+  background-image:
+    radial-gradient(ellipse 80% 60% at 50% 0%,rgba(166,138,86,.12) 0%,transparent 70%),
+    radial-gradient(ellipse 60% 40% at 80% 100%,rgba(14,107,89,.1) 0%,transparent 60%);
+}
+
+.card{
+  width:100%;max-width:400px;padding:48px 44px 44px;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(166,138,86,.22);
+  border-radius:16px;
+  box-shadow:0 24px 80px rgba(0,0,0,.6);
+  backdrop-filter:blur(8px);
+}
+
+.logo-area{text-align:center;margin-bottom:36px}
+.logo-brand{font-size:11px;font-weight:700;color:rgba(166,138,86,.6);letter-spacing:3px;text-transform:uppercase;margin-bottom:8px}
+.logo-title{font-size:22px;font-weight:900;color:#f0e8d0;letter-spacing:.5px}
+.logo-sub{font-size:12px;color:rgba(200,176,122,.5);margin-top:6px}
+
+.divider{height:1px;background:rgba(166,138,86,.18);margin-bottom:32px}
+
+.field{display:flex;flex-direction:column;gap:7px;margin-bottom:18px}
+.field label{font-size:11px;font-weight:700;color:rgba(200,176,122,.55);letter-spacing:1.2px;text-transform:uppercase}
+.field input{
+  padding:11px 14px;
+  background:rgba(0,0,0,.35);
+  border:1px solid rgba(166,138,86,.25);
+  border-radius:8px;
+  color:rgba(220,200,160,.92);
+  font-size:14px;
+  font-family:inherit;
+  outline:none;
+  transition:border-color .15s,background .15s;
+}
+.field input:focus{border-color:rgba(166,138,86,.65);background:rgba(0,0,0,.5)}
+.field input::placeholder{color:rgba(200,176,122,.2);font-size:13px}
+
+.error{
+  display:none;font-size:12px;color:rgba(255,120,120,.9);
+  background:rgba(255,0,0,.07);border:1px solid rgba(255,100,100,.2);
+  border-radius:6px;padding:8px 12px;margin-bottom:16px;
+  text-align:center;
+}
+.error.show{display:block}
+
+.login-btn{
+  width:100%;margin-top:8px;padding:13px;
+  border-radius:10px;border:none;cursor:pointer;
+  font-family:inherit;font-size:14px;font-weight:800;letter-spacing:.5px;
+  background:linear-gradient(135deg,#0e6b59,#16a085);
+  color:#fff;
+  box-shadow:0 6px 24px rgba(14,107,89,.4);
+  transition:filter .15s,transform .15s,box-shadow .15s;
+}
+.login-btn:hover{filter:brightness(1.12);transform:translateY(-2px);box-shadow:0 12px 36px rgba(14,107,89,.55)}
+.login-btn:active{transform:translateY(0);filter:brightness(.95)}
+
+.footer{text-align:center;margin-top:28px;font-size:10px;color:rgba(166,138,86,.3);letter-spacing:.5px}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo-area">
+    <div class="logo-brand">GOSTUDY</div>
+    <div class="logo-title">行銷圖卡生成工具</div>
+    <div class="logo-sub">Marketing Design Tool</div>
+  </div>
+  <div class="divider"></div>
+
+  <form id="login-form" onsubmit="handleLogin(event)" novalidate>
+    <div class="field">
+      <label for="username">帳號</label>
+      <input id="username" type="text" placeholder="請輸入帳號" autocomplete="username" autofocus>
+    </div>
+    <div class="field">
+      <label for="password">密碼</label>
+      <input id="password" type="password" placeholder="請輸入密碼" autocomplete="current-password">
+    </div>
+    <div class="error" id="err-msg">帳號或密碼錯誤，請再試一次</div>
+    <button class="login-btn" type="submit">登入</button>
+  </form>
+
+  <div class="footer">© GOSTUDY 行銷部 · 內部使用</div>
+</div>
+
+<script>
+const USERS = { admin: 'admin12345' };
+
+function handleLogin(e) {
+  e.preventDefault();
+  const user = document.getElementById('username').value.trim();
+  const pass = document.getElementById('password').value;
+  const errEl = document.getElementById('err-msg');
+
+  if (USERS[user] && USERS[user] === pass) {
+    sessionStorage.setItem('gs_auth', '1');
+    window.location.href = '/weekly_design_tool.html';
+  } else {
+    errEl.classList.add('show');
+    document.getElementById('password').value = '';
+    document.getElementById('password').focus();
+  }
+}
+
+// 已登入則直接跳過
+if (sessionStorage.getItem('gs_auth') === '1') {
+  window.location.href = '/weekly_design_tool.html';
+}
+</script>
+</body>
+</html>

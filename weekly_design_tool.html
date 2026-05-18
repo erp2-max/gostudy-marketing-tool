@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GOSTUDY · 行銷圖卡生成工具</title>
+<script>if(sessionStorage.getItem('gs_auth')!=='1'){location.replace('/');}</script>
 <script>
   window.addEventListener('DOMContentLoaded', function() {
     var f = document.createElement('link'); f.rel='stylesheet';
@@ -3185,7 +3186,7 @@ async function openInPhotopea(el, label, w, h) {
   const restoreBg = await bakeBgFilter(el, w, h);
 
   try {
-    const raw = await html2canvas(el,{scale:2,width:w,height:h,useCORS:true,allowTaint:false,backgroundColor:null,logging:false,onclone:(_,clonedEl)=>{clonedEl.querySelectorAll('[data-drag="hook-group"]').forEach(hg=>{let t=hg.style.transform;t=t.replace(/rotate\([^)]+\)\s*/g,'');t=t.replace(/skewX\((-?[\d.]+)deg\)/g,(_,d)=>{const v=Math.tan(parseFloat(d)*Math.PI/180).toFixed(6);return `matrix(1,0,${v},1,0,0)`;});hg.style.transform=t;});});
+    const raw = await html2canvas(el,{scale:2,width:w,height:h,useCORS:true,allowTaint:false,backgroundColor:null,logging:false,onclone:(_,clonedEl)=>{clonedEl.querySelectorAll('[data-drag="hook-group"]').forEach(hg=>{let t=hg.style.transform;t=t.replace(/rotate\([^)]+\)\s*/g,'');t=t.replace(/skewX\((-?[\d.]+)deg\)/g,(_,d)=>{const v=Math.tan(parseFloat(d)*Math.PI/180).toFixed(6);return `matrix(1,0,${v},1,0,0)`;});hg.style.transform=t;});}});
     const canvas=document.createElement('canvas'); canvas.width=w; canvas.height=h;
     canvas.getContext('2d').drawImage(raw,0,0,w,h);
     // 使用 JPEG 壓縮降低 URL 長度（大約 100-250KB → base64 130-330KB）
