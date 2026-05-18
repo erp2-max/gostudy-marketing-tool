@@ -1,66 +1,57 @@
 {
 "cover": {
-"headline": "2026 QS 世界大學排名正式出爐",
-"subheadline": "MIT 連霸 14 年，帝國理工衝上全球第 2",
-"hookLine1": "1,500+ 所大學激烈競逐",
-"hookLine2": "亞洲首度超越歐洲",
+"headline": "2026 QS 帝國理工升全球第2",
+"subheadline": "MIT 連霸 15 年，英美亞洗牌！你的賽道還在嗎？",
+"hookLine1": "MIT 連霸第15年",
+"hookLine2": "帝國超越牛劍",
 "hookLine3": ""
 },
 "overview": {
-"title": "2026 QS 排名四大震撼數據",
+"title": "2026 QS 世界大學排名四大關鍵變局",
 "rows": [
-{ "num": "01", "title": "MIT 連霸第 14 年", "brief": "全球第一寶座屹立不搖" },
-{ "num": "02", "title": "亞洲 565 所大學上榜", "brief": "首度超越歐洲 487 所" },
-{ "num": "03", "title": "台大創歷史最佳第 63 名", "brief": "較去年進步 5 個名次" },
-{ "num": "04", "title": "英國 50+ 所大學跌榜", "brief": "帝國理工逆勢升至全球第 2" }
+{ "num": "01", "title": "帝國理工升至全球第2", "brief": "擊退牛津劍橋，英國新霸主" },
+{ "num": "02", "title": "美國大學7年來首次回升", "brief": "8所大學挺進全球前20" },
+{ "num": "03", "title": "亞洲強勢擴張", "brief": "NUS第8，中國2校進前20" },
+{ "num": "04", "title": "全球1,501所接受評比", "brief": "500所排名上升，創歷年新高" }
 ],
 "rankingSection": {
-"heading": "2026 QS 世界大學排名 TOP 10",
+"heading": "2026 QS 世界大學排名",
 "rows": [
 { "rank": "#1", "name": "MIT", "nameZh": "麻省理工學院" },
-{ "rank": "#2", "name": "Imperial College London", "nameZh": "倫敦帝國學院" },
+{ "rank": "#2", "name": "Imperial College London", "nameZh": "帝國理工學院" },
 { "rank": "#3", "name": "Stanford University", "nameZh": "史丹佛大學" },
 { "rank": "#4", "name": "University of Oxford", "nameZh": "牛津大學" },
 { "rank": "#5", "name": "Harvard University", "nameZh": "哈佛大學" },
 { "rank": "#6", "name": "University of Cambridge", "nameZh": "劍橋大學" },
-{ "rank": "#7", "name": "ETH Zurich", "nameZh": "蘇黎世聯邦理工學院" },
+{ "rank": "#7", "name": "ETH Zurich", "nameZh": "蘇黎世聯邦理工" },
 { "rank": "#8", "name": "National University of Singapore", "nameZh": "新加坡國立大學" },
-{ "rank": "#9", "name": "UCL", "nameZh": "倫敦大學學院" },
+{ "rank": "#9", "name": "University College London", "nameZh": "倫敦大學學院" },
 { "rank": "#10", "name": "California Institute of Technology", "nameZh": "加州理工學院" }
 ]
 }
 },
 "pages": [
 {
-"title": "亞洲崛起：全球學術版圖正在重寫",
+"title": "英國留學｜帝國理工升第2的申請機會",
 "layout": "bullets",
 "bullets": [
-"亞洲總上榜數｜565 所，首度超越歐洲（487 所），成為全球上榜最多的地區",
-"最大黑馬｜馬來西亞 Sunway University 排名暴衝 120+ 位，東南亞競爭力爆發",
-"新加坡雙強｜NUS 第 8、NTU 第 12，小國大學術，CP 值留學首選",
-"香港大躍進｜香港大學衝上全球第 11，港校整體表現全球升幅第二"
+"國際生滿分｜帝國理工國際學生與師資比例雙滿分，台灣申請者接受度極高",
+"牛劍小幅下滑｜牛津跌至第4、劍橋第6，選校策略需配合排名重新評估",
+"英國前10共4席｜Imperial、Oxford、Cambridge、UCL 仍佔全球前10，英國賽道穩健",
+"荷包君精算｜QS第2的帝國學費約£35,000，與第4牛津相差不到£5,000"
 ]
 },
 {
-"title": "台灣大學 2026 QS 成績單",
+"title": "亞洲與美國｜2026年最值得關注的留學賽道",
 "layout": "bullets",
 "bullets": [
-"台灣大學｜全球第 63 名（↑5），台灣唯一百大，就業成果指標獲滿分 100 分",
-"清華大學｜全球第 176 名（↑34），單年暴衝 34 名為台灣最大進步",
-"陽明交大｜全球第 199 名（↑20），首度闖進 QS 全球前 200 強",
-"成功大學｜全球第 203 名，台灣共 27 所大學上榜、8 所進入前 500"
-]
-},
-{
-"title": "你該現在出手的 3 個理由",
-"layout": "bullets",
-"bullets": [
-"競爭加劇中｜帝國理工升至全球第 2，申請門檻同步拉高，提早備戰是關鍵",
-"亞洲窗口縮短｜NUS、NTU 能見度大增，國際申請人數逐年攀升",
-"英國洗牌進行中｜50+ 所英國大學跌榜，選校眼光比以往更重要"
+"美國7年首次回升｜8校進前20，史丹佛從第6躍升第3，就業導向選校正當時",
+"NUS蟬聯第8｜新加坡作為英語留學跳板，學費與就業回報比持續吸引台灣學生",
+"北大清華進前20｜北京大學第14、清華大學第17，中國雙一流的國際認可度急升",
+"芝加哥大學逆襲｜從第21竄升至第13，商科與經濟學研究生申請的避坑新選擇"
 ]
 }
 ],
-"cta": "立即預約諮詢，鎖定你的目標名校",
-"hashtags": "#QS2026 #世界大學排名 #留學申請 #英國留學 #帝國理工 #新加坡留學 #GOSTUDY"
+"cta": "留言「QS排名」，目標學校漲跌分析一次看！",
+"hashtags": "#QS排名2026 #世界大學排名 #英國留學 #帝國理工 #GoStudy"
 }
