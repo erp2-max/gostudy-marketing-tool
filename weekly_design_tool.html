@@ -2050,37 +2050,6 @@ function buildSectionEditPanel(sec) {
       adjRow.appendChild(fRow);
     });
 
-    // Stroke (cover only)
-    if (!isBlog) {
-      const strokeRow=document.createElement('div'); strokeRow.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:6px';
-      const strokeLbl=document.createElement('span'); strokeLbl.style.cssText='font-size:11px;color:var(--muted);flex:1'; strokeLbl.textContent='標題框線粗細';
-      const strokeM=document.createElement('button'); strokeM.textContent='－'; strokeM.className='side-btn'; strokeM.style.cssText=btnStyle;
-      const strokeVal=document.createElement('span'); strokeVal.style.cssText='font-size:12px;font-weight:700;color:var(--gold);min-width:36px;text-align:center';
-      strokeVal.textContent=(sec._cardOverrides.textStroke||4)+'px'; valEls.stroke=strokeVal;
-      const strokeP=document.createElement('button'); strokeP.textContent='＋'; strokeP.className='side-btn'; strokeP.style.cssText=btnStyle;
-      strokeM.onclick=()=>{ sec._cardOverrides.textStroke=Math.max(0,(sec._cardOverrides.textStroke||4)-1); strokeVal.textContent=sec._cardOverrides.textStroke+'px'; rebuildSection(sec); };
-      strokeP.onclick=()=>{ sec._cardOverrides.textStroke=Math.min(12,(sec._cardOverrides.textStroke||4)+1); strokeVal.textContent=sec._cardOverrides.textStroke+'px'; rebuildSection(sec); };
-      strokeRow.appendChild(strokeLbl); strokeRow.appendChild(strokeM); strokeRow.appendChild(strokeVal); strokeRow.appendChild(strokeP);
-      adjRow.appendChild(strokeRow);
-    }
-
-    // Logo + BN scale
-    const scaleKeys = isBlog
-      ? [{label:'Logo 大小', key:'logoScale'}]
-      : [{label:'Logo 大小', key:'logoScale'},{label:'Breaking News 大小', key:'bnScale'}];
-    scaleKeys.forEach(({label:sl,key:sk})=>{
-      const r2=document.createElement('div'); r2.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:6px';
-      const l2=document.createElement('span'); l2.style.cssText='font-size:11px;color:var(--muted);flex:1'; l2.textContent=sl;
-      const bM2=document.createElement('button'); bM2.textContent='－'; bM2.className='side-btn'; bM2.style.cssText=btnStyle;
-      const v2=document.createElement('span'); v2.style.cssText='font-size:12px;font-weight:700;color:var(--gold);min-width:42px;text-align:center';
-      v2.textContent=Math.round((sec._cardOverrides[sk]||1)*100)+'%'; valEls[sk]=v2;
-      const bP2=document.createElement('button'); bP2.textContent='＋'; bP2.className='side-btn'; bP2.style.cssText=btnStyle;
-      bM2.onclick=()=>{ sec._cardOverrides[sk]=Math.max(0.3,+((sec._cardOverrides[sk]||1)-0.1).toFixed(2)); v2.textContent=Math.round(sec._cardOverrides[sk]*100)+'%'; rebuildSection(sec); };
-      bP2.onclick=()=>{ sec._cardOverrides[sk]=Math.min(3.0,+((sec._cardOverrides[sk]||1)+0.1).toFixed(2)); v2.textContent=Math.round(sec._cardOverrides[sk]*100)+'%'; rebuildSection(sec); };
-      r2.appendChild(l2); r2.appendChild(bM2); r2.appendChild(v2); r2.appendChild(bP2);
-      adjRow.appendChild(r2);
-    });
-
     // Subject size
     if (subjectUrl) {
       const subSzRow=document.createElement('div'); subSzRow.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:6px';
